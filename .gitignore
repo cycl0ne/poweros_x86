@@ -1,3 +1,4 @@
 kernel
 *.o
 harddisk.img
+bin/
