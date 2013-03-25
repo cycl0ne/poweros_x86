@@ -12,6 +12,12 @@ because on my long business trips im in lack of a rasperry pi development stack.
 It is partly inspired by the good old AmigaOS, but it is not compatible. Some
 Functions are the same others dont. So dont rely on it.
 
+Playing around:
+===============
+I know that there is only textoutput at the moment, but pe patient :) if you want to test things for yourselve, please go into boot.test. Since there is no disk operations at the moment you need to get booted from the kernel file.
+In boot.test you will find a .c file, inside it is a test_main or something similar. This is your starting point to test the API of the OS. I implemented a small load routine for the ps2mouse device driver. This is why the screens fills when you move your mouse.
+
+
 Status:
 =======
 At the moment im reporting the Raspberry Pi Source back to x86. The system boots up at the moment,
