@@ -19,9 +19,6 @@ static const char name[] = "mouseport.device";
 static const char version[] = DEVICE_VERSION_STRING
 static const char EndResident;
 
-void QueueCommand(struct IORequest *io, SysBase *SysBase);
-void EndCommand(UINT32 error, struct IORequest *io);
-
 APTR mdev_OpenDev(struct MDBase *MDBase, struct IORequest *ioreq, UINT32 unitnum, UINT32 flags);
 APTR mdev_CloseDev(struct MDBase *MDBase, struct IORequest *ioreq);
 APTR mdev_ExpungeDev(struct MDBase *MDBase);
@@ -103,7 +100,6 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 #define SysBase MDBase->SysBase
 void mdev_BeginIO(MDBase *MDBase, struct IORequest *io)
 {
-	
 	UINT8 cmd = io->io_Command;
 	io->io_Flags &= (~(IOF_QUEUED|IOF_CURRENT|IOF_SERVICING|IOF_DONE))&0x0ff;
 	io->io_Error = 0;
@@ -112,7 +108,7 @@ void mdev_BeginIO(MDBase *MDBase, struct IORequest *io)
 
 	if (mouseCmdQuick[cmd] >= 0)
 	{
-		QueueCommand(io, SysBase);
+		QueueCommand((struct IOStdReq*)io, SysBase);
 		// Check if we are the first in Queue, if not, just return
 		if (!TEST_BITS(io->io_Flags, IOF_CURRENT))
 		{
@@ -132,7 +128,7 @@ void mdev_BeginIO(MDBase *MDBase, struct IORequest *io)
 
 void mdev_AbortIO(MDBase *MDBase, struct IORequest *ioreq)
 {
-	EndCommand(IOERR_ABORTED, ioreq);
+	EndCommand(IOERR_ABORTED, (struct IOStdReq*)ioreq, SysBase);
 }
 
 static const char EndResident = 0;

@@ -9,7 +9,7 @@
 #include "dos.h"
 #include "pci.h"
 
-struct ExpansionBase
+typedef struct ExpansionBase
 {
 	struct Library			Library;
 	APTR					SysBase;
@@ -24,7 +24,7 @@ struct ExpansionBase
 	UINT32	g_nPCIMethod;
 	UINT32	g_nPCINumBusses;
 	UINT32	g_nPCINumDevices;
-};
+}ExpansionBase;
 
 struct ExpDosNode
 {

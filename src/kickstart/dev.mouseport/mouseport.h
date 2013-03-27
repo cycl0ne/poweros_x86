@@ -5,6 +5,9 @@
 #include "sysbase.h"
 #include "io.h"
 
+void QueueCommand(struct IOStdReq *io, SysBase *SysBase);
+void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase);
+
 #define	 MD_READEVENT	   (CMD_NONSTD+0)
 #define	 MD_ASKCTYPE	   (CMD_NONSTD+1)
 #define	 MD_SETCTYPE	   (CMD_NONSTD+2)
