@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "exec_funcs.h"
 #include "mouseport.h"
+#include "keyboard.h"
 #include "inputevent.h"
 
 // This is a Testsuite for implementations on the OS.
@@ -68,6 +69,8 @@ struct TestStruct {
 	struct InputEvent ie[10];
 };
 
+#include "alerts.h"
+
 static void test_mouse(SysBase *SysBase)
 {
 	struct TestStruct *ts = AllocVec(sizeof(struct TestStruct), MEMF_CLEAR);
@@ -103,6 +106,7 @@ static void test_mouse(SysBase *SysBase)
 			//DPrintF("io->flags = %b\n", ts->io[i]->io_Flags);
 			if (ts->io[i]->io_Error > 0) DPrintF("Io Error [%d]\n", i);
 		}
+		
 		for(;;)
 		{
 			Wait(1<<mp->mp_SigBit);
@@ -123,19 +127,83 @@ static void test_mouse(SysBase *SysBase)
 				SendIO((struct IORequest *) rcvd_io );
 			}
 		}
+		
 		//DPrintF("EventClass [%x]\n", ts->io[i].ie_Class);
 	}
 }
 
-static void test_TestTask(APTR data, struct SysBase *SysBase) 
+static void test_keyboard(SysBase *SysBase)
 {
-	DPrintF("Binary  Output: %b\n", 0x79);
-	DPrintF("Hex     Output: %x\n", 0x79);
-	DPrintF("Decimal Output: %d\n", 0x79);
+	struct TestStruct *ts = AllocVec(sizeof(struct TestStruct), MEMF_CLEAR);
 
-	DPrintF("Load Test Mouse\n");
-	test_mouse(SysBase);
+	if (ts != NULL)
+	{
+		INT32 ret = 0;
+		struct MsgPort *mp= CreateMsgPort();
+		for (int i=0 ; i<10; i++)
+		{
+			ts->mp[i] = mp;
+			ts->io[i] = CreateIORequest(mp, sizeof(struct IOStdReq));
+			if ((ts->mp[i] == NULL)||(ts->io[i] == NULL))
+			{
+				DPrintF("Error allocating Port/Message at : %d\n", i);
+				for(;;);
+				break;
+			}
+			ret = OpenDevice("keyboard.device", 0, (struct IORequest *)ts->io[i], 0);
+			if (ret != 0) 
+			{
+				DPrintF("OpenDevice keyboard.device failed!\n");
+				for(;;);
+				break;
+			}
+			ts->io[i]->io_Command = KBD_READEVENT; /* add a new request */
+			ts->io[i]->io_Error = 0;
+			ts->io[i]->io_Actual = 0;	
+			ts->io[i]->io_Data = &ts->ie[i];
+			ts->io[i]->io_Flags = 0;
+			ts->io[i]->io_Length = sizeof(struct InputEvent);
+			ts->io[i]->io_Message.mn_Node.ln_Name = (STRPTR)i;
+			SendIO((struct IORequest *) ts->io[i] );
+			//DPrintF("io->flags = %b\n", ts->io[i]->io_Flags);
+			if (ts->io[i]->io_Error > 0) 
+			{
+				DPrintF("Io Error [%d]\n", i);
+			}
+		}
 
+		for(;;)
+		{
+			Wait(1<<mp->mp_SigBit);
+			while (!IsMsgPortEmpty(mp))
+			{
+				//DPrintF("[ID:%x]", SysBase->IDNestCnt);
+				struct IOStdReq *rcvd_io = (struct IOStdReq *)GetMsg(mp);
+				struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
+				DPrintF("Event Class %x (i= %x)\n", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name);
+			
+				rcvd_io->io_Command = KBD_READEVENT; /* add a new request */
+				rcvd_io->io_Error = 0;
+				rcvd_io->io_Actual = 0;	
+				//rcvd_io->io_Data = &ts->ie[i];
+				rcvd_io->io_Flags = 0;
+				rcvd_io->io_Length = sizeof(struct InputEvent);
+
+				SendIO((struct IORequest *) rcvd_io );
+			}
+		}
+		
+		//DPrintF("EventClass [%x]\n", ts->io[i].ie_Class);
+	}
+}
+
+static void test_AlertTest(SysBase *SysBase)
+{
+	Alert(AN_MemCorrupt, "Memory defect -> Just kidding\n");
+}
+
+static void test_Srini(SysBase *SysBase)
+{
 // Small Tutorial for Srini on opening a device. 
 // Example: timer.device
 // We will create a wait(seconds); Function
@@ -170,7 +238,54 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("We will go 5 Seconds to sleep\n");
 	DoIO((struct IORequest *) io );
 	DPrintF("Return after 5 Seconds\n");
+}
 
+static void test_printit(INT32 chr, APTR SysBase)
+{
+	RawPutChar(chr);
+}
+
+static void test_RawIO(SysBase *SysBase)
+{
+	RawIOInit();
+
+	// Simple printf("hello...
+	RawDoFmt("HELLO WORLD\n", NULL, test_printit, SysBase);
+
+	UINT32 var[2] = {0x32, 0x10};
+
+	// we emulate a command sequence printf("...", var1, var2);
+	RawDoFmt("[%b] [%x]\n", (va_list) var, test_printit, SysBase);
+
+	// single char output
+	RawPutChar('H');
+	RawPutChar('E');
+	RawPutChar('L');
+	RawPutChar('O');
+	RawPutChar('\n');
+	
+	// Now test some input ->
+	UINT8 chr = RawMayGetChar();
+	while(chr != 'q') {
+		// we only print chars received a-z and return
+		if ((chr > 'a' && chr <'z') || chr=='\r') RawPutChar(chr);
+		chr = RawMayGetChar();
+	}
+	Alert(AN_MemCorrupt, "End of Test RawIO\n");
+}
+
+static void test_TestTask(APTR data, struct SysBase *SysBase) 
+{
+	DPrintF("Binary  Output: %b\n", 0x79);
+	DPrintF("Hex     Output: %x\n", 0x79);
+	DPrintF("Decimal Output: %d\n", 0x79);
+
+//	test_mouse(SysBase);
+	test_keyboard(SysBase);
+//	test_AlertTest(SysBase);
+//	test_RawIO(SysBase);
+
+	test_Srini(SysBase);
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }
 

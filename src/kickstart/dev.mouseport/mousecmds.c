@@ -9,22 +9,6 @@
 
 #include "sysbase.h"
 #include "exec_funcs.h"
-
-#define IsMsgPortEmpty(x) \
-	( ((x)->mp_MsgList.lh_TailPred) == (struct Node *)(&(x)->mp_MsgList) )
-
-#   define GetHead(l)       (void *)(((struct List *)l)->lh_Head->ln_Succ \
-				? ((struct List *)l)->lh_Head \
-				: (struct Node *)0)
-#   define GetTail(l)       (void *)(((struct List *)l)->lh_TailPred->ln_Pred \
-				? ((struct List *)l)->lh_TailPred \
-				: (struct Node *)0)
-#   define GetSucc(n)       (void *)(((struct Node *)n)->ln_Succ->ln_Succ \
-				? ((struct Node *)n)->ln_Succ \
-				: (struct Node *)0)
-#   define GetPred(n)       (void *)(((struct Node *)n)->ln_Pred->ln_Pred \
-				? ((struct Node *)n)->ln_Pred \
-				: (struct Node *)0)
 	
 void QueueCommand(struct IOStdReq *io, SysBase *SysBase)
 {
@@ -62,7 +46,9 @@ void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase)
 	if ((io->io_Flags & IOF_CURRENT) == 0) {
 		if ((io->io_Flags & IOF_QUEUED) == 0)  {
 			Enable(ipl);
-			if (!TEST_BITS(io->io_Flags, IOF_QUICK)) ReplyMsg(&io->io_Message);
+			//Still quick? Return
+			if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+			ReplyMsg(&io->io_Message);
 			return;
 		}
 	}
@@ -70,13 +56,15 @@ void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase)
 	Remove(&io->io_Message.mn_Node);
 	if (IsMsgPortEmpty(&io->io_Unit->unit_MsgPort)) {
 		Enable(ipl);
-		if (!TEST_BITS(io->io_Flags, IOF_QUICK)) ReplyMsg(&io->io_Message);
+		if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+		ReplyMsg(&io->io_Message);
 		return;
 	}
 	struct IOStdReq *tmp = GetHead(&io->io_Unit->unit_MsgPort.mp_MsgList);
 	if (tmp!=NULL) SET_BITS(tmp->io_Flags, IOF_CURRENT);
 	Enable(ipl);
-	if (!TEST_BITS(io->io_Flags, IOF_QUICK)) ReplyMsg(&io->io_Message);
+	if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+	ReplyMsg(&io->io_Message);
 	return;		
 }
 
@@ -152,7 +140,7 @@ static void MDReadEvent(struct IOStdReq *io, MDBase *MDBase)
 			//DPrintF("No Waiters [%x][%x]\n", MDBase->BufTail, MDBase->BufHead);
 			break; // leave loop
 		}
-		struct Task *task = FindTask(NULL);
+		//struct Task *task = FindTask(NULL);
 		//DPrintF("Waiter found. Task currently running[%s]\n", task->Node.ln_Name);
 		ioloop = (struct IOStdReq *)GetHead(&unit->unit_MsgPort.mp_MsgList);
 		continue;

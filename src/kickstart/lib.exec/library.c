@@ -93,7 +93,7 @@ void lib_SumLibrary(SysBase *SysBase, struct Library *library)
 
     /* Do it again if the library changed while summing. */
   }while(library->lib_Flags&LIBF_CHANGED);
-  if(!(oldflags&LIBF_CHANGED)&&library->lib_Sum!=sum) Alert(AT_DeadEnd|AN_LibChkSum);
+  if(!(oldflags&LIBF_CHANGED)&&library->lib_Sum!=sum) Alert(AT_DeadEnd|AN_LibChkSum, "Library Checksum failed\n");
 
   /* Set new checksum */
   library->lib_Sum=sum;

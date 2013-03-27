@@ -82,7 +82,7 @@ void lib_AddLibrary(SysBase *SysBase,struct Library *library);
 UINT32 lib_RemLibrary(SysBase *SysBase, struct Library *library);
 void lib_SumLibrary(SysBase *SysBase, struct Library *library);
 
-void lib_Alert(SysBase *SysBase, UINT32 alertNum);
+void lib_Alert(SysBase *SysBase, UINT32 alertNum, const char *fmt, ...);
 
 struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcInit, APTR structInit, UINT32(*libInit)(struct Library*,APTR, struct SysBase*), UINT32 dataSize, UINT32 segList);
 BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end);

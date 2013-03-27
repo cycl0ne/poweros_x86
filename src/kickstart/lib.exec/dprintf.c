@@ -13,10 +13,10 @@ static void printit(INT32 chr, APTR ptr)
 void lib_DPrintF(struct SysBase *SysBase, char *fmt, ...)
 {
 	//RawDoFmt(FormatString, DataStream, PutChProc, PutChData);
-	Disable();
+//	Disable();
 	va_list pvar;
 	va_start(pvar, fmt);
 	RawDoFmt(fmt, pvar, printit, NULL);
 	va_end(pvar);
-	Enable(0);
+//	Enable(0);
 }

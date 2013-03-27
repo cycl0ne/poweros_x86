@@ -108,9 +108,7 @@ __attribute__((no_instrument_function)) BOOL mouse_handler(UINT32 number, MDBase
 		if (MDBase->Unit.unit_Flags & DUB_STOPPED) return 0;
 		if (!IsMsgPortEmpty(&MDBase->Unit.unit_MsgPort)) {
 			struct IOStdReq *new = (struct IOStdReq *)GetHead(&MDBase->Unit.unit_MsgPort.mp_MsgList);
-			//if (new != NULL) {
 			mouseCmdVector[MD_READEVENT](new, MDBase);
-			//}
 		}
 		MDBase->Flags &= ~DUB_IS_SERVICE;
 		break;

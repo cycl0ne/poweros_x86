@@ -11,6 +11,10 @@ static inline void arch_Intr_Disable(void) {
    asm volatile ("cli");
 }
 
+static inline void arch_Halt(void) {
+   asm volatile ("hlt");
+}
+
 static inline void memcpy(void *dest, const void *src, UINT32 size)
 {
    asm volatile ("cld; rep movsb" : "+c" (size), "+S" (src), "+D" (dest) :: "memory");

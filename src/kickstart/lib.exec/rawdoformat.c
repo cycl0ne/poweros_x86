@@ -52,7 +52,8 @@ va_list lib_RawDoFmt(struct SysBase *SysBase, const char *fmt, va_list ap, void 
 	int chars_to_print;
 	int pad_spaces;
 
-	if(fmt == NULL || ap == NULL || PutCh == NULL) return ap;
+	//if(fmt == NULL || ap == NULL || PutCh == NULL) return ap;
+	if(fmt == NULL || PutCh == NULL) return ap;
 
 	for (;;) {
 		while ((ch = *fmt++) != '%') {

@@ -7,7 +7,8 @@
  
 harddisk_image_size=$((4*1024*1024)) # 4 megabytes
 harddisk_image="harddisk.img"
-qemu_cmdline="qemu-system-i386 -monitor stdio -vga vmware"
+
+qemu_cmdline="qemu-system-i386 -vga vmware -monitor stdio " #-serial stdio"
 kernel_args=""
 kernel_binary="bin/kernel.bin"
  

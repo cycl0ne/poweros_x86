@@ -76,7 +76,7 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 	NewList((struct List *) &TimerBase->Lists[UNIT_WAITUNTIL] );
 	NewList((struct List *) &TimerBase->Lists[UNIT_WAITECLOCK] );
 
-	DPrintF("[Timer] TimerBase: %x, OpenDevice: %x\n", TimerBase, timer_BeginIO);
+	//DPrintF("[Timer] TimerBase: %x, OpenDevice: %x\n", TimerBase, timer_BeginIO);
 	// VBL (100hz) Timer
 	TimerBase->TimerVBLIntServer = CreateIntServer(DevName, TIMER_INT_PRI, TimerVBLIRQServer, TimerBase);
 	AddIntServer(IRQ_CLK, TimerBase->TimerVBLIntServer);

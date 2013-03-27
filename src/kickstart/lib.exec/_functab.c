@@ -106,9 +106,9 @@ APTR FuncTab[] =
 	(void(*)) lib_InitResidentCode,
 	(void(*)) lib_SetFunction,
 	(void(*)) lib_RawDoFmt,
-	(void(*)) NULL, //lib_RawIOInit,
-	(void(*)) NULL, //lib_RawPutChar,
-	(void(*)) NULL, //lib_RawMayGetChar,
+	(void(*)) lib_RawIOInit,
+	(void(*)) lib_RawPutChar,
+	(void(*)) lib_RawMayGetChar,
 	(void(*)) lib_CopyMemQuick,
 	
 	(APTR) ((INT32)-1)
