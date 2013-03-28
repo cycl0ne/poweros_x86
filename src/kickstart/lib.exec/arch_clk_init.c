@@ -13,8 +13,8 @@
 #define IRQ_MOUSE     12
 #define IRQ_NE2000    5
 
-#define CLK_PORT1  ((UINT8 *) 0x40U)
-#define CLK_PORT4  ((UINT8 *) 0x43U)
+#define CLK_PORT1  ((UINT16 *) 0x40U)
+#define CLK_PORT4  ((UINT16 *) 0x43U)
 
 #define CLK_CONST     1193180
 #define MAGIC_NUMBER  1194

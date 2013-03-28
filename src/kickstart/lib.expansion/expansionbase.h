@@ -19,11 +19,6 @@ typedef struct ExpansionBase
 	List					BoardList; // Holds the PCI/PCIe Board list (not used on Raspi)
 	struct SignalSemaphore	MountListLock;
 	List					MountList;
-
-	struct PCIBus pciBus[MAX_PCI_BUSSES];
-	UINT32	g_nPCIMethod;
-	UINT32	g_nPCINumBusses;
-	UINT32	g_nPCINumDevices;
 }ExpansionBase;
 
 struct ExpDosNode

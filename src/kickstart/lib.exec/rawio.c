@@ -4,10 +4,10 @@
 #include "exec_funcs.h"
 #include "_debug.h"
 
-#define SERIAL_PORT_A ((UINT8 *)0x3F8)
-#define SERIAL_PORT_B ((UINT8 *)0x2F8)
-#define SERIAL_PORT_C ((UINT8 *)0x3E8)
-#define SERIAL_PORT_D ((UINT8 *)0x2E8)
+#define SERIAL_PORT_A ((UINT16 *)0x3F8)
+#define SERIAL_PORT_B ((UINT16 *)0x2F8)
+#define SERIAL_PORT_C ((UINT16 *)0x3E8)
+#define SERIAL_PORT_D ((UINT16 *)0x2E8)
 
 
 void arch_RawIOInit()

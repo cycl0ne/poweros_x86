@@ -27,7 +27,7 @@ void gfxdev_BeginIO(VgaGfxBase *VgaGfxBase, struct IORequest *io)
 			return;
 		}
 		// If Device is stopped, just return
-		if (TEST_BITS(VgaGfxBase->Unit.unit_Flags, DUB_STOPPED))
+		if (TEST_BITS(VgaGfxBase->Unit.unit.unit_Flags, DUB_STOPPED))
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
 			return;	
@@ -49,7 +49,7 @@ APTR gfxdev_OpenDev(VgaGfxBase *VgaGfxBase, struct IORequest *ioreq, UINT32 unit
 	ioreq->io_Error = 0;
 	VgaGfxBase->Device.dd_Library.lib_OpenCnt++;
 	VgaGfxBase->Device.dd_Library.lib_Flags &= ~LIBF_DELEXP;
-	ioreq->io_Unit = &VgaGfxBase->Unit;
+	ioreq->io_Unit = &VgaGfxBase->Unit.unit;
 	return VgaGfxBase;		
 }
 

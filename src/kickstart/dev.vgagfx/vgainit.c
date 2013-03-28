@@ -15,6 +15,8 @@
 
 #include "sysbase.h"
 #include "exec_funcs.h"
+
+#include "pci.h"
 #include "expansion_funcs.h"
 
 #define DEVICE_VERSION_STRING "\0$VER: vgagfx.device 0.1 ("__DATE__")\r\n";
@@ -71,7 +73,9 @@ static const struct Resident ROMTag =
 	&InitTab
 };
 
-#define IS_PRIORITY		0
+void SVGA_Init(VgaGfxBase *VgaGfxBase);
+void SVGA_Enable(VgaGfxBase *VgaGfxBase);
+void Screen_Init(VgaGfxBase *VgaGfxBase);
 
 static VgaGfxBase *gfxdev_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, struct SysBase *SysBase)
 {
@@ -86,118 +90,26 @@ static VgaGfxBase *gfxdev_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, struct S
 	VgaGfxBase->SysBase	= SysBase;
 	
 	// Initialise Unit Command Queue
-	NewList((struct List *)&VgaGfxBase->Unit.unit_MsgPort.mp_MsgList);
-	VgaGfxBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
-	VgaGfxBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
-	VgaGfxBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
+	NewList((struct List *)&VgaGfxBase->Unit.unit.unit_MsgPort.mp_MsgList);
+	VgaGfxBase->Unit.unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
+	VgaGfxBase->Unit.unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
+	VgaGfxBase->Unit.unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
 
-	VgaGfxBase->ExpansionBase = (ExpansionBase *)OpenLibrary("expansion.library", 0);
-	if (VgaGfxBase->ExpansionBase == NULL) Alert((1<<31), "[vgagfx] Cant open expansion.library\n");
+	struct ExpansionBase *ExpansionBase = (struct ExpansionBase *)OpenLibrary("expansion.library", 0);
+	VgaGfxBase->ExpansionBase = ExpansionBase;
+	if (VgaGfxBase->ExpansionBase == NULL) {
+		Alert((1<<31), "[vgagfx] Cant open expansion.library\n");
+		return NULL;
+	}
 
-	VgaGfxBase->IS = CreateIntServer("IRQ vgagfx.device", IS_PRIORITY, vgagfx_handler, VgaGfxBase);
-	//AddIntServer(IRQ_MOUSE, MDBase->IS);
+	if (!PCIFindDevice(PCI_VENDOR_ID_VMWARE, PCI_DEVICE_ID_VMWARE_SVGA2, &VgaGfxBase->Unit.pciAddr)) {
+		Alert((1<<31), "No VMware SVGA device found.");
+	}
+   
+	SVGA_Init(VgaGfxBase);
+	SVGA_Enable(VgaGfxBase);
+	Screen_Init(VgaGfxBase);
+
 	return VgaGfxBase;
 }
-
-#if 0
-void SVGA_Init(void)
-{
-   if (!PCI_FindDevice(PCI_VENDOR_ID_VMWARE, PCI_DEVICE_ID_VMWARE_SVGA2,
-                       &gSVGA.pciAddr)) {
-      Console_Panic("No VMware SVGA device found.");
-   }
-
-   /*
-    * Use the default base address for each memory region.
-    * We must map at least ioBase before using ReadReg/WriteReg.
-    */
-
-   PCI_SetMemEnable(&gSVGA.pciAddr, TRUE);
-   gSVGA.ioBase = PCI_GetBARAddr(&gSVGA.pciAddr, 0);
-   gSVGA.fbMem = (void*) PCI_GetBARAddr(&gSVGA.pciAddr, 1);
-   gSVGA.fifoMem = (void*) PCI_GetBARAddr(&gSVGA.pciAddr, 2);
-
-   /*
-    * Version negotiation:
-    *
-    *   1. Write to SVGA_REG_ID the maximum ID supported by this driver.
-    *   2. Read from SVGA_REG_ID
-    *      a. If we read back the same value, this ID is supported. We're done.
-    *      b. If not, decrement the ID and repeat.
-    */
-
-   gSVGA.deviceVersionId = SVGA_ID_2;
-   do {
-      SVGA_WriteReg(SVGA_REG_ID, gSVGA.deviceVersionId);
-      if (SVGA_ReadReg(SVGA_REG_ID) == gSVGA.deviceVersionId) {
-         break;
-      } else {
-         gSVGA.deviceVersionId--;
-      }
-   } while (gSVGA.deviceVersionId >= SVGA_ID_0);
-
-   if (gSVGA.deviceVersionId < SVGA_ID_0) {
-      Console_Panic("Error negotiating SVGA device version.");
-   }
-
-   /*
-    * We must determine the FIFO and FB size after version
-    * negotiation, since the default version (SVGA_ID_0)
-    * does not support the FIFO buffer at all.
-    */
-
-   gSVGA.vramSize = SVGA_ReadReg(SVGA_REG_VRAM_SIZE);
-   gSVGA.fbSize = SVGA_ReadReg(SVGA_REG_FB_SIZE);
-   gSVGA.fifoSize = SVGA_ReadReg(SVGA_REG_MEM_SIZE);
-
-   /*
-    * Sanity-check the FIFO and framebuffer sizes.
-    * These are arbitrary values.
-    */
-
-   if (gSVGA.fbSize < 0x100000) {
-      SVGA_Panic("FB size very small, probably incorrect.");
-   }
-   if (gSVGA.fifoSize < 0x20000) {
-      SVGA_Panic("FIFO size very small, probably incorrect.");
-   }
-
-   /*
-    * If the device is new enough to support capability flags, get the
-    * capabilities register.
-    */
-
-   if (gSVGA.deviceVersionId >= SVGA_ID_1) {
-      gSVGA.capabilities = SVGA_ReadReg(SVGA_REG_CAPABILITIES);
-   }
-
-   /*
-    * Optional interrupt initialization.
-    *
-    * This uses the default IRQ that was assigned to our
-    * device by the BIOS.
-    */
-
-#ifndef REALLY_TINY
-   if (gSVGA.capabilities & SVGA_CAP_IRQMASK) {
-      uint8 irq = PCI_ConfigRead8(&gSVGA.pciAddr, offsetof(PCIConfigSpace, intrLine));
-
-      /* Start out with all SVGA IRQs masked */
-      SVGA_WriteReg(SVGA_REG_IRQMASK, 0);
-
-      /* Clear all pending IRQs stored by the device */
-      IO_Out32(gSVGA.ioBase + SVGA_IRQSTATUS_PORT, 0xFF);
-
-      /* Clear all pending IRQs stored by us */
-      SVGA_ClearIRQ();
-
-      /* Enable the IRQ */
-      Intr_SetHandler(IRQ_VECTOR(irq), SVGAInterruptHandler);
-      Intr_SetMask(irq, TRUE);
-   }
-#endif
-
-   SVGA_Enable();
-}
-#endif
 

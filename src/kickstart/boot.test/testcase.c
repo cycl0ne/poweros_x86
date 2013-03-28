@@ -274,6 +274,8 @@ static void test_RawIO(SysBase *SysBase)
 	Alert(AN_MemCorrupt, "End of Test RawIO\n");
 }
 
+BOOL VmwSetVideoMode(UINT32 Width, UINT32 Height, UINT32 Bpp, SysBase *SysBase);
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("Binary  Output: %b\n", 0x79);
@@ -281,9 +283,10 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Decimal Output: %d\n", 0x79);
 
 //	test_mouse(SysBase);
-	test_keyboard(SysBase);
+//	test_keyboard(SysBase);
 //	test_AlertTest(SysBase);
 //	test_RawIO(SysBase);
+//	VmwSetVideoMode(800, 600, 32, SysBase);
 
 	test_Srini(SysBase);
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
