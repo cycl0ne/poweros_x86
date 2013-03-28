@@ -10,7 +10,7 @@ void SVGA_Disable(VgaGfxBase *VgaGfxBase);
 void SVGA_Init(VgaGfxBase *VgaGfxBase);
 void SVGA_InitFifo(VgaGfxBase *VgaGfxBase);
 void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UINT32 width, UINT32 height ) ;
-void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 width, UINT32 height ) ;
+void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, INT32 x, INT32 y, INT32 width, INT32 height ) ;
 
 #define SysBase			VgaGfxBase->SysBase
 #define ExpansionBase	VgaGfxBase->ExpansionBase
@@ -35,6 +35,30 @@ static void fifoSync( VgaGfxBase *VgaGfxBase )
 	while ( SVGA_ReadReg(VgaGfxBase, SVGA_REG_BUSY ) );
 }
 
+void writeFifo(VgaGfxBase *VgaGfxBase, UINT32 value)
+{
+    UINT32 *tmp = VgaGfxBase->fifoMem;
+	/* Need to sync? */
+	if ((tmp[SVGA_FIFO_NEXT_CMD] + sizeof(UINT32) == tmp[SVGA_FIFO_STOP])
+		|| (tmp[SVGA_FIFO_NEXT_CMD] == tmp[SVGA_FIFO_MAX] - sizeof(UINT32) &&
+			tmp[SVGA_FIFO_STOP] == tmp[SVGA_FIFO_MIN]))
+	{
+		fifoSync(VgaGfxBase);
+	}
+
+	tmp[tmp[SVGA_FIFO_NEXT_CMD] / sizeof(UINT32)] = value;
+	if(tmp[SVGA_FIFO_NEXT_CMD] == tmp[SVGA_FIFO_MAX] - sizeof(UINT32))
+	{
+		tmp[SVGA_FIFO_NEXT_CMD] = tmp[SVGA_FIFO_MIN];
+	}
+	else
+	{
+		tmp[SVGA_FIFO_NEXT_CMD] += sizeof(UINT32);
+	}
+}
+
+
+#if 0
 static void writeFifo(VgaGfxBase *VgaGfxBase, UINT32 value ) 
 {
 	if (
@@ -51,7 +75,7 @@ static void writeFifo(VgaGfxBase *VgaGfxBase, UINT32 value )
 		VgaGfxBase->fifoMem[ SVGA_FIFO_NEXT_CMD ] += sizeof( UINT32 );
 	}
 }
-
+#endif
 //------------------------------------
 
 /*
@@ -72,7 +96,7 @@ void SVGA_Init(VgaGfxBase *VgaGfxBase)
 	VgaGfxBase->ioBase 	= 			PCIGetBARAddr(&VgaGfxBase->pciAddr, 0);
 	VgaGfxBase->fbMem		= (void*)	PCIGetBARAddr(&VgaGfxBase->pciAddr, 1);
 	VgaGfxBase->fifoMem	= (void*)	PCIGetBARAddr(&VgaGfxBase->pciAddr, 2);
-
+	//VgaGfxBase->fifoMem		= (UINT32*)	SVGA_ReadReg(VgaGfxBase, SVGA_REG_MEM_START );
 	VgaGfxBase->deviceVersionId = SVGA_ID_2;
 	do {
 		SVGA_WriteReg(VgaGfxBase, SVGA_REG_ID, VgaGfxBase->deviceVersionId);
@@ -94,33 +118,37 @@ void SVGA_Init(VgaGfxBase *VgaGfxBase)
 	if (VgaGfxBase->deviceVersionId >= SVGA_ID_1) {
 		VgaGfxBase->capabilities = SVGA_ReadReg(VgaGfxBase, SVGA_REG_CAPABILITIES);
 	}
-	
+		
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_GUEST_ID, GUEST_OS_OTHER );
 	if (SVGA_ReadReg(VgaGfxBase, SVGA_REG_GUEST_ID) != GUEST_OS_OTHER) {
 		Alert((1<<31), "Guest OS Failed.");
 	}
+
+	SVGA_SetMode(VgaGfxBase, 640, 480, 32);
 
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_ENABLE, TRUE );
 	if ( SVGA_ReadReg(VgaGfxBase, SVGA_REG_ENABLE ) != 1 ) {
 		Alert((1<<31), "Enabling Card failed.");
 	}
 
-	SVGA_InitFifo(VgaGfxBase);
+//	SVGA_InitFifo(VgaGfxBase);
 
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_CURSOR_X, 0 );
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_CURSOR_Y, 0 );
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_CURSOR_ON, SVGA_CURSOR_ON_HIDE );	
-	
+
+DPrintF("hbpp: %d\n", SVGA_ReadReg(VgaGfxBase, SVGA_REG_HOST_BITS_PER_PIXEL ));
+DPrintF("ConfDone: %x, RegDone: %x\n", SVGA_ReadReg(VgaGfxBase, SVGA_REG_CONFIG_DONE ),SVGA_ReadReg(VgaGfxBase, SVGA_REG_ENABLE ));
 DPrintF("FB: %x, Fifo: %x, FifoSz: %x\n", VgaGfxBase->fbMem, VgaGfxBase->fifoMem, VgaGfxBase->fifoSize);
-	SVGA_SetMode(VgaGfxBase, 1024, 768, 32);
-	
-	for (int i = 0; i< 1024*768*4; i++) {
-//		VgaGfxBase->fbMem[i] = 0x77;
-	}
-	SVGA_FillRect(VgaGfxBase, 0x77777777, 0, 0, 500, 380);
+
+	SVGA_FillRect(VgaGfxBase, 0x00777777ul, 0, 0, 640, 480);
 
 //	SVGA_FillRect(VgaGfxBase, 0xFFFFFF00, 0, 381, 1024, 768);
-//	SVGA_UpdateRect(VgaGfxBase, 0, 0, 1024, 768);
+	SVGA_UpdateRect(VgaGfxBase, 0, 0, 500, 380);
+	
+//	SVGA_SetMode(VgaGfxBase, 800, 600, 32);
+//	SVGA_InitFifo(VgaGfxBase);
+//	SVGA_FillRect(VgaGfxBase, 0x00FF0000ul, 0, 0, 640, 480);
 }
 
 void SVGA_Disable(VgaGfxBase *VgaGfxBase)
@@ -163,6 +191,7 @@ void SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_BITS_PER_PIXEL, nBpp );
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_GUEST_ID, GUEST_OS_OTHER );
 	SVGA_WriteReg(VgaGfxBase, SVGA_REG_ENABLE, TRUE );
+	SVGA_InitFifo(VgaGfxBase);
 }
 
 void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UINT32 width, UINT32 height ) 
@@ -175,7 +204,7 @@ void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UIN
 	writeFifo(VgaGfxBase, height );
 }
 
-void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 width, UINT32 height ) 
+void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, INT32 x, INT32 y, INT32 width, INT32 height ) 
 {
 	writeFifo(VgaGfxBase, SVGA_CMD_UPDATE );
 	writeFifo(VgaGfxBase, x );

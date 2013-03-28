@@ -330,7 +330,6 @@ BOOL VmwSetVideoMode(ULONG Width, ULONG Height, ULONG Bpp, APTR SysBase)
 
 	DPrintF("%x, %x, %x\n", VmwFramebuffer,VmwFifo, VmwSvgaIn(SVGA_REG_ID));
 
-	for(;;);
 
       VmwSvgaOut(SVGA_REG_WIDTH, Width);
       VmwSvgaOut(SVGA_REG_HEIGHT, Height);
