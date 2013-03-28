@@ -19,7 +19,6 @@ BOOL enabled = FALSE;
 void lib_DPrintF(struct SysBase *SysBase, char *fmt, ...)
 {
 	if (!enabled) {RawIOInit(); enabled = TRUE;}
-
 	va_list pvar;
 	va_start(pvar, fmt);
 	RawDoFmt(fmt, pvar, raw_printit, SysBase);

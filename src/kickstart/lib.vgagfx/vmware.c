@@ -1,5 +1,6 @@
 #include "vgagfx.h"
 #include "vmware.h"
+#include "asm.h"
 
 #define GUEST_OS_OTHER 					0x5000 + 10
 
@@ -16,14 +17,14 @@ void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 width, U
 
 UINT32 SVGA_ReadReg(VgaGfxBase *VgaGfxBase, UINT32 index)
 {
-   WRITE_PORT_ULONG(VgaGfxBase->ioBase + SVGA_INDEX_PORT, index);
-   return READ_PORT_ULONG(VgaGfxBase->ioBase + SVGA_VALUE_PORT);
+   outl(VgaGfxBase->ioBase + SVGA_INDEX_PORT, index);
+   return inl(VgaGfxBase->ioBase + SVGA_VALUE_PORT);
 }
 
 void SVGA_WriteReg(VgaGfxBase *VgaGfxBase, UINT32 index, UINT32 value)
 {
-   WRITE_PORT_ULONG(VgaGfxBase->ioBase + SVGA_INDEX_PORT, index);
-   WRITE_PORT_ULONG(VgaGfxBase->ioBase + SVGA_VALUE_PORT, value);
+   outl(VgaGfxBase->ioBase + SVGA_INDEX_PORT, index);
+   outl(VgaGfxBase->ioBase + SVGA_VALUE_PORT, value);
 }
 
 //------------------------------------
