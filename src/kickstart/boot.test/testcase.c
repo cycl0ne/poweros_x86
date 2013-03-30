@@ -276,11 +276,52 @@ static void test_RawIO(SysBase *SysBase)
 
 BOOL VmwSetVideoMode(UINT32 Width, UINT32 Height, UINT32 Bpp, SysBase *SysBase);
 
+#include "vgagfx.h"
+#include "vmware.h"
+
+static inline void
+memset32(void *dest, UINT32 value, UINT32 size)
+{
+   asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
+}
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("Binary  Output: %b\n", 0x79);
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
+
+	VgaGfxBase *VgaGfxBase = OpenLibrary("vgagfx.library", 0);
+	if (!VgaGfxBase) DPrintF("Failed to open library\n");
+	
+	SVGA_SetDisplayMode(VgaGfxBase, 640, 480, 32);
+
+	SVGA_DrawFillRect32(VgaGfxBase,   0,   0, 640,  10, 0xffff0000, 0);
+	SVGA_DrawFillRect32(VgaGfxBase,   0, 470, 640, 480, 0xffff0000, 0);
+	SVGA_DrawFillRect32(VgaGfxBase,   0,   0,  10, 480, 0xffff0000, 0);
+	SVGA_DrawFillRect32(VgaGfxBase, 630,   0, 640, 480, 0xffff0000, 0);
+	
+	SVGA_CopyRect(VgaGfxBase, 0, 0, 100, 100, 50, 50);
+	SVGA_FillRect(VgaGfxBase, 0xff00ff00, 5, 5, 30, 240);
+
+	SVGA_FifoUpdateFullscreen(VgaGfxBase);
+
+//	SVGA_DrawHorzLine32(VgaGfxBase, 0, 640, 0, 0xffff0000, 0);
+//	SVGA_DrawHorzLine32(VgaGfxBase, 0, 640, 479, 0xffff0000, 0);
+	
+//	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) {	
+//		memset32(VgaGfxBase->fbDma, i, 640*20);
+		//SVGA_FifoUpdateFullscreen(VgaGfxBase);
+//	}
+	
+//	SVGA_FillRect(VgaGfxBase, i, 5, 5, 630, 240);
+
+//	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 0, 0, 640, 10);
+//	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 0, 470, 640, 10);
+//	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 0, 0, 10, 480);
+//	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 630, 0, 10, 480);
+
+//	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) SVGA_FillRect(VgaGfxBase, i, 5, 5, 630, 240);
 
 //	test_mouse(SysBase);
 //	test_keyboard(SysBase);

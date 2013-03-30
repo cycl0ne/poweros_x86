@@ -1,4 +1,5 @@
 #include "vgagfx.h"
+#include "vmware.h"
 
 #define LIBRARY_VERSION_STRING "\0$VER: vgagfx.library 0.1 ("__DATE__")\r\n";
 #define LIBRARY_VERSION 0
@@ -71,10 +72,9 @@ static VgaGfxBase *vglib_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, APTR SysB
 		return NULL;
 		Alert((1<<31), "No VMware SVGA device found.");
 	}
-   
-	SVGA_Init(VgaGfxBase);
 
-	return VgaGfxBase;	
+	SVGA_CheckCapabilities(VgaGfxBase);
+	return VgaGfxBase;
 }
 
 static const char EndResident = 0;

@@ -1,3 +1,6 @@
+#ifndef exec_funcs_h
+#define exec_funcs_h
+
 #include "types.h"
 #include "memory.h"
 #include "device.h"
@@ -186,7 +189,7 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 #define AllocSignal(x)			(((INT8(*)(APTR, INT32))					_GETVECADDR(SysBase, 50))(SysBase,x))
 #define FreeSignal(x)			(((INT8(*)(APTR, INT32))					_GETVECADDR(SysBase, 51))(SysBase,x))
 
-#define OpenLibrary(x,y)		(((struct Library*(*)(APTR, STRPTR, UINT32))	_GETVECADDR(SysBase, 52))(SysBase,x, y))
+#define OpenLibrary(x,y)		(((APTR(*)(APTR, STRPTR, UINT32))	_GETVECADDR(SysBase, 52))(SysBase,x, y))
 #define CloseLibrary(x)			(((void(*)(APTR, struct Library *))				_GETVECADDR(SysBase, 53))(SysBase,x))
 #define AddLibrary(x)			(((void(*)(APTR, struct Library *))				_GETVECADDR(SysBase, 54))(SysBase,x))
 #define RemLibrary(x)			(((INT32(*)(APTR, struct Library *))			_GETVECADDR(SysBase, 55))(SysBase,x))
@@ -247,3 +250,4 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 
 #define CopyMemQuick(x, y, z)		(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
 
+#endif
