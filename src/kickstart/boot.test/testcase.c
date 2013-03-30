@@ -301,8 +301,8 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	SVGA_DrawFillRect32(VgaGfxBase,   0,   0,  10, 480, 0xffff0000, 0);
 	SVGA_DrawFillRect32(VgaGfxBase, 630,   0, 640, 480, 0xffff0000, 0);
 	
-	SVGA_CopyRect(VgaGfxBase, 0, 0, 100, 100, 50, 50);
-	SVGA_FillRect(VgaGfxBase, 0xff00ff00, 5, 5, 30, 240);
+//	SVGA_CopyRect(VgaGfxBase, 0, 0, 100, 100, 50, 50);
+//	SVGA_FillRect(VgaGfxBase, 0xff00ff00, 5, 5, 30, 240);
 
 	SVGA_FifoUpdateFullscreen(VgaGfxBase);
 

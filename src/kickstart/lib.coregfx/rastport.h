@@ -6,17 +6,17 @@
 #include "layers.h"
 
 typedef struct CRastPort {
-	PixMap	*crp_pixmap;
-	Layer	*crp_layer;
-	UINT32	crp_mode;
-	UINT32	crp_dashmask;
-	UINT32	crp_dashcount;
-	UINT32	crp_fillmode;
-	BOOL	crp_usebg;
-	UINT32	crp_foreground;
-	UINT32	crp_foreground_rgb;
-	UINT32	crp_background;
-	UINT32	crp_background_rgb;
+	PixMap	*crp_Pixmap;
+	Layer	*crp_Layer;
+	UINT32	crp_Mode;
+	UINT32	crp_Dashmask;
+	UINT32	crp_Dashcount;
+	UINT32	crp_Fillmode;
+	BOOL	crp_useBg;
+	UINT32	crp_Foreground;
+	UINT32	crp_ForegroundRGB;
+	UINT32	crp_Background;
+	UINT32	crp_BackgroundRGB;
 } CRastPort;
 
 #endif
