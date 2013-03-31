@@ -9,7 +9,7 @@ void UnlockLayer(Layer *l)
 void LockLayer(Layer *l)
 {
 }
-#if 0
+
 UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, UINT32 y)
 {
 	Layer *l = rp->crp_Layer;
@@ -33,7 +33,7 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 					if (!cr->lobs)
 					{
 						// Onscreen
-						SVGA_DrawPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+						CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					} else
@@ -47,7 +47,7 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 						}
 						// DrawOffscreen (smart refresh)
 						//GfxBase->Driver->DrawPixel(GfxBase->Driver, cr->BitMap, x, y, rp->FgPen);
-						MEM_DrawPixel(cr->BitMap, x, y, rp->crp_Foreground, rp->crp_Mode);
+						CoreGfxBase->DrawMemoryPixel(cr->BitMap, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					}
@@ -65,9 +65,8 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 					if (cr->bounds.MinX <= x && cr->bounds.MaxX >=x 
 						&& cr->bounds.MinY <= y && cr->bounds.MaxX >=y)
 					{
-						//DrawPixel(super, x, y, color);
 						//GfxBase->Driver->DrawPixel(GfxBase->Driver, super, x, y, rp->FgPen);
-						SVGA_DrawPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+						CoreGfxBase->DrawMemoryPixel(super, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					}	
@@ -78,10 +77,10 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 		return -1;
 	} else
 	{
-		SVGA_DrawPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
-		//GfxBase->Driver->DrawPixel(GfxBase->Driver, rp->BitMap, x, y, rp->FgPen);
+		CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+		//SVGA_DrawPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
 	}
 	//FixCursor(rp);
 	return 0;
 }
-#endif 
+ 

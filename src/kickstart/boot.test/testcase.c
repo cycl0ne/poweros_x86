@@ -285,12 +285,8 @@ memset32(void *dest, UINT32 value, UINT32 size)
    asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
 }
 
-static void test_TestTask(APTR data, struct SysBase *SysBase) 
+void test_vgagfx(APTR SysBase)
 {
-	DPrintF("Binary  Output: %b\n", 0x79);
-	DPrintF("Hex     Output: %x\n", 0x79);
-	DPrintF("Decimal Output: %d\n", 0x79);
-
 	VgaGfxBase *VgaGfxBase = OpenLibrary("vgagfx.library", 0);
 	if (!VgaGfxBase) DPrintF("Failed to open library\n");
 	
@@ -322,6 +318,27 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 630, 0, 10, 480);
 
 //	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) SVGA_FillRect(VgaGfxBase, i, 5, 5, 630, 240);
+}
+
+#include "pixmap.h"
+
+void test_cgfx(APTR SysBase)
+{
+	APTR *CoreGfxBase = OpenLibrary("coregfx.library", 0);
+	if (!CoreGfxBase) DPrintF("Failed to open library\n");
+
+//	PixMap *pix = cgfx_AllocPixMap(CoreGfxBase, 200, 200, 32, NULL, NULL);
+//	if (!pix) DPrintF("Failed to alloc pixmap\n");
+
+}
+
+static void test_TestTask(APTR data, struct SysBase *SysBase) 
+{
+	DPrintF("Binary  Output: %b\n", 0x79);
+	DPrintF("Hex     Output: %x\n", 0x79);
+	DPrintF("Decimal Output: %d\n", 0x79);
+
+	test_cgfx(SysBase);
 
 //	test_mouse(SysBase);
 //	test_keyboard(SysBase);

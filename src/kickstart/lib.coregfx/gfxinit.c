@@ -1,4 +1,7 @@
 #include "coregfx.h"
+#include "vgagfx.h"
+#include "pixmap.h"
+
 
 #define LIBRARY_VERSION_STRING "\0$VER: coregfx.library 0.1 ("__DATE__")\r\n";
 #define LIBRARY_VERSION 0
@@ -49,6 +52,15 @@ static const volatile struct Resident ROMTag =
 	&InitTab
 };
 
+void SVGA_DrawPixel32(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT32 rop);
+//CoreGfxBase->DrawMemoryPixel(super, x, y, rp->crp_Foreground, rp->crp_Mode);
+
+void DrawMemoryPixel32(PixMap *dst, UINT32 x, UINT32 y, UINT32 c, UINT32 mode)
+{
+	register unsigned char *addr = dst->addr + y * dst->pitch + (x << 2);
+	*((UINT32*)addr) = c;
+}
+
 static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR SysBase)
 {
 	CoreGfxBase->Library.lib_OpenCnt = 0;
@@ -62,7 +74,9 @@ static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR Sy
 
 	CoreGfxBase->VgaGfxBase = OpenLibrary("vgagfx.library", 0);
 	if (!CoreGfxBase->VgaGfxBase) DPrintF("Failed to open vgagfx.library\n");
-
+	CoreGfxBase->DrawScreenPixel = (void(*)())SVGA_DrawPixel32;
+	CoreGfxBase->DrawMemoryPixel = (void(*)())DrawMemoryPixel32;
+	
 	return CoreGfxBase;
 }
 

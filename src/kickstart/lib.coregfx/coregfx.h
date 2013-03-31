@@ -7,11 +7,14 @@
 #include "resident.h"
 
 #include "exec_funcs.h"
+//void SVGA_DrawPixel32(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT32 rop)
 
 typedef struct CoreGfxBase {
 	struct Library	Library;
 	APTR	VgaGfxBase;	
 	APTR	SysBase;
+	VOID	(*DrawScreenPixel)();
+	VOID	(*DrawMemoryPixel)();
 } CoreGfxBase;
 
 #define	MWROP_COPY			0	/* src*/
