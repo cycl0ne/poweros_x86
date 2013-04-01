@@ -6,8 +6,8 @@
 #include "layers.h"
 
 typedef struct CRastPort {
-	PixMap	*crp_Pixmap;
-	Layer	*crp_Layer;
+	struct PixMap	*crp_PixMap;
+	struct Layer	*crp_Layer;
 	UINT32	crp_Mode;
 	UINT32	crp_Dashmask;
 	UINT32	crp_Dashcount;

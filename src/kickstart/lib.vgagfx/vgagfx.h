@@ -113,7 +113,7 @@ typedef struct VgaGfxBase {
 
 void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UINT32 width, UINT32 height ); 
 void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, INT32 x, INT32 y, INT32 width, INT32 height );
-void SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp );
+APTR SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp );
 void SVGA_WaitForFB(VgaGfxBase *VgaGfxBase);
 
 
@@ -132,7 +132,7 @@ void SVGA_DrawPixel24(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT
 void SVGA_DrawPixel16(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT16 c, UINT32 rop);
 void SVGA_DrawPixel8(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT8 c, UINT32 rop);
 
-UINT32 SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp);
+APTR SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp);
 UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase);
 void SVGA_FifoUpdateFullscreen(VgaGfxBase *VgaGfxBase);
 void SVGA_CopyRect(VgaGfxBase *VgaGfxBase, UINT32 srcX, UINT32 srcY, UINT32 dstX, UINT32 dstY, UINT32 width, UINT32 height ); 

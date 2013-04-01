@@ -320,7 +320,9 @@ void test_vgagfx(APTR SysBase)
 //	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) SVGA_FillRect(VgaGfxBase, i, 5, 5, 630, 240);
 }
 
+#include "coregfx.h"
 #include "pixmap.h"
+PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, APTR pixels, UINT32 palsize);
 
 void test_cgfx(APTR SysBase)
 {
@@ -338,7 +340,7 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
 
-	test_cgfx(SysBase);
+//	test_cgfx(SysBase);
 
 //	test_mouse(SysBase);
 //	test_keyboard(SysBase);

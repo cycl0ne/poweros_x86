@@ -2,12 +2,22 @@
 #include "rastport.h"
 #include "layers.h"
 
-void UnlockLayer(Layer *l)
-{
-}
+void UnlockLayer(Layer *l){};
+void LockLayer(Layer *l){};
 
-void LockLayer(Layer *l)
+static void DrawPixel(PixMap *pix, UINT32 x, UINT32 y, UINT32 col, UINT32 mode)
 {
+	switch (pix->bpp)
+	{
+		case 32:
+		{
+			register unsigned char *addr = pix->addr + y * pix->pitch + (x << 2);
+			*((UINT32*)addr) = col;
+			break;
+		}
+		default:
+		break;
+	}
 }
 
 UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, UINT32 y)
@@ -33,7 +43,8 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 					if (!cr->lobs)
 					{
 						// Onscreen
-						CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+						//CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+						DrawPixel(rp->crp_PixMap, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					} else
@@ -47,7 +58,8 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 						}
 						// DrawOffscreen (smart refresh)
 						//GfxBase->Driver->DrawPixel(GfxBase->Driver, cr->BitMap, x, y, rp->FgPen);
-						CoreGfxBase->DrawMemoryPixel(cr->BitMap, x, y, rp->crp_Foreground, rp->crp_Mode);
+						//CoreGfxBase->DrawMemoryPixel(cr->BitMap, x, y, rp->crp_Foreground, rp->crp_Mode);
+						DrawPixel(cr->BitMap, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					}
@@ -66,7 +78,8 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 						&& cr->bounds.MinY <= y && cr->bounds.MaxX >=y)
 					{
 						//GfxBase->Driver->DrawPixel(GfxBase->Driver, super, x, y, rp->FgPen);
-						CoreGfxBase->DrawMemoryPixel(super, x, y, rp->crp_Foreground, rp->crp_Mode);
+						DrawPixel(super, x, y, rp->crp_Foreground, rp->crp_Mode);
+						//CoreGfxBase->DrawMemoryPixel(super, x, y, rp->crp_Foreground, rp->crp_Mode);
 						UnlockLayer(l);
 						return 0;
 					}	
@@ -77,7 +90,8 @@ UINT32 cgfx_DrawPoint(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 x, 
 		return -1;
 	} else
 	{
-		CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
+		DrawPixel(rp->crp_PixMap, x, y, rp->crp_Foreground, rp->crp_Mode);
+		//CoreGfxBase->DrawScreenPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
 		//SVGA_DrawPixel(CoreGfxBase->VgaGfxBase, x, y, rp->crp_Foreground, rp->crp_Mode);
 	}
 	//FixCursor(rp);

@@ -1,9 +1,11 @@
 #ifndef PIXMAP_H
 #define PIXMAP_H
+#include "types.h"
 
 #define FPM_Memory		(1<<0)
 #define FPM_AllocAddr	(1<<1)
-#define FPM_FrameBuffer	(1<<30)
+#define FPM_Displayable	(1<<2)
+#define FPM_Framebuffer	(1<<30)
 #define FPM_AllocVec	(1<<31)
 
 typedef struct PixMap {

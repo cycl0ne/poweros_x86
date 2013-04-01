@@ -61,6 +61,8 @@ void DrawMemoryPixel32(PixMap *dst, UINT32 x, UINT32 y, UINT32 c, UINT32 mode)
 	*((UINT32*)addr) = c;
 }
 
+void __TestView(CoreGfxBase *CoreGfxBase);
+
 static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR SysBase)
 {
 	CoreGfxBase->Library.lib_OpenCnt = 0;
@@ -76,7 +78,8 @@ static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR Sy
 	if (!CoreGfxBase->VgaGfxBase) DPrintF("Failed to open vgagfx.library\n");
 	CoreGfxBase->DrawScreenPixel = (void(*)())SVGA_DrawPixel32;
 	CoreGfxBase->DrawMemoryPixel = (void(*)())DrawMemoryPixel32;
-	
+	CoreGfxBase->ActiveView = NULL; // Initialize to NULL (No View Opened)
+__TestView(CoreGfxBase);
 	return CoreGfxBase;
 }
 

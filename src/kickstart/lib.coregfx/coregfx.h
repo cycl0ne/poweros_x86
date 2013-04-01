@@ -15,6 +15,7 @@ typedef struct CoreGfxBase {
 	APTR	SysBase;
 	VOID	(*DrawScreenPixel)();
 	VOID	(*DrawMemoryPixel)();
+	APTR	ActiveView;
 } CoreGfxBase;
 
 #define	MWROP_COPY			0	/* src*/

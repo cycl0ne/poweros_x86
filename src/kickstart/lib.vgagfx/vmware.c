@@ -66,7 +66,7 @@ UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase)
 	return TRUE;
 }
 
-void SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp)
+APTR SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp)
 {
 	WriteReg(VgaGfxBase, SVGA_REG_WIDTH, nWidth);
 	WriteReg(VgaGfxBase, SVGA_REG_HEIGHT, nHeight);
@@ -80,9 +80,10 @@ void SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 
 	ReadReg(VgaGfxBase, SVGA_REG_RED_MASK);
 	ReadReg(VgaGfxBase, SVGA_REG_GREEN_MASK);
 	ReadReg(VgaGfxBase, SVGA_REG_BLUE_MASK);
+	return VgaGfxBase->fbDma;
 }
 
-UINT32 SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp)
+APTR SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp)
 {
 	SVGA_FifoStop(VgaGfxBase);
 	SVGA_SetMode(VgaGfxBase, nWidth, nHeight, nBpp);
@@ -91,6 +92,7 @@ UINT32 SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight
 	memset(VgaGfxBase->fbDma, 0, nHeight * VgaGfxBase->bytesPerRow);
 //	FifoUpdateFullscreen();
 	SVGA_FifoStart(VgaGfxBase);
+	return VgaGfxBase->fbDma;
 }
 
 void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UINT32 width, UINT32 height ) 

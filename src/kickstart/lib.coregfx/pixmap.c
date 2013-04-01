@@ -3,11 +3,11 @@
 
 #define SysBase CoreGfxBase->SysBase
 
-PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, APTR pixels, UINT32 palsize)
+PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, UINT32 flags, APTR pixels)
 {
 	if (width <= 0 || height <= 0) return NULL;
 
-	PixMap *ret = AllocVec(sizeof(PixMap), MEMF_CLEAR);
+	PixMap *ret = AllocVec(sizeof(PixMap), MEMF_FAST|MEMF_CLEAR);
 	if (ret)
 	{
 		ret->flags = FPM_AllocVec|FPM_Memory;
@@ -16,13 +16,21 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 		ret->bpp  = bpp;
 		ret->pitch = width * (bpp>>3);
 		ret->memsize = width * height * (bpp>>3);
+		if (flags & FPM_Displayable)
+		{
+			ret->flags |= (FPM_Displayable|FPM_Framebuffer);
+			//ret->addr = (void *)0xfd000000; //HACK !!!! oO !!!!
+			// Here we should ask the GFXDriver for Memory. 
+			// But we will fall through, since we have only a FB Driver
+		}
+		
 		if (pixels)	
 		{
 			ret->addr = pixels;
 		} else 
 		{
 			ret->flags |= FPM_AllocAddr;
-			ret->addr = AllocVec(ret->memsize, MEMF_CLEAR);
+			ret->addr = AllocVec(ret->memsize, MEMF_FAST|MEMF_CLEAR);
 		}
 		if (!ret->addr) 
 		{
