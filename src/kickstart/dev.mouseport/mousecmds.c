@@ -104,6 +104,7 @@ static void MDReadEvent(struct IOStdReq *io, MDBase *MDBase)
 		}
 		
 		struct InputEvent *ie = (struct InputEvent *)ioloop->io_Data;
+//		DPrintF("io_Data: %x ---", ioloop->io_Data);
 		UINT32 ieSize = ioloop->io_Length / sizeof(struct InputEvent);
 		UINT8 i = 0;
 

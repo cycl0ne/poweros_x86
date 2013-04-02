@@ -1,6 +1,8 @@
 #ifndef REGION_FUNCS_H
 #define REGION_FUNCS_H
 
+#include "types.h"
+#if 0
 ClipRegion *AllocRegion();
 ClipRegion *AllocRectRegion(INT32 left, INT32 top, INT32 right, INT32 bottom);
 ClipRegion *AllocRectRegionIndirect(Rect *prc);
@@ -21,25 +23,26 @@ void SubtractRectFromRegion(const Rect *rect, ClipRegion *rgn);
 void UnionRegion(ClipRegion *newReg, ClipRegion *reg1, ClipRegion *reg2);
 void UnionRectWithRegion(const Rect *rect, ClipRegion *rgn);
 void XorRegion(ClipRegion *dr, ClipRegion *sra, ClipRegion *srb);
+#endif
 
-#define AllocRegion()				(((ClipRegion*(*)(struct RegionBase *))										_GETVECADDR(RegionBase, 5))(RegionBase))
-#define AllocRectRegion(a,b,c,d)	(((ClipRegion*(*)(struct RegionBase *, INT32, INT32, INT32, INT32))			_GETVECADDR(RegionBase, 6))(RegionBase,a,b,c,d))
-#define AllocRectRegionIndirect(a)	(((ClipRegion*(*)(struct RegionBase *, Rect *))								_GETVECADDR(RegionBase, 7))(RegionBase,a))
-#define CopyRegion(a,b)				(((void(*)(struct RegionBase *, ClipRegion*, ClipRegion*))					_GETVECADDR(RegionBase, 8))(RegionBase,a,b))
-#define DestroyRegion(a)			(((void(*)(struct RegionBase *, ClipRegion*))								_GETVECADDR(RegionBase, 9))(RegionBase,a))
-#define EmptyRegion(a)				(((BOOL(*)(struct RegionBase *, ClipRegion*))								_GETVECADDR(RegionBase,10))(RegionBase,a))
-#define EqualRegion(a,b)			(((BOOL(*)(struct RegionBase *, ClipRegion*, ClipRegion*))					_GETVECADDR(RegionBase,11))(RegionBase,a,b))
-#define GetRegionBox(a,b)			(((INT32(*)(struct RegionBase *, ClipRegion*, Rect*))						_GETVECADDR(RegionBase,12))(RegionBase,a,b))
-#define IntersectRegion(a,b,c)		(((void(*)(struct RegionBase *,ClipRegion*,ClipRegion*,ClipRegion*))		_GETVECADDR(RegionBase,13))(RegionBase,a,b,c))
-#define OffsetRegion(a,b,c)			(((void(*)(struct RegionBase *, ClipRegion*, INT32, INT32))					_GETVECADDR(RegionBase,14))(RegionBase,a,b,c))
-#define PtInRegion(a,b,c)			(((BOOL(*)(struct RegionBase *, ClipRegion*, INT32, INT32))					_GETVECADDR(RegionBase,15))(RegionBase,a,b,c))
-#define RectInRegion(a,b)			(((INT32(*)(struct RegionBase *, ClipRegion*, const Rect *))				_GETVECADDR(RegionBase,16))(RegionBase,a,b))
-#define SetRectRegion(a,b,c,d,e)	(((void(*)(struct RegionBase *, ClipRegion*, INT32, INT32, INT32, INT32))	_GETVECADDR(RegionBase,17))(RegionBase,a,b,c,d,e))
-#define SetRectRegionIndirect(a,b)	(((void(*)(struct RegionBase *, ClipRegion*, Rect *))						_GETVECADDR(RegionBase,18))(RegionBase,a,b))
-#define SubtractRegion(a,b,c)		(((void(*)(struct RegionBase *, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,19))(RegionBase,a,b,c))
-#define SubtractRectFromRegion(a,b)	(((void(*)(struct RegionBase *, const Rect*, ClipRegion*))					_GETVECADDR(RegionBase,20))(RegionBase,a,b))
-#define UnionRegion(a,b,c)			(((void(*)(struct RegionBase *, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,21))(RegionBase,a,b,c))
-#define UnionRectWithRegion(a,b)	(((void(*)(struct RegionBase *, const Rect*, ClipRegion*))					_GETVECADDR(RegionBase,22))(RegionBase,a,b))
-#define XorRegion(a,b,c)			(((void(*)(struct RegionBase *, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,23))(RegionBase,a,b,c))
+#define AllocRegion()				(((ClipRegion*(*)(APTR))										_GETVECADDR(RegionBase, 5))(RegionBase))
+#define AllocRectRegion(a,b,c,d)	(((ClipRegion*(*)(APTR, INT32, INT32, INT32, INT32))			_GETVECADDR(RegionBase, 6))(RegionBase,a,b,c,d))
+#define AllocRectRegionIndirect(a)	(((ClipRegion*(*)(APTR, Rect *))								_GETVECADDR(RegionBase, 7))(RegionBase,a))
+#define CopyRegion(a,b)				(((void(*)(APTR, ClipRegion*, ClipRegion*))					_GETVECADDR(RegionBase, 8))(RegionBase,a,b))
+#define DestroyRegion(a)			(((void(*)(APTR, ClipRegion*))								_GETVECADDR(RegionBase, 9))(RegionBase,a))
+#define EmptyRegion(a)				(((BOOL(*)(APTR, ClipRegion*))								_GETVECADDR(RegionBase,10))(RegionBase,a))
+#define EqualRegion(a,b)			(((BOOL(*)(APTR, ClipRegion*, ClipRegion*))					_GETVECADDR(RegionBase,11))(RegionBase,a,b))
+#define GetRegionBox(a,b)			(((INT32(*)(APTR, ClipRegion*, Rect*))						_GETVECADDR(RegionBase,12))(RegionBase,a,b))
+#define IntersectRegion(a,b,c)		(((void(*)(APTR,ClipRegion*,ClipRegion*,ClipRegion*))			_GETVECADDR(RegionBase,13))(RegionBase,a,b,c))
+#define OffsetRegion(a,b,c)			(((void(*)(APTR, ClipRegion*, INT32, INT32))					_GETVECADDR(RegionBase,14))(RegionBase,a,b,c))
+#define PtInRegion(a,b,c)			(((BOOL(*)(APTR, ClipRegion*, INT32, INT32))					_GETVECADDR(RegionBase,15))(RegionBase,a,b,c))
+#define RectInRegion(a,b)			(((INT32(*)(APTR, ClipRegion*, const Rect *))					_GETVECADDR(RegionBase,16))(RegionBase,a,b))
+#define SetRectRegion(a,b,c,d,e)	(((void(*)(APTR, ClipRegion*, INT32, INT32, INT32, INT32))	_GETVECADDR(RegionBase,17))(RegionBase,a,b,c,d,e))
+#define SetRectRegionIndirect(a,b)	(((void(*)(APTR, ClipRegion*, Rect *))						_GETVECADDR(RegionBase,18))(RegionBase,a,b))
+#define SubtractRegion(a,b,c)		(((void(*)(APTR, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,19))(RegionBase,a,b,c))
+#define SubtractRectFromRegion(a,b)	(((void(*)(APTR, const Rect*, ClipRegion*))					_GETVECADDR(RegionBase,20))(RegionBase,a,b))
+#define UnionRegion(a,b,c)			(((void(*)(APTR, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,21))(RegionBase,a,b,c))
+#define UnionRectWithRegion(a,b)	(((void(*)(APTR, const Rect*, ClipRegion*))					_GETVECADDR(RegionBase,22))(RegionBase,a,b))
+#define XorRegion(a,b,c)			(((void(*)(APTR, ClipRegion*, ClipRegion*, ClipRegion*))		_GETVECADDR(RegionBase,23))(RegionBase,a,b,c))
 
 #endif

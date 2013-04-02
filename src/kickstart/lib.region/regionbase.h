@@ -13,7 +13,7 @@
 
 typedef struct RegionBase {
 	struct Library	Library;
-	SysBase			*SysBase;
+	APTR			SysBase;
 } RegionBase;
 
 #define MEMCHECK(reg, rect, firstrect){\

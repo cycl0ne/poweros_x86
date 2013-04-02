@@ -115,22 +115,20 @@ void SVGA_FillRect(VgaGfxBase *VgaGfxBase, UINT32 color, UINT32 x, UINT32 y, UIN
 void SVGA_UpdateRect(VgaGfxBase *VgaGfxBase, INT32 x, INT32 y, INT32 width, INT32 height );
 APTR SVGA_SetMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp );
 void SVGA_WaitForFB(VgaGfxBase *VgaGfxBase);
-
-
+/*
 void SVGA_DrawHorzLine32(VgaGfxBase *VgaGfxBase, UINT32 x1, UINT32 x2, UINT32 y, UINT32 c, UINT32 rop);
 void SVGA_DrawHorzLine16(VgaGfxBase *VgaGfxBase, UINT32 x1, UINT32 x2, UINT32 y, UINT16 c, UINT32 rop);
 void SVGA_DrawFillRect32(VgaGfxBase *VgaGfxBase, UINT32 x1, UINT32 y1, UINT32 x2, UINT32 y2, UINT32 c, UINT32 rop);
 void SVGA_DrawFillRect16(VgaGfxBase *VgaGfxBase, UINT32 x1, UINT32 y1, UINT32 x2, UINT32 y2, UINT16 c, UINT32 rop);
-
 UINT32 SVGA_ReadPixel32(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y);
 UINT32 SVGA_ReadPixel24(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y);
 UINT16 SVGA_ReadPixel16(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y);
 UINT8 SVGA_ReadPixel8(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y);
-
 void SVGA_DrawPixel32(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT32 rop);
 void SVGA_DrawPixel24(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT32 rop);
 void SVGA_DrawPixel16(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT16 c, UINT32 rop);
 void SVGA_DrawPixel8(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT8 c, UINT32 rop);
+*/
 
 APTR SVGA_SetDisplayMode(VgaGfxBase *VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp);
 UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase);

@@ -54,7 +54,7 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 	TestBase->SysBase = SysBase;
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
 	// For this we initialise a worker Task with Prio 0 
-	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*4, 0); //4kb Stack should be enough
+	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*16, 0); //4kb Stack should be enough
 	return TestBase;
 }
 
@@ -107,6 +107,8 @@ static void test_mouse(SysBase *SysBase)
 			if (ts->io[i]->io_Error > 0) DPrintF("Io Error [%d]\n", i);
 		}
 		
+		int x = 0, y = 0;
+		
 		for(;;)
 		{
 			Wait(1<<mp->mp_SigBit);
@@ -115,7 +117,7 @@ static void test_mouse(SysBase *SysBase)
 				//DPrintF("[ID:%x]", SysBase->IDNestCnt);
 				struct IOStdReq *rcvd_io = (struct IOStdReq *)GetMsg(mp);
 				struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
-				DPrintF("Event Class %x (i= %x)\n", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name);
+				DPrintF("Event Class %x (i= %x)[%d, %d]", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y);
 			
 				rcvd_io->io_Command = MD_READEVENT; /* add a new request */
 				rcvd_io->io_Error = 0;
@@ -123,7 +125,13 @@ static void test_mouse(SysBase *SysBase)
 				//rcvd_io->io_Data = &ts->ie[i];
 				rcvd_io->io_Flags = 0;
 				rcvd_io->io_Length = sizeof(struct InputEvent);
-
+		x+=rcvd_ie->ie_X;
+		y-=rcvd_ie->ie_Y;
+		if (x>640) x=640;
+		if (x<0) x= 0;
+		if (y>480) y=480;
+		if (y<0) y= 0;
+		DPrintF("x: %d, y: %d\n", x, y);
 				SendIO((struct IORequest *) rcvd_io );
 			}
 		}
@@ -291,11 +299,6 @@ void test_vgagfx(APTR SysBase)
 	if (!VgaGfxBase) DPrintF("Failed to open library\n");
 	
 	SVGA_SetDisplayMode(VgaGfxBase, 640, 480, 32);
-
-	SVGA_DrawFillRect32(VgaGfxBase,   0,   0, 640,  10, 0xffff0000, 0);
-	SVGA_DrawFillRect32(VgaGfxBase,   0, 470, 640, 480, 0xffff0000, 0);
-	SVGA_DrawFillRect32(VgaGfxBase,   0,   0,  10, 480, 0xffff0000, 0);
-	SVGA_DrawFillRect32(VgaGfxBase, 630,   0, 640, 480, 0xffff0000, 0);
 	
 //	SVGA_CopyRect(VgaGfxBase, 0, 0, 100, 100, 50, 50);
 //	SVGA_FillRect(VgaGfxBase, 0xff00ff00, 5, 5, 30, 240);
@@ -334,6 +337,86 @@ void test_cgfx(APTR SysBase)
 
 }
 
+#include "cursor.h"
+#include "coregfx_funcs.h"
+
+static Cursor_T arrow = {	/* default arrow cursor*/
+	16, 16,
+	0,  0,
+	RGB(255, 255, 255), RGB(0, 0, 0),
+	{ 0xe000, 0x9800, 0x8600, 0x4180,
+	  0x4060, 0x2018, 0x2004, 0x107c,
+	  0x1020, 0x0910, 0x0988, 0x0544,
+	  0x0522, 0x0211, 0x000a, 0x0004 },
+	{ 0xe000, 0xf800, 0xfe00, 0x7f80,
+	  0x7fe0, 0x3ff8, 0x3ffc, 0x1ffc,
+	  0x1fe0, 0x0ff0, 0x0ff8, 0x077c,
+	  0x073e, 0x021f, 0x000e, 0x0004 }
+};
+#include "coregfx.h"
+#include "view.h"
+struct InputEvent ie;
+	
+static void test_MousePointer(APTR SysBase)
+{
+	APTR *CoreGfxBase = OpenLibrary("coregfx.library", 0);
+	if (!CoreGfxBase) DPrintF("Failed to open library\n");
+	DPrintF("coregfx: %x\n", CoreGfxBase);
+	INT32 x=0, y=0;
+	DPrintF("Movecursor\n");
+	MoveCursor(x,y);
+	DPrintF("Setcursor\n");
+	SetCursor(&arrow);
+	DPrintF("Showcursor\n");
+	ShowCursor();
+	DPrintF("ShowcursorEnd\n");
+	INT32 ret = 0;
+	struct MsgPort *mp	= CreateMsgPort();
+	struct IOStdReq *io	= CreateIORequest(mp, sizeof(struct IOStdReq));;
+
+	ret = OpenDevice("mouseport.device", 0, (struct IORequest *)io, 0);
+	if (ret != 0) 
+	{
+		DPrintF("OpenDevice mouseport.device failed!\n");
+		return;
+	}
+
+	io->io_Command = MD_READEVENT; /* add a new request */
+	io->io_Error = 0;
+	io->io_Actual = 0;	
+	io->io_Data = &ie;
+	io->io_Flags = 0;
+	io->io_Length = sizeof(struct InputEvent);
+	io->io_Message.mn_Node.ln_Name = (STRPTR)0;
+	DPrintF("Doio\n");
+	DoIO((struct IORequest *) io );
+	if (io->io_Error > 0) DPrintF("Io Error [%d]\n", 0);
+	for(;;)
+	{
+		struct IOStdReq *rcvd_io = io;
+		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
+		//DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
+		
+		rcvd_io->io_Command = MD_READEVENT; /* add a new request */
+		rcvd_io->io_Error = 0;
+		rcvd_io->io_Actual = 0;
+		rcvd_io->io_Data = &ie;
+		rcvd_io->io_Flags = 0;
+		rcvd_io->io_Length = sizeof(struct InputEvent);
+		
+		x+=ie.ie_X;
+		y-=ie.ie_Y;
+		if (x>640) x=640;
+		if (x<0) x= 0;
+		if (y>480) y=480;
+		if (y<0) y= 0;
+		MoveCursor(x,y);
+		//DPrintF("x:%d, y:%d \n",x, y);
+//for(;;);
+		DoIO((struct IORequest *) io );
+	}	
+}
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("Binary  Output: %b\n", 0x79);
@@ -347,6 +430,8 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	test_AlertTest(SysBase);
 //	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
+
+	test_MousePointer(SysBase);
 
 //	test_Srini(SysBase);
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");

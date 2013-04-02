@@ -5,11 +5,12 @@
 #include "pixmap.h"
 
 struct ViewPort {
-	struct ViewPort *Next;			// NULL = Only Screen Visible, !NULL = Other Screen visible
-	struct PixMap	*PixMap;		// Screenbitmap
-	APTR			oldPMAddr;
-	INT32			DWidth,DHeight;		// Actual Width and Height
-	INT32			DxOffset,DyOffset;	// At which Offset?
+	struct ViewPort 	*Next;			// NULL = Only Screen Visible, !NULL = Other Screen visible
+	struct CRastPort	*RastPort;
+	struct PixMap		*PixMap;		// Screenbitmap
+	APTR				oldPMAddr;
+	INT32				DWidth,DHeight;		// Actual Width and Height
+	INT32				DxOffset,DyOffset;	// At which Offset?
 };
 
 struct View {

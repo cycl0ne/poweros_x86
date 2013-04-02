@@ -1,7 +1,253 @@
 #include "coregfx.h"
 #include "pixmap.h"
+#include "exec_funcs.h"
+
+/* no color, used for transparency, should not be 0, -1 or any MWRGB color*/
+#define NOCOLOR	0x01000000L			/* MWRGBA(1, 0, 0, 0)*/
+#define PORTRAIT_NONE		0x00	/* hw framebuffer, no rotation*/
+#define PORTRAIT_LEFT		0x01	/* rotate left*/
+#define	PORTRAIT_RIGHT		0x02	/* rotate right*/
+#define PORTRAIT_DOWN		0x04	/* upside down*/
 
 #define SysBase CoreGfxBase->SysBase
+BOOL SVGA_SelectSubdriver(PixMap *psd);
+
+static int CalcMemGCAlloc(PixMap *psd, int width, int height, int planes, int bpp, unsigned int *psize, unsigned *ppitch)
+{
+	unsigned int pitch;
+
+	if(!planes)
+		planes = psd->planes;
+	if(!bpp)
+		bpp = psd->bpp;
+	/* 
+	 * swap width and height in left/right portrait modes,
+	 * so imagesize is calculated properly
+	 */
+	if(psd->portrait & (PORTRAIT_LEFT|PORTRAIT_RIGHT)) {
+		int tmp = width;
+		width = height;
+		height = tmp;
+	}
+
+	/* use 4bpp linear for VGA 4 planes memdc format*/
+	if(planes == 4)
+		bpp = 4;
+
+	/* compute pitch: bytes per line*/
+	switch(bpp) {
+	case 1:
+		pitch = (width+7)/8;
+		break;
+	case 2:
+		pitch = (width+3)/4;
+		break;
+	case 4:
+		pitch = (width+1)/2;
+		break;
+	case 8:
+		pitch = width;
+		break;
+	case 16:
+		pitch = width * 2;
+		break;
+	case 18:
+	case 24:
+		pitch = width * 3;
+		break;
+	case 32:
+		pitch = width * 4;
+		break;
+	default:
+		*ppitch = *psize = 0;
+		return 0;
+	}
+
+	/* right align pitch to DWORD boundary*/
+	pitch = (pitch + 3) & ~3;
+
+	*psize = pitch * height;
+	*ppitch = pitch;
+	return 1;
+}
+
+static BOOL mapmemgc(PixMap *mempsd, INT32 w, INT32 h, int planes, int bpp, int data_format, unsigned int pitch, int size, void *addr)
+{
+	/* pixmaps are always in non-portrait orientation*/
+	mempsd->xres = w;
+	mempsd->yres = h;		
+
+	mempsd->xvirtres = w;
+	mempsd->yvirtres = h;
+	mempsd->planes = planes;
+	mempsd->bpp = bpp;
+	mempsd->data_format = data_format;
+	mempsd->pitch = pitch;
+	mempsd->size = size;
+	mempsd->addr = addr;
+
+	/* select and init hw compatible framebuffer subdriver for pixmap drawing*/
+
+	if (!SVGA_SelectSubdriver(mempsd)) return 0;
+	return 1;
+}
+
+
+PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize)
+{
+	PixMap *pmd;
+	int 	bpp, planes=1, data_format, pixtype;
+	unsigned int size, pitch;
+   
+	if (width <= 0 || height <= 0) return NULL;
+
+/*
+	bpp = rootpsd->bpp;
+	data_format = rootpsd->data_format;
+	pixtype = rootpsd->pixtype;
+	planes = rootpsd->planes;
+*/
+	switch (format) 
+	{
+	case 0:			/* default, return framebuffer compatible pixmap*/
+		break;
+	case 32:		/* match framebuffer format if running 32bpp, else RGBA*/
+		if (bpp == 32) break;
+		/* else fall through - create RGBA8888 pixmap*/
+	case IF_RGBA8888:
+		bpp = 32;
+		data_format = format;
+		pixtype = PF_TRUECOLORABGR;
+		break;
+	case IF_BGRA8888:
+		bpp = 32;
+		data_format = format;
+		pixtype = PF_TRUECOLOR8888;
+		break;
+	/*case MWIF_PAL1:*/				/* MWIF_PAL1 is MWIF_MONOBYTEMSB*/
+	case IF_MONOBYTEMSB:			/* ft2 non-alias*/
+	case IF_MONOBYTELSB:			/* t1lib non-alias*/
+	case IF_MONOWORDMSB:			/* core mwcfont, pcf*/
+		bpp = 1;
+		data_format = format;
+		pixtype = PF_PALETTE;
+		break;
+	case IF_PAL2:
+		bpp = 2;
+		data_format = format;
+		pixtype = PF_PALETTE;
+		break;
+	case IF_PAL4:
+		bpp = 4;
+		data_format = format;
+		pixtype = PF_PALETTE;
+		break;
+	case IF_PAL8:
+		bpp = 8;
+		data_format = format;
+		pixtype = PF_PALETTE;
+		break;
+	case IF_RGB1555:
+		bpp = 16;
+		data_format = format;
+		pixtype = PF_TRUECOLOR1555;
+		break;
+	case IF_RGB555:
+		bpp = 16;
+		data_format = format;
+		pixtype = PF_TRUECOLOR555;
+		break;
+	case IF_RGB565:
+		bpp = 16;
+		data_format = format;
+		pixtype = PF_TRUECOLOR565;
+		break;
+	case IF_RGB888:
+		bpp = 24;
+		data_format = format;
+		pixtype = PF_TRUECOLOR888;
+		break;
+	default:
+		DPrintF("AllocPixmap: unsupported format %08x\n", format);
+		return NULL;	/* fail*/
+	}
+
+	PixMap	*mempsd;
+
+	pmd = AllocVec(sizeof(PixMap), MEMF_FAST);
+	if (!pmd)
+	{
+		DPrintF("AllocVec on Pixmap failed.\n");
+		return NULL;
+	}
+
+	pmd->flags = PSF_MEMORY;			/* reset PSF_SCREEN or PSF_ADDRMALLOC flags*/
+	pmd->portrait = PORTRAIT_NONE; /* don't rotate offscreen pixmaps*/
+	pmd->addr = NULL;
+	//pmd->Update = NULL;				/* no external updates required for mem device*/
+	pmd->palette = NULL;				/* don't copy any palette*/
+	pmd->palsize = 0;
+	pmd->transcolor = NOCOLOR;		/* no transparent colors unless set by image loader*/
+
+	CalcMemGCAlloc(pmd, width, height, planes, bpp, &size, &pitch);
+	
+	if (!pixels) 
+	{
+		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
+		pmd->flags |= PSF_ADDRMALLOC;
+		DPrintF("Allocated Pixels Addr: %x\n", pixels);
+	}
+	if (!pixels) 
+	{
+		FreeVec(pmd);
+		return NULL;
+	}
+
+	if (palsize && (pmd->palette = AllocVec(palsize*sizeof(CgfxPalEntry), MEMF_CLEAR|MEMF_FAST)) == NULL)
+	{
+		FreeVec(pmd);
+		return NULL;		
+	}
+	pmd->palsize = palsize;
+ 
+	mapmemgc(pmd, width, height, planes, bpp, data_format, pitch, size, pixels);
+
+	pmd->pixtype = pixtype;		/* save pixtype for proper colorval creation*/
+	pmd->ncolors = (pmd->bpp >= 24)? (1 << 24): (1 << pmd->bpp);
+
+	return pmd;
+}
+#if 0
+
+PSD
+GdCreatePixmap(PSD rootpsd, MWCOORD width, MWCOORD height, int format, void *pixels, int palsize)
+{
+
+
+
+	/* Allocate space for pixel values */
+	if (!pixels) {
+		pixels = calloc(size, 1);
+		pmd->flags |= PSF_ADDRMALLOC;
+	}
+	if (!pixels) {
+err:
+		pmd->FreeMemGC(pmd);
+		return NULL;
+	}
+ 
+	/* allocate palette*/
+	if (palsize && (pmd->palette = calloc(palsize*sizeof(MWPALENTRY), 1)) == NULL)
+		goto err;
+	pmd->palsize = palsize;
+ 
+	pmd->MapMemGC(pmd, width, height, planes, bpp, data_format, pitch, size, pixels);
+	pmd->pixtype = pixtype;		/* save pixtype for proper colorval creation*/
+	pmd->ncolors = (pmd->bpp >= 24)? (1 << 24): (1 << pmd->bpp);
+
+	return pmd;
+}
+
 
 PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, UINT32 flags, APTR pixels)
 {
@@ -16,6 +262,8 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 		ret->bpp  = bpp;
 		ret->pitch = width * (bpp>>3);
 		ret->memsize = width * height * (bpp>>3);
+
+
 		if (flags & FPM_Displayable)
 		{
 			ret->flags |= (FPM_Displayable|FPM_Framebuffer);
@@ -70,3 +318,4 @@ BOOL BltPixMap(CoreGfxBase *CoreGfxBase, PixMap *dstpix, UINT32 dstx, UINT32 dst
 	
 	
 }
+#endif 

@@ -50,6 +50,8 @@ static const volatile struct Resident ROMTag =
 	&InitTab
 };
 
+APTR g_VgaGfxBase = 0;
+
 static VgaGfxBase *vglib_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, APTR SysBase)
 {
 	VgaGfxBase->Library.lib_OpenCnt = 0;
@@ -74,6 +76,7 @@ static VgaGfxBase *vglib_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, APTR SysB
 	}
 
 	SVGA_CheckCapabilities(VgaGfxBase);
+	g_VgaGfxBase = VgaGfxBase;
 	return VgaGfxBase;
 }
 

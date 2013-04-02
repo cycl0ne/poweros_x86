@@ -1,37 +1,27 @@
 #include "coregfx.h"
 #include "pixmap.h"
 #include "rastport.h"
+#include "region_funcs.h"
 
 #define SysBase CoreGfxBase->SysBase
+#define RegionBase CoreGfxBase->RegionBase
 
-#if 0
-typedef struct CRastPort {
-	PixMap	*crp_Pixmap;
-	Layer	*crp_Layer;
-	UINT32	crp_Mode;
-	UINT32	crp_Dashmask;
-	UINT32	crp_Dashcount;
-	UINT32	crp_Fillmode;
-	BOOL	crp_useBg;
-	UINT32	crp_Foreground;
-	UINT32	crp_ForegroundRGB;
-	UINT32	crp_Background;
-	UINT32	crp_BackgroundRGB;
-} CRastPort;
-#endif
-
-struct RastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm)
+struct CRastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm)
 {
-	struct RastPort *rp = AllocVec(sizeof(struct CRastPort), MEMF_CLEAR|MEMF_FAST);
+	struct CRastPort *rp = AllocVec(sizeof(struct CRastPort), MEMF_CLEAR|MEMF_FAST);
 	if (rp)
 	{
-//		SetMode(rp, ROP_COPY);
-//		SetFillMode(rp, FILL_SOLID);
-//		SetAPen(rp, RGB(255,255,255));
-//		SetBPen(rp, RGB(0,0,0));
-//		SetUseBackground(rp, TRUE);
-//		SetDash(rp, 0,0);
+		rp->crp_PixMap = bm;
+		SetMode(rp, ROP_COPY);
+		SetFillMode(rp, FILL_SOLID);
+		SetForegroundPixelVal(rp, 0x0);
+		SetBackgroundPixelVal(rp, 0x0);
+		SetUseBackground(rp, TRUE);
+		SetDash(rp, 0,0);
 		//SetStippleBitmap(0,0,0);
+		DPrintF("SetClipRegion %x\n", RegionBase);
+		SetClipRegion(rp, AllocRectRegion(0, 0, bm->xvirtres, bm->yvirtres));
+		DPrintF("SetClipRegion2\n");
 	}
 	return rp;
 }
