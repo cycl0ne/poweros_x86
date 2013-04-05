@@ -30,7 +30,7 @@ __attribute__((no_instrument_function)) BOOL TimerVBLIRQServer(UINT32 number, AP
 //__attribute__((no_instrument_function)) BOOL Timer3IRQServer(UINT32 number, istate* istate, TimerBase *TimerBase, APTR SysBase);
 
 
-APTR timer_FuncTab[] = 
+APTR timer_FuncTab[] =
 {
  (void(*)) timer_OpenDev,
  (void(*)) timer_CloseDev,
@@ -60,7 +60,7 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 	TimerBase->Device.dd_Library.lib_IDString = (STRPTR)Version;
 
 	TimerBase->Timer_SysBase = SysBase;
-	
+
     /* Setup the timer.device data */
 	TimerBase->CurrentTime.tv_secs  = 0;
 	TimerBase->CurrentTime.tv_micro = 0;
@@ -84,7 +84,7 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 	// EClock Timer
 //	TimerBase->Timer1IntServer = CreateIntServer(DevName, TIMER_INT_PRI, Timer1IRQServer, TimerBase);
 //	AddIntServer(IRQ_TIMER1, TimerBase->Timer1IntServer);
-	
+
 	return TimerBase;
 }
 
@@ -96,9 +96,9 @@ struct InitTable
 	APTR	FunctionTable;
 	APTR	DataTable;
 	APTR	InitFunction;
-} timer_InitTab = 
+} timer_InitTab =
 {
-	sizeof(struct TimerBase), 
+	sizeof(struct TimerBase),
 	timer_FuncTab,
 	NULL,
 	timer_InitDev
@@ -110,7 +110,7 @@ struct Resident TimerRomTag =
 	RTC_MATCHWORD,
 	&TimerRomTag,
 	&TimerEndResident,
-	RTF_COLDSTART,
+	RTF_AUTOINIT | RTF_COLDSTART,
 	VERSION,
 	NT_DEVICE,
 	50,

@@ -43,9 +43,9 @@ void ExecInit(void)
 	arch_irq_create(SysBase);
 	// create Clock
 	arch_clk_init(SysBase);
-	
+
 	// Create two clean Task, one IDLE Task and one Worker Task with Prio 100
-	Task *task1 = TaskCreate("idle", lib_Idle, SysBase, _IDLE_TASK_STACK_, -124); 
+	Task *task1 = TaskCreate("idle", lib_Idle, SysBase, _IDLE_TASK_STACK_, -124);
 	Task *task2 = TaskCreate("ExecTask", lib_ExecTask, SysBase, _EXEC_TASK_STACK_, 100);
 
 	if (RomTagScanner(config.base, (UINT32 *)(config.base + config.kernel_size)) == FALSE)
@@ -53,17 +53,19 @@ void ExecInit(void)
 		monitor_write("[PANIC] RomTagScanner FAILED!\n");
 		for(;;);
 	}
-	InitResidentCode(RTF_SINGLETASK);
 
-	DPrintF("[INIT] Activating SysBase Permit/Enable -> Leaving SingleTask\n");
+	InitResidentCode(RTF_SINGLETASK);
+	InitResidentCode(RTF_TESTCASE);
+
+	//DPrintF("[INIT] Activating SysBase Permit/Enable -> Leaving SingleTask\n");
 	Permit();
 	//asm volatile("sti");
 	//UINT32 ipl = Disable();
 	//Enable(ipl);
 
-	DPrintF("[INIT] Schedule -> leaving Kernel Init\n");
+	DPrintF("ExecInit: Schedule\n");
 	Schedule();
-	DPrintF("[INIT] PONR (point of no return\n");
+	DPrintF("ExecInit: dead end\n");
 	asm volatile("int $0x1");
 	for(;;);
 }
@@ -71,9 +73,9 @@ void ExecInit(void)
 /*
 RETIRED
 // DBUG
-monitor_write("[PANIC] AFTEr EXCINT\n");	
+monitor_write("[PANIC] AFTEr EXCINT\n");
     asm volatile("int $0x3");
-monitor_write("[PANIC] AFTER INT0x3\n");	
+monitor_write("[PANIC] AFTER INT0x3\n");
 for(;;);
 //DEBUG
 //

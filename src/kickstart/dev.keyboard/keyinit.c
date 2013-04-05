@@ -31,7 +31,7 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *ioreq);
 void kdev_AbortIO(KbdBase *kdev_, struct IORequest *ioreq);
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase);
 
-static APTR FuncTab[] = 
+static APTR FuncTab[] =
 {
 	(void(*)) kdev_OpenDev,
 	(void(*)) kdev_CloseDev,
@@ -51,12 +51,12 @@ static const APTR InitTab[4]=
 	(APTR)kdev_Init
 };
 
-static const struct Resident ROMTag = 
+static const struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART,
+	RTF_AUTOINIT | RTF_COLDSTART,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	45,
@@ -120,7 +120,7 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 		}
 		// Check for Numeric
 		// Numeric can have the follwing values:
-		// 47, 48, 49, 4a, 4b, 4c, 4d, 4e, 4f, 50, 51, 52, 53, 
+		// 47, 48, 49, 4a, 4b, 4c, 4d, 4e, 4f, 50, 51, 52, 53,
 		if ((key > 0x47 && key < 0x53) &&
 			(key > 0x47+0x80 && key < 0x53+0x80))
 		{
@@ -140,7 +140,7 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 			tail -=2;
 			tail &= (KBBUFSIZE-1);
 		}
-		
+
 		KbdBase->BufQueue[tail] = key;
 		qualifier |= KbdBase->Shifts;
 		//DPrintF("Writing Buffer key: %x qual: %x (tail: %x)\n", key, qualifier, tail);
@@ -150,9 +150,9 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 
 		//DPrintF("BufferHead: %d BufferTail: %d\n", KbdBase->BufHead, KbdBase->BufTail);
 		//DPrintF("Buffer: %x  %x\n", KbdBase->BufQueue[KbdBase->BufTail], KbdBase->BufQueue[KbdBase->BufTail+1]);
-		
+
 		if (KbdBase->Unit.unit_Flags & DUB_STOPPED) return;
-		
+
 		//DPrintF("commandVector\n");
 
 		if (!IsMsgPortEmpty(&KbdBase->Unit.unit_MsgPort)) {
@@ -194,6 +194,8 @@ static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase)
 {
+	DPrintF("Keyboard Init...\n");
+
 	KbdBase->Device.dd_Library.lib_OpenCnt = 0;
 	KbdBase->Device.dd_Library.lib_Node.ln_Pri = 0;
 	KbdBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
@@ -201,16 +203,16 @@ static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struc
 	KbdBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
 	KbdBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
 	KbdBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
-	
+
 	KbdBase->SysBase	= SysBase;
 	KbdBase->Flags		= 0;
-	
+
 	// Initialise Unit Command Queue
 	NewList((struct List *)&KbdBase->Unit.unit_MsgPort.mp_MsgList);
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	KbdBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
-	
+
 	// Initialise the reset handler list
 	NewList((struct List *)&KbdBase->HandlerList);
 

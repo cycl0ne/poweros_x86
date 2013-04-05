@@ -9,7 +9,7 @@
 * this is why we use a Task here and leave Kernel Init.
 */
 
-void lib_ExecTask(struct SysBase *SysBase) 
+void lib_ExecTask(struct SysBase *SysBase)
 {
 	InitResidentCode(RTF_COLDSTART);
 	for(int i =0; i<0xfffffff; i++);

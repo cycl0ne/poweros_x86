@@ -28,7 +28,7 @@ void exp_ScanPCIAll(struct ExpansionBase *ExpansionBase);
 void exp_ScanPCIBus(struct ExpansionBase *ExpansionBase, INT32 nBusNum, INT32 nBridgeFrom, INT32 nBusDev);
 
 
-static volatile APTR FuncTab[] = 
+static volatile APTR FuncTab[] =
 {
 	(void(*)) exp_OpenLib,
 	(void(*)) exp_CloseLib,
@@ -41,11 +41,11 @@ static volatile APTR FuncTab[] =
 	(void(*)) exp_ScanPCIBus,
 	(void(*)) exp_FindPCIDevice,
 	(void(*)) exp_ReadPCIConfig,
-	(void(*)) exp_WritePCIConfig, 
+	(void(*)) exp_WritePCIConfig,
 
-	(void(*)) exp_GetPCIMemorySize, 
-	(void(*)) exp_SetPCILatency, 
-	(void(*)) exp_EnablePCIMaster, 
+	(void(*)) exp_GetPCIMemorySize,
+	(void(*)) exp_SetPCILatency,
+	(void(*)) exp_EnablePCIMaster,
 	(APTR) ((UINT32)-1)
 };
 
@@ -57,12 +57,12 @@ static const volatile APTR InitTab[4]=
 	(APTR)exp_Init
 };
 
-static const volatile struct Resident ROMTag = 
+static const volatile struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK,
+	RTF_AUTOINIT | RTF_SINGLETASK,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	110,
@@ -77,11 +77,12 @@ static const volatile struct Resident ROMTag =
 
 static void CheckPCIInstructionSet(struct ExpansionBase *ExpansionBase)
 {
+
 	ExpansionBase->g_nPCIMethod = 0;
 
-	/* Do simple register checks to find the way how to access the pci bus */
+	// Do simple register checks to find the way how to access the pci bus
 
-	/* Check PCI method 2 */
+	// Check PCI method 2
 	outb( 0x0, 0x0cf8 );
 	outb( 0x0, 0x0cfa );
 	if ( inb( 0x0cf8 ) == 0x0 && inb( 0x0cfa ) == 0x0 )
@@ -91,7 +92,7 @@ static void CheckPCIInstructionSet(struct ExpansionBase *ExpansionBase)
 		return;
 	}
 
-	/* Check PCI method 1 */
+	// Check PCI method 1
 	outl( 0x80000000, 0x0cf8 );
 	if ( inl( 0x0cf8 ) == 0x80000000 )
 	{
@@ -104,7 +105,7 @@ static void CheckPCIInstructionSet(struct ExpansionBase *ExpansionBase)
 		}
 	}
 
-	/* Check for Virtual PC PCI method 1 */
+	// Check for Virtual PC PCI method 1
 	outl( 0x80000000, 0x0cf8 );
 	if ( inl( 0x0cf8 ) == 0x80000000 )
 	{
@@ -116,6 +117,7 @@ static void CheckPCIInstructionSet(struct ExpansionBase *ExpansionBase)
 			return;
 		}
 	}
+
 }
 
 #undef SysBase
@@ -128,14 +130,14 @@ static struct ExpansionBase *exp_Init(struct ExpansionBase *ExpansionBase, UINT3
 	ExpansionBase->Library.lib_Node.ln_Name = (STRPTR)name;
 	ExpansionBase->Library.lib_Version = LIBRARY_VERSION;
 	ExpansionBase->Library.lib_Revision = LIBRARY_REVISION;
-	ExpansionBase->Library.lib_IDString = (STRPTR)&version[7];	
+	ExpansionBase->Library.lib_IDString = (STRPTR)&version[7];
 	ExpansionBase->SysBase	= SysBase;
 	ExpansionBase->DosBase	= NULL; // For later use
 
 	NewListType(&ExpansionBase->BoardList, NT_PCILIST);
 	InitSemaphore(&ExpansionBase->BoardListLock);
 
-	NewListType(&ExpansionBase->MountList, NT_DOSLIST);	
+	NewListType(&ExpansionBase->MountList, NT_DOSLIST);
 	InitSemaphore(&ExpansionBase->MountListLock);
 
 	ExpansionBase->g_nPCINumBusses = 0;
@@ -155,7 +157,7 @@ static struct ExpansionBase *exp_Init(struct ExpansionBase *ExpansionBase, UINT3
 		ScanPCIAll();
 	}
 
-	return ExpansionBase;	
+	return ExpansionBase;
 }
 
 static const char EndResident = 0;
