@@ -5,6 +5,7 @@
 #include "sysbase.h"
 #include "io.h"
 #include "resident.h"
+//#include "font.h"
 
 #include "exec_funcs.h"
 #include "coregfx_funcs.h"
@@ -22,6 +23,13 @@
 #define	IMAGE_NEXTBIT(m)				((UINT16) ((m) >> 1))
 #define	IMAGE_TESTBIT(m)				((m) & IMAGE_FIRSTBIT)  /* use with shiftbit*/
 #define	IMAGE_SHIFTBIT(m)				((UINT16) ((m) << 1))  /* for testbit*/
+
+/* no color, used for transparency, should not be 0, -1 or any MWRGB color*/
+#define NOCOLOR	0x01000000L			/* MWRGBA(1, 0, 0, 0)*/
+#define PORTRAIT_NONE		0x00	/* hw framebuffer, no rotation*/
+#define PORTRAIT_LEFT		0x01	/* rotate left*/
+#define	PORTRAIT_RIGHT		0x02	/* rotate right*/
+#define PORTRAIT_DOWN		0x04	/* upside down*/
 
 // Needs to stay here because of MAX_CURSOR_SIZE definition
 #include "cursor.h"
@@ -59,7 +67,7 @@ typedef struct CgfxPalEntry{
 	UINT8	g;
 	UINT8	b;
 	UINT8 _padding;
-} CgfxPalEntry;
+} CgfxPalEntry, *pCGfxPalEntry;
 
 typedef struct CoreGfxBase {
 	struct Library	Library;
@@ -67,10 +75,10 @@ typedef struct CoreGfxBase {
 	APTR	SysBase;
 	APTR	RegionBase;
 	CGfxCursor	Cursor;
-//	BOOL	CurVisible;
-//	BOOL	CurNeedsRestore;
 	struct View *ActiveView;
-} CoreGfxBase;
+	struct CGfxCoreFont *builtin_fonts;
+	struct CGfxCoreFont *user_builtin_fonts;
+} CoreGfxBase, *pCoreGfxBase;
 
 /* Line modes */
 #define LINE_SOLID      0
@@ -118,6 +126,13 @@ typedef struct CoreGfxBase {
 #define ROP_BLENDCONSTANT		32	/* alpha blend src -> dst with constant alpha*/
 #define ROP_BLENDFGBG			33	/* alpha blend fg/bg color -> dst with src alpha channel*/
 #define ROP_USE_GC_MODE		255 /* use current GC mode for ROP.  Nano-X CopyArea only*/
+
+#define ARC		0x0001	/* arc*/
+#define OUTLINE	0x0002
+#define ARCOUTLINE	0x0003	/* arc + outline*/
+#define PIE		0x0004	/* pie (filled)*/
+#define ELLIPSE	0x0008	/* ellipse outline*/
+#define ELLIPSEFILL	0x0010	/* ellipse filled*/
 
 #define ARGB(a,r,g,b)	((UINT32)(((unsigned char)(r)|\
 				(((UINT32)(unsigned char)(g))<<8))|\

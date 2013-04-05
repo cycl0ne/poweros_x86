@@ -4,7 +4,7 @@
 #define SysBase CoreGfxBase->SysBase
 
 APTR SVGA_SetDisplayMode(APTR VgaGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 nBpp);
-struct CRastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
+struct CRastPort *cgfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
 
 static inline void memset32(void *dest, UINT32 value, UINT32 size)
 {
@@ -18,7 +18,7 @@ struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 x
 	if (vp)
 	{
 		vp->Next	= NULL;
-		vp->RastPort = gfx_InitRastPort(CoreGfxBase, pix);
+		vp->RastPort = cgfx_InitRastPort(CoreGfxBase, pix);
 		vp->PixMap	= pix;
 		vp->DWidth	= pix->xres;
 		vp->DHeight = pix->yres;
@@ -43,10 +43,11 @@ struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHe
 	return view;
 }
 
-UINT32 cgfx_MakeVPort(CoreGfxBase *CoreGfxBase, struct View *view, struct ViewPort *vp)
+BOOL cgfx_MakeVPort(CoreGfxBase *CoreGfxBase, struct View *view, struct ViewPort *vp)
 {
+	if (view == NULL || vp == NULL) return FALSE;
 	view->vp = vp;
-	return 0;
+	return TRUE;
 }
 
 static inline void memcpy32(void *dest, const void *src, UINT32 size)
@@ -72,7 +73,8 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 			// Copy FB content to Bitmap
 			memcpy32(apix->addr, aview->fbAddr, aview->fbSize);
 			// Clear old Framebuffer View
-			memset32(aview->fbAddr, 0x00, aview->fbSize);			
+			memset32(aview->fbAddr, 0x00, aview->fbSize);
+			apix->flags &= ~PSF_SCREEN;
 		}
 		// Activate new View
 		DPrintF("SVGA_SetDisplayMode(%d, %d, %d)\n", view->width, view->height, view->bpp);
@@ -82,6 +84,7 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 		// Save old addr of Pixmap
 		view->vp->oldPMAddr = view->vp->PixMap->addr;
 		view->vp->PixMap->addr = view->fbAddr;
+		view->vp->PixMap->flags |= PSF_SCREEN;
 		// Store the new View
 		CoreGfxBase->ActiveView = view;
 	} else
@@ -102,22 +105,21 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 		DPrintF("Shutdown View: Clear Screen %x/%x\n", aview->fbAddr, aview->fbSize);
 		memset32(aview->fbAddr, 0x00000000, aview->fbSize);
 		CoreGfxBase->ActiveView = NULL;
+		apix->flags &= ~PSF_SCREEN;
 	}
 }
 
 //PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, UINT32 flags, APTR pixels);;
 PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize);
 struct CRastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
-void cgfx_Line(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2, BOOL bDrawLastPoint) ;
-void cgfx_Point(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y);
-void cgfx_FillRect(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 width, INT32 height);
 
 #include "cursor.h"
+#include "font.h"
 
 void __TestView(CoreGfxBase *CoreGfxBase)
 {
 	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, 640, 480, IF_BGRA8888, FPM_Displayable, NULL,0 );
-	struct CRastPort *rp = gfx_InitRastPort(CoreGfxBase, pix);
+	struct CRastPort *rp = cgfx_InitRastPort(CoreGfxBase, pix);
 	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
 	if (pix) memset32(pix->addr, 0x0, pix->size/4);
 
@@ -153,29 +155,46 @@ void __TestView(CoreGfxBase *CoreGfxBase)
 //	cgfx_LoadView(CoreGfxBase, NULL);	
 //void cgfx_Line(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2, BOOL bDrawLastPoint) 
 	SetForegroundColor(rp, RGB(255, 0, 0));
-	cgfx_Point(CoreGfxBase, rp, 100, 100);
-	cgfx_Line(CoreGfxBase, rp, 10, 10, 200, 200, TRUE);
-
+//	Point(rp, 100, 100);
+//DPrintF("Line %x\n", rp->crp_Foreground);
+//for(;;);
+	Line(rp, 10, 10, 200, 200, TRUE);
+//DPrintF("Endline\n");
 	for (int i = 10; i< 640; i+=10) 
 	{
-		cgfx_Line(CoreGfxBase, rp, i, 10, 200, 200, TRUE);
+		Line(rp, i, 10, 200, 200, TRUE);
 	}
 
 	SetForegroundColor(rp, RGB(0, 255, 0));
 	for (int i = 10; i< 480; i+=5) 
-		cgfx_Line(CoreGfxBase, rp, 10, i, 200, 200, TRUE);
+		Line(rp, 10, i, 200, 200, TRUE);
 
 	SetForegroundColor(rp, RGB(0, 0, 255));
 	for (int i = 10; i< 640; i+=10) 
-		cgfx_Line(CoreGfxBase, rp, 10, 480, i, 200, TRUE);
+		Line(rp, 10, 480, i, 200, TRUE);
 
 	SetForegroundColor(rp, RGB(255, 255, 255));
 	SetMode(rp, ROP_XOR);
-	cgfx_FillRect(CoreGfxBase, rp, 50, 50, 100, 100);
+	FillRect(rp, 50, 50, 100, 100);
 	SetMode(rp, ROP_OR);
-	cgfx_FillRect(CoreGfxBase, rp, 100, 100, 100, 100);
+	FillRect(rp, 100, 100, 100, 100);
 	SetMode(rp, ROP_INVERT);
-	cgfx_FillRect(CoreGfxBase, rp, 150, 150, 100, 100);
+	FillRect(rp, 150, 150, 100, 100);
+	SetMode(rp, ROP_COPY);
+//	DPrintF("Blit\n");
+	Blit(rp, 0, 0, 100, 100, rp, 150, 150, 0);
+//	DPrintF("Blit\n");
+	//void cgfx_Text(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, pCGfxFont pfont, INT32 x, INT32 y, const void *str, int cc,UINT32 flags);
+
+CGfxFont *font = CreateFont(rp, FONT_SYSTEM_VAR, 0, 0, NULL);
+//DPrintF("Font %x\n", font);
+BOOL old = SetUseBackground(rp, FALSE);
+	Text(rp, font, 50, 200, "Hello World", -1, TF_BASELINE);
+	Text(rp, font, 50, 300, "Hello World", -1, TF_TOP);
+	Text(rp, font, 50, 400, "Hello World", -1, TF_BOTTOM);
+
+//DPrintF("Textend\n");
+
 //	MoveCursor(0,0);
 //DPrintF("Setcursor\n");
 //	SetCursor(&arrow);

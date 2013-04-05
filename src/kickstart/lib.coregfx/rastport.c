@@ -6,7 +6,7 @@
 #define SysBase CoreGfxBase->SysBase
 #define RegionBase CoreGfxBase->RegionBase
 
-struct CRastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm)
+struct CRastPort *cgfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm)
 {
 	struct CRastPort *rp = AllocVec(sizeof(struct CRastPort), MEMF_CLEAR|MEMF_FAST);
 	if (rp)
@@ -19,14 +19,14 @@ struct CRastPort *gfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm)
 		SetUseBackground(rp, TRUE);
 		SetDash(rp, 0,0);
 		//SetStippleBitmap(0,0,0);
-		DPrintF("SetClipRegion %x\n", RegionBase);
+		//DPrintF("SetClipRegion %x\n", RegionBase);
 		SetClipRegion(rp, AllocRectRegion(0, 0, bm->xvirtres, bm->yvirtres));
-		DPrintF("SetClipRegion2\n");
+		//DPrintF("SetClipRegion2\n");
 	}
 	return rp;
 }
 
-void gfx_FreeRastPort(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, BOOL flag)
+void cgfx_FreeRastPort(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, BOOL flag)
 {
 	if (flag); //FreeBitmap;
 	FreeVec(rp);

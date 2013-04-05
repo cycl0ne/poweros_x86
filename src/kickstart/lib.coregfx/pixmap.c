@@ -2,15 +2,98 @@
 #include "pixmap.h"
 #include "exec_funcs.h"
 
-/* no color, used for transparency, should not be 0, -1 or any MWRGB color*/
-#define NOCOLOR	0x01000000L			/* MWRGBA(1, 0, 0, 0)*/
-#define PORTRAIT_NONE		0x00	/* hw framebuffer, no rotation*/
-#define PORTRAIT_LEFT		0x01	/* rotate left*/
-#define	PORTRAIT_RIGHT		0x02	/* rotate right*/
-#define PORTRAIT_DOWN		0x04	/* upside down*/
-
 #define SysBase CoreGfxBase->SysBase
 BOOL SVGA_SelectSubdriver(PixMap *psd);
+
+static void gen_getscreeninfo(struct CRastPort *rp, pCGfxScreenInfo psi)
+{
+	PixMap *psd = rp->crp_PixMap;
+	psi->rows = psd->yvirtres;
+	psi->cols = psd->xvirtres;
+	psi->planes = psd->planes;
+	psi->bpp = psd->bpp;
+	psi->data_format = psd->data_format;
+	psi->ncolors = psd->ncolors;
+	psi->fonts = 4; //FIXME: NUMBER_FONTS;
+	psi->portrait = psd->portrait;
+	psi->fbdriver = TRUE;	/* running fb driver, can direct map*/
+	psi->pixtype = psd->pixtype;
+
+	switch (psd->data_format) {
+	case IF_BGRA8888:
+		psi->rmask = RMASKBGRA;
+		psi->gmask = GMASKBGRA;
+		psi->bmask = BMASKBGRA;
+		psi->amask = AMASKBGRA;
+		break;
+	case IF_RGBA8888:
+		psi->rmask = RMASKRGBA;
+		psi->gmask = GMASKRGBA;
+		psi->bmask = BMASKRGBA;
+		psi->amask = AMASKRGBA;
+	case IF_BGR888:
+		psi->rmask = RMASKBGR;
+		psi->gmask = GMASKBGR;
+		psi->bmask = BMASKBGR;
+		psi->amask = AMASKBGR;
+		break;
+	case IF_RGB565:
+		psi->rmask = RMASK565;
+		psi->gmask = GMASK565;
+		psi->bmask = BMASK565;
+		psi->amask = AMASK565;
+		break;
+	case IF_RGB555:
+		psi->rmask = RMASK555;
+		psi->gmask = GMASK555;
+		psi->bmask = BMASK555;
+		psi->amask = AMASK555;
+		break;
+	case IF_RGB332:
+		psi->rmask = RMASK332;
+		psi->gmask = GMASK332;
+		psi->bmask = BMASK332;
+		psi->amask = AMASK332;
+		break;
+	case IF_BGR233:
+		psi->rmask = RMASK233;
+		psi->gmask = GMASK233;
+		psi->bmask = BMASK233;
+		psi->amask = AMASK233;
+		break;
+	case PF_PALETTE:
+	default:
+		psi->amask 	= 0x00;
+		psi->rmask 	= 0xff;
+		psi->gmask 	= 0xff;
+		psi->bmask	= 0xff;
+		break;
+	}
+
+	//eCos
+    //psi->ydpcm = 42; 		/* 320 / (3 * 2.54)*/
+    //psi->xdpcm = 38; 		/* 240 / (2.5 * 2.54)*/
+	//psp
+    //psi->ydpcm = 120;
+    //psi->xdpcm = 120;
+	if(psd->yvirtres > 480) {	//FIXME update
+		/* SVGA 800x600*/
+		psi->xdpcm = 33;	/* assumes screen width of 24 cm*/
+		psi->ydpcm = 33;	/* assumes screen height of 18 cm*/
+	} else if(psd->yvirtres > 350) {
+		/* VGA 640x480*/
+		psi->xdpcm = 27;	/* assumes screen width of 24 cm*/
+		psi->ydpcm = 27;	/* assumes screen height of 18 cm*/
+        } else if(psd->yvirtres <= 240) {
+		/* half VGA 640x240 */
+		psi->xdpcm = 14;        /* assumes screen width of 24 cm*/ 
+		psi->ydpcm =  5;
+	} else {
+		/* EGA 640x350*/
+		psi->xdpcm = 27;	/* assumes screen width of 24 cm*/
+		psi->ydpcm = 19;	/* assumes screen height of 18 cm*/
+	}
+}
 
 static int CalcMemGCAlloc(PixMap *psd, int width, int height, int planes, int bpp, unsigned int *psize, unsigned *ppitch)
 {
@@ -195,7 +278,7 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 	{
 		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
 		pmd->flags |= PSF_ADDRMALLOC;
-		DPrintF("Allocated Pixels Addr: %x\n", pixels);
+		//DPrintF("Allocated Pixels Addr: %x\n", pixels);
 	}
 	if (!pixels) 
 	{
@@ -214,9 +297,10 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 
 	pmd->pixtype = pixtype;		/* save pixtype for proper colorval creation*/
 	pmd->ncolors = (pmd->bpp >= 24)? (1 << 24): (1 << pmd->bpp);
-
+	pmd->_GetScreenInfo = gen_getscreeninfo;
 	return pmd;
 }
+
 #if 0
 
 PSD

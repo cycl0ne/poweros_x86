@@ -46,7 +46,7 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 	if ((x >= rp->crp_ClipMinX) && (x <= rp->crp_ClipMaxX) &&
 	  (y >= rp->crp_ClipMinY) && (y <= rp->crp_ClipMaxY)) 
 	{
-		if (rp->crp_ClipResult) CheckCursor(rp, x, y, x, y);
+		if (rp->crp_ClipResult) CheckCursor(psd, x, y, x, y);
 		return rp->crp_ClipResult;
 	}
 
@@ -100,7 +100,7 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 		rp->crp_ClipMinY = 0;
 		rp->crp_ClipMaxY = psd->yvirtres - 1;
 		rp->crp_ClipResult = TRUE;
-		CheckCursor(rp, x, y, x, y);
+		CheckCursor(psd, x, y, x, y);
 		return TRUE;
 	}
 
@@ -118,7 +118,7 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 			rp->crp_ClipMaxX = rect->right - 1;
 			rp->crp_ClipMaxY = rect->bottom - 1;
 			rp->crp_ClipResult = TRUE;
-			CheckCursor(rp, x, y, x, y);
+			CheckCursor(psd, x, y, x, y);
 			return TRUE;
 		}
 	}
@@ -156,7 +156,7 @@ INT32 cgfx_ClipArea(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1,
 	if ((x2 >= rp->crp_ClipMinX) && (x2 <= rp->crp_ClipMaxX) && (y2 >= rp->crp_ClipMinY) && (y2 <= rp->crp_ClipMaxY)) 
 	{
 		if (!rp->crp_ClipResult) return CLIP_INVISIBLE;
-		CheckCursor(rp, x1, y1, x2, y2);
+		CheckCursor(rp->crp_PixMap, x1, y1, x2, y2);
 		return CLIP_VISIBLE;
 	}
 	return CLIP_PARTIAL;

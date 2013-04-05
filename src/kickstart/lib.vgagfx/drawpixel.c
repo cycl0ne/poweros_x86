@@ -3,110 +3,7 @@
 #include "pixmap.h"
 #include "rastport.h"
 #include "exec_funcs.h"
-
-#define	APPLYOP(op, width, STYPE, s, DTYPE, d, ssz, dsz)	\
-	{											\
-		int  count = width;						\
-		switch (op) {							\
-		case ROP_COPY:						\
-		case ROP_SRC_OVER:					\
-		case ROP_SRC_IN:						\
-		case ROP_SRC_ATOP:					\
-			while(--count >= 0) {				\
-				DTYPE d = STYPE s;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_XOR_FGBG:					\
-		case ROP_PORTERDUFF_XOR:				\
-			while(--count >= 0) {				\
-				DTYPE d ^= (STYPE s) ^ gr_background; \
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_SRCTRANSCOPY:				\
-			while(--count >= 0) {				\
-				DTYPE d = (DTYPE d)? DTYPE d: STYPE s; \
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_XOR:							\
-			while(--count >= 0) {				\
-				DTYPE d ^= STYPE s;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_AND:							\
-			while(--count >= 0) {				\
-				DTYPE d &= STYPE s;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_OR:							\
-			while(--count >= 0) {				\
-				DTYPE d |= STYPE s;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_SRC_OUT:						\
-		case ROP_DST_OUT:						\
-		case ROP_CLEAR:						\
-			while(--count >= 0) {				\
-				DTYPE d = 0;					\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_SET:							\
-			while(--count >= 0) {				\
-				DTYPE d = ~0;					\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_EQUIV:						\
-			while(--count >= 0) {				\
-				DTYPE d = ~(DTYPE d ^ STYPE s); \
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_NOR:							\
-			while(--count >= 0) {				\
-				DTYPE d = ~(DTYPE d | STYPE s); \
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_NAND:						\
-			while(--count >= 0) {				\
-				DTYPE d = ~(DTYPE d & STYPE s); \
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_INVERT:						\
-			while(--count >= 0) {				\
-				DTYPE d = ~DTYPE d;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_COPYINVERTED:				\
-			while(--count >= 0) {				\
-				DTYPE d = ~STYPE s;				\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_ORINVERTED:					\
-			while(--count >= 0) {				\
-				DTYPE d |= ~STYPE s;			\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_ANDINVERTED:					\
-			while(--count >= 0) {				\
-				DTYPE d &= ~STYPE s;			\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_ORREVERSE:					\
-			while(--count >= 0) {				\
-				DTYPE d = ~DTYPE d | STYPE s; 	\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_ANDREVERSE:					\
-			while(--count >= 0) {				\
-				DTYPE d = ~DTYPE d & STYPE s; 	\
-				d += dsz; s += ssz; }			\
-			break;								\
-		case ROP_NOOP:						\
-		case ROP_DST_OVER:					\
-		case ROP_DST_IN:						\
-		case ROP_DST_ATOP:					\
-			break;								\
-		}										\
-	}
-
+#include "blit.h"
 
 extern APTR g_SysBase;
 extern APTR g_VgaGfxBase;
@@ -115,7 +12,6 @@ void SVGA_DrawPixel32(struct CRastPort *rp, INT32 x,INT32 y,UINT32 c)
 {
 	struct PixMap *psd = rp->crp_PixMap;
 	register unsigned char *addr = psd->addr + y * psd->pitch + (x << 2);
-
 	if (rp->crp_Mode == ROP_COPY)
 		*((UINT32*)addr) = c;
 	else
@@ -127,7 +23,6 @@ void SVGA_DrawPixel32(struct CRastPort *rp, INT32 x,INT32 y,UINT32 c)
 
 UINT32 SVGA_ReadPixel32(struct CRastPort *rp, INT32 x,INT32 y)
 {
-	APTR SysBase = g_SysBase;
 	struct PixMap *psd = rp->crp_PixMap;
 	register unsigned char *addr = psd->addr + y * psd->pitch + (x << 2);
 	return *((UINT32*)addr);
@@ -135,8 +30,6 @@ UINT32 SVGA_ReadPixel32(struct CRastPort *rp, INT32 x,INT32 y)
 
 void SVGA_DrawHorzLine32(struct CRastPort *rp, INT32 x1, INT32 x2, INT32 y, UINT32 c)
 {
-	APTR SysBase = g_SysBase;
-
 	struct PixMap *psd = rp->crp_PixMap;
 	register unsigned char *addr = psd->addr + y * psd->pitch + (x1 << 2);
 	int width = x2-x1+1;
@@ -208,23 +101,44 @@ BOOL SVGA_SelectSubdriver(PixMap *psd)
 		case 32:
 			if (psd->data_format == IF_RGBA8888)	/* RGBA pixmaps*/
 			{
-				psd->DrawPixel		= SVGA_DrawPixel32;
-				psd->ReadPixel		= SVGA_ReadPixel32;
-				psd->DrawHorzLine	= SVGA_DrawHorzLine32;
-				psd->DrawVertLine	= SVGA_DrawVertLine32;
-				psd->FillRect 		= SVGA_DrawFillRect32;
+				psd->_DrawPixel		= SVGA_DrawPixel32;
+				psd->_ReadPixel		= SVGA_ReadPixel32;
+				psd->_DrawHorzLine	= SVGA_DrawHorzLine32;
+				psd->_DrawVertLine	= SVGA_DrawVertLine32;
+				psd->_FillRect 		= SVGA_DrawFillRect32;
+				psd->BlitFallback	= NULL;
+				psd->FrameBlit			= frameblit_xxxa8888;
+				psd->FrameStretchBlit	= frameblit_stretch_xxxa8888;
+				psd->BlitCopyMaskMonoByteMSB = convblit_copy_mask_mono_byte_msb_bgra;
+				psd->BlitCopyMaskMonoByteLSB = convblit_copy_mask_mono_byte_lsb_bgra;
+				psd->BlitCopyMaskMonoWordMSB = convblit_copy_mask_mono_word_msb_bgra;
+				psd->BlitBlendMaskAlphaByte  = convblit_blend_mask_alpha_byte_bgra;
+				psd->BlitCopyRGBA8888 = convblit_copy_rgba8888_bgra8888;
+				psd->BlitSrcOverRGBA8888 = convblit_srcover_rgba8888_bgra8888;
+				psd->BlitCopyRGB888 = convblit_copy_rgb888_bgra8888;
+				psd->BlitStretchRGBA8888 = frameblit_stretch_rgba8888_bgra8888;
 			}
 			else
 			{
-				psd->DrawPixel		= SVGA_DrawPixel32;
-				psd->ReadPixel		= SVGA_ReadPixel32;
-				psd->DrawHorzLine	= SVGA_DrawHorzLine32;
-				psd->DrawVertLine	= SVGA_DrawVertLine32;
-				psd->FillRect 		= SVGA_DrawFillRect32;
+				psd->_DrawPixel		= SVGA_DrawPixel32;
+				psd->_ReadPixel		= SVGA_ReadPixel32;
+				psd->_DrawHorzLine	= SVGA_DrawHorzLine32;
+				psd->_DrawVertLine	= SVGA_DrawVertLine32;
+				psd->_FillRect 		= SVGA_DrawFillRect32;
+				psd->BlitFallback	= NULL;
+				psd->FrameBlit			= frameblit_xxxa8888;
+				psd->FrameStretchBlit	= frameblit_stretch_xxxa8888;
+				psd->BlitCopyMaskMonoByteMSB = convblit_copy_mask_mono_byte_msb_bgra;
+				psd->BlitCopyMaskMonoByteLSB = convblit_copy_mask_mono_byte_lsb_bgra;
+				psd->BlitCopyMaskMonoWordMSB = convblit_copy_mask_mono_word_msb_bgra;
+				psd->BlitBlendMaskAlphaByte  = convblit_blend_mask_alpha_byte_bgra;
+				psd->BlitCopyRGBA8888 = convblit_copy_rgba8888_bgra8888;
+				psd->BlitSrcOverRGBA8888 = convblit_srcover_rgba8888_bgra8888;
+				psd->BlitCopyRGB888 = convblit_copy_rgb888_bgra8888;
+				psd->BlitStretchRGBA8888 = frameblit_stretch_rgba8888_bgra8888;
 			}
 			break;
 		}
 	}
 }
-
 

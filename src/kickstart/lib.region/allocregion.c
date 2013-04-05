@@ -5,7 +5,7 @@
 
 ClipRegion *reg_AllocRegion(RegionBase *RegionBase)
 {
-DPrintF("allocregion()\n");
+//DPrintF("allocregion()\n");
 	ClipRegion *rgn;
 
 	if ((rgn = AllocVec(sizeof(ClipRegion), MEMF_FAST|MEMF_CLEAR )))

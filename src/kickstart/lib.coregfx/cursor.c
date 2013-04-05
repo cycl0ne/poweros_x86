@@ -115,12 +115,12 @@ INT32 cgfx_ShowCursor(CoreGfxBase *CoreGfxBase)
 			if(x >= 0 && x < psd->xvirtres &&
 			   y >= 0 && y < psd->yvirtres) 
 			   {
-				oldcolor = psd->ReadPixel(rp, x, y);
+				oldcolor = psd->_ReadPixel(rp, x, y);
 				//DPrintF("Readpixel %x ", oldcolor);
 				if (curbit & mbits) 
 				{
 					newcolor = (curbit&cbits)? cur->curbg: cur->curfg;
-					if (oldcolor != newcolor) psd->DrawPixel(rp, x, y, newcolor);
+					if (oldcolor != newcolor) psd->_DrawPixel(rp, x, y, newcolor);
 				}
 				*saveptr++ = oldcolor;
 			}
@@ -162,7 +162,7 @@ INT32 cgfx_HideCursor(CoreGfxBase *CoreGfxBase)
 			if(x >= 0 && x < psd->xvirtres &&
 			   y >= 0 && y < psd->yvirtres) 
 			{
-				psd->DrawPixel(rp, x, y, *saveptr++);
+				psd->_DrawPixel(rp, x, y, *saveptr++);
 			}
 		}
 	}
@@ -171,10 +171,9 @@ INT32 cgfx_HideCursor(CoreGfxBase *CoreGfxBase)
 	return prevcursor;
 }
 
-void cgfx_CheckCursor(CoreGfxBase *CoreGfxBase, CRastPort *rp,INT32 x1,INT32 y1,INT32 x2,INT32 y2)
+void cgfx_CheckCursor(CoreGfxBase *CoreGfxBase, PixMap *psd, INT32 x1,INT32 y1,INT32 x2,INT32 y2)
 {
 	INT32 temp;
-	PixMap *psd = rp->crp_PixMap;
 	CGfxCursor	*cur = &CoreGfxBase->Cursor;
 
 	if (cur->curvisible <= 0 || (psd->flags & PSF_SCREEN) == 0) return;
@@ -197,15 +196,15 @@ void cgfx_CheckCursor(CoreGfxBase *CoreGfxBase, CRastPort *rp,INT32 x1,INT32 y1,
 	cur->curneedsrestore = TRUE;
 }
 
-void cgfx_FixCursor(CoreGfxBase *CoreGfxBase, CRastPort *rp)
+void cgfx_FixCursor(CoreGfxBase *CoreGfxBase, PixMap *psd)
 {
 	CGfxCursor	*cur = &CoreGfxBase->Cursor;
 
-	if (cur->curneedsrestore && (rp->crp_PixMap->flags & PSF_SCREEN)) 
+	if (cur->curneedsrestore && (psd->flags & PSF_SCREEN)) 
 	{
 		ShowCursor();
 		cur->curneedsrestore = FALSE;
+		SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 	}
-	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 }
 

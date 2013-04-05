@@ -2,6 +2,7 @@
 #define PIXMAP_H
 #include "types.h"
 #include "rastport.h"
+#include "blit.h"
 
 #define	PSF_SCREEN			0x0001	/* screen device*/
 #define PSF_MEMORY			0x0002	/* memory device*/
@@ -73,6 +74,49 @@
 #define IF_PAL4		 0x00400000L		/*  4bpp palette (old PF_PALETTE)*/
 #define IF_PAL8		 0x00800000L		/*  8bpp palette (old PF_PALETTE)*/
 
+/* MWIF_BGR233*/
+#define RMASK233	0x07
+#define GMASK233	0x38
+#define BMASK233	0xc0
+#define AMASK233	0x00
+
+/* MWIF_RGB332*/
+#define RMASK332	0xe0
+#define GMASK332	0x1c
+#define BMASK332	0x03
+#define AMASK332	0x00
+
+/* MWIF_RGB555*/
+#define RMASK555	0x7c00
+#define GMASK555	0x03e0
+#define BMASK555	0x001f
+#define AMASK555	0x8000
+
+/* MWIF_RGB565*/
+#define RMASK565	0xf800
+#define GMASK565	0x07e0
+#define BMASK565	0x001f
+#define AMASK565	0x0000
+
+/* MWIF_BGR888*/
+#define RMASKBGR	0xff0000
+#define GMASKBGR	0x00ff00
+#define BMASKBGR	0x0000ff
+#define AMASKBGR	0x000000
+
+/* MWIF_BGRA8888*/
+#define RMASKBGRA	0x00ff0000
+#define GMASKBGRA	0x0000ff00
+#define BMASKBGRA	0x000000ff
+#define AMASKBGRA	0xff000000
+
+/* MWIF_RGBA8888*/
+#define RMASKRGBA	0x000000ff
+#define GMASKRGBA	0x0000ff00
+#define BMASKRGBA	0x00ff0000
+#define AMASKRGBA	0xff000000
+typedef void (*BLITFUNC)(struct PixMap*, pCGfxBlitParms);		/* proto for blitter functions*/
+
 typedef struct PixMap {
 	UINT32	flags;
 	UINT32	xvirtres, yvirtres;
@@ -90,11 +134,29 @@ typedef struct PixMap {
 	UINT32	pixtype;
 	
 	int	portrait;
-	void	(*DrawPixel)(struct CRastPort *psd, INT32 x,INT32 y,UINT32 c);
-	UINT32	(*ReadPixel)(struct CRastPort *psd, INT32 x,INT32 y);
-	void	(*DrawHorzLine)(struct CRastPort *psd, INT32 x1,INT32 x2,INT32 y, UINT32 c);
-	void	(*DrawVertLine)(struct CRastPort *psd, INT32 x,INT32 y1,INT32 y2, UINT32 c);
-	void	(*FillRect)(struct CRastPort *psd, INT32 x1,INT32 y1,INT32 x2,INT32 y2, UINT32 c);
+	void	(*_GetScreenInfo)(struct CRastPort *rp,pCGfxScreenInfo psi);
+
+	void	(*_DrawPixel)(struct CRastPort *psd, INT32 x,INT32 y,UINT32 c);
+	UINT32	(*_ReadPixel)(struct CRastPort *psd, INT32 x,INT32 y);
+	void	(*_DrawHorzLine)(struct CRastPort *psd, INT32 x1,INT32 x2,INT32 y, UINT32 c);
+	void	(*_DrawVertLine)(struct CRastPort *psd, INT32 x,INT32 y1,INT32 y2, UINT32 c);
+	void	(*_FillRect)(struct CRastPort *psd, INT32 x1,INT32 y1,INT32 x2,INT32 y2, UINT32 c);
+	void	(*_Update)(struct PixMap *pix, INT32 x, INT32 y, INT32 width, INT32 height);
+	void	(*BlitFallback)(struct PixMap * destpsd,INT32 destx,INT32 desty,INT32 w,INT32 h,
+							struct PixMap * srcpsd,INT32 srcx,INT32 srcy,int op);
+	BLITFUNC FrameBlit;
+	BLITFUNC FrameStretchBlit;
+	/* fast conversion blits for text and images*/
+	BLITFUNC BlitCopyMaskMonoByteMSB;				/* ft non-alias*/
+	BLITFUNC BlitCopyMaskMonoByteLSB;				/* t1 non-alias*/
+	BLITFUNC BlitCopyMaskMonoWordMSB;				/* core/pcf non-alias*/
+	BLITFUNC BlitBlendMaskAlphaByte;				/* ft2/t1 antialias*/
+	BLITFUNC BlitCopyRGBA8888;					/* GdArea RGBA MWPF_RGB image copy*/
+	BLITFUNC BlitSrcOverRGBA8888;					/* png RGBA image w/alpha*/
+	BLITFUNC BlitCopyRGB888;						/* png RGB image no alpha*/
+	BLITFUNC BlitStretchRGBA8888;					/* conversion stretch blit for RGBA src*/
+
 } PixMap;
+
 
 #endif

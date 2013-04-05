@@ -325,7 +325,6 @@ void test_vgagfx(APTR SysBase)
 
 #include "coregfx.h"
 #include "pixmap.h"
-PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 bpp, APTR pixels, UINT32 palsize);
 
 void test_cgfx(APTR SysBase)
 {
@@ -355,12 +354,52 @@ static Cursor_T arrow = {	/* default arrow cursor*/
 };
 #include "coregfx.h"
 #include "view.h"
+
+struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 xOffset, INT32 yOffset);
+struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 bpp);
+BOOL cgfx_MakeVPort(CoreGfxBase *CoreGfxBase, struct View *view, struct ViewPort *vp);
+void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view);
+PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize);
+struct CRastPort *cgfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
+
 struct InputEvent ie;
-	
+
+//	SetForegroundColor(rp, RGB(255, 0, 0));
+
+void nxDraw3dBox(APTR CoreGfxBase, struct CRastPort *rp, int x, int y, int w, int h, UINT32 crTop, UINT32 crBottom)
+{
+	UINT32 old = SetForegroundColor(rp, crTop);
+	Line(rp, x, y+h-2, x, y+1,TRUE);		/* left*/
+	Line(rp, x, y, x+w-2, y,TRUE);			/* top*/
+
+	SetForegroundColor(rp, crBottom);
+	Line(rp, x+w-1, y, x+w-1, y+h-2,TRUE);		/* right*/
+	Line(rp, x+w-1, y+h-1, x, y+h-1,TRUE);		/* bottom*/
+	SetForegroundColor(rp, old);
+}
+
+
 static void test_MousePointer(APTR SysBase)
 {
-	APTR *CoreGfxBase = OpenLibrary("coregfx.library", 0);
-	if (!CoreGfxBase) DPrintF("Failed to open library\n");
+	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
+	if (!CoreGfxBase) { DPrintF("Failed to open library\n"); return; }
+	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, 640, 480, IF_BGRA8888, FPM_Displayable, NULL,0 );
+	struct CRastPort *rp = cgfx_InitRastPort(CoreGfxBase, pix);
+	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
+	SetForegroundColor(rp, RGB(150,150,150));
+	FillRect(rp, 0, 0, 639, 479);
+//	if (pix) memset32(pix->addr, 0x0, pix->size/4);
+
+	DPrintF("cgfx_CreateView()\n");
+	struct View *view	= cgfx_CreateView(CoreGfxBase, 640, 480, 32);
+	struct ViewPort *vp = cgfx_CreateVPort(CoreGfxBase, pix, 0, 0);
+	cgfx_MakeVPort(CoreGfxBase, view, vp);
+	DPrintF("LoadView()\n");
+	cgfx_LoadView(CoreGfxBase, view);
+
+nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230, 221));
+nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
+
 	DPrintF("coregfx: %x\n", CoreGfxBase);
 	INT32 x=0, y=0;
 	DPrintF("Movecursor\n");
