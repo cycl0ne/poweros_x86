@@ -33,6 +33,12 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 
 	    if(library != NULL)
 	    {
+			library->lib_Node.ln_Type = resident->rt_Type;
+	        library->lib_Node.ln_Name = resident->rt_Name;
+	        library->lib_Version      = resident->rt_Version;
+	        library->lib_IDString     = resident->rt_IdString;
+	        library->lib_Flags	      = LIBF_SUMUSED | LIBF_CHANGED;
+
 			switch(resident->rt_Type)
 			{
 			case NT_DEVICE:
@@ -101,43 +107,26 @@ struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcTable, APTR structIni
     library->lib_PosSize=(UINT16)dataSize; // and DataSize the correct Values
 
     if(structInit!=NULL)
+	{
 		//InitStruct(structInit,library,0); // Create Structure
-
-	DPrintF("libInit= %p\n", libInit);
-	DPrintF("library= %p\n", library);
+	}
 
     if(libInit!=NULL)
+    {
 		library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) libInit)(library, (APTR)segList, SysBase));
-	DPrintF("now library= %p\n", library);
+	}
+
   }
   return library;
 }
 
 void lib_MakeFunctions(SysBase *SysBase, APTR target, APTR functionArray, UINT32 funcDispBase)
 {
-	if(funcDispBase != NULL) return;
+	if(funcDispBase != NULL)
+		return;
 
     /* If FuncDispBase is NULL it's an array of function pointers */
-	//INTERN_MakeFunctions(target, functionArray);
-
-
-	{
-		INT32 n = 1;
-		APTR vector;
-		//DPrintF("functionArray = %p\n",functionArray);
-		void **fp = (void **)functionArray;
-		//DPrintF("fp = %p\n",fp);
-
-		while(*fp != (void*)-1)
-		{
-			vector = (APTR)((UINT32)target-n*4); // EVIL on 64bit, this should be 8!
-			DPrintF("vector = %p\n",vector);
-			*((UINT32*)vector) = (UINT32) *fp;
-			DPrintF("*vector = %p\n",*((UINT32*)vector));
-			fp++;
-			n++;
-		}
-	}
+	INTERN_MakeFunctions(target, functionArray);
 
 }
 
