@@ -55,6 +55,13 @@ int cgfx_SetFontRotation(CoreGfxBase *CoreGfxBase, pCGfxFont pfont, int tenthdeg
 INT16 cgfx_SetFontSize(CoreGfxBase *CoreGfxBase, pCGfxFont pfont, INT16 height, INT16 width);
 CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *name, UINT16 height, UINT16 width, const pCGfxLogFont plogfont);
 
+void cgfx_Poly(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, int count, CGfxPoint *points);
+void cgfx_FillPoly(CoreGfxBase *CoreGfxBase, CRastPort *rp, int count, CGfxPoint *pointtable);
+
+void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 angle1, INT32 angle2, int type);
+void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 ax, INT32 ay, INT32 bx, INT32 by, int type);
+void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, INT32 rx, INT32 ry, BOOL fill);
+
 #endif
 
 #define ClipArea(a,b,c,d,e)	(((INT32(*)(APTR, CRastPort *, INT32, INT32, INT32, INT32))	_GETVECADDR(CoreGfxBase, 5))(CoreGfxBase, a, b, c, d, e))
@@ -105,5 +112,14 @@ CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *n
 #define CreateFont(a,b,c,d,e)			(((CGfxFont *(*)(pCoreGfxBase, CRastPort *rp, const char *name, INT32 height, INT32 width, const pCGfxLogFont plogfont))	_GETVECADDR(CoreGfxBase,43))(CoreGfxBase,a,b,c,d,e))
 
 #define GetScreenInfo(a,b)				(((void(*)(pCoreGfxBase, CRastPort *rp, pCGfxScreenInfo psi)) _GETVECADDR(CoreGfxBase,44))(CoreGfxBase,a,b))
+
+
+#define Poly(a,b,c) 					(((void (*)(pCoreGfxBase, struct CRastPort *rp, int count, CGfxPoint *points)) 	_GETVECADDR(CoreGfxBase,45))(CoreGfxBase,a,b,c))
+#define FillPoly(a,b,c) 				(((void (*)(pCoreGfxBase, CRastPort *rp, int count, CGfxPoint *pointtable))		_GETVECADDR(CoreGfxBase,46))(CoreGfxBase,a,b,c))
+
+#define ArcAngle(a,b,c,d,e,f,g,h)	 	(((void (*)(pCoreGfxBase, CRastPort *rp, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 angle1, INT32 angle2, int type))					_GETVECADDR(CoreGfxBase,47))(CoreGfxBase,a,b,c,d,e,f,g,h))
+#define Arc(a,b,c,d,e,f,g,h,i,j)		(((void (*)(pCoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 ax, INT32 ay, INT32 bx, INT32 by, int type))	_GETVECADDR(CoreGfxBase,48))(CoreGfxBase,a,b,c,d,e,f,g,h,i,j))
+#define Ellipse(a,b,c,d,e,f)		 	(((void (*)(pCoreGfxBase, CRastPort *psd, INT32 x, INT32 y, INT32 rx, INT32 ry, BOOL fill))												_GETVECADDR(CoreGfxBase,49))(CoreGfxBase,a,b,c,d,e,f))
+
 
 #endif

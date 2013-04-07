@@ -62,6 +62,13 @@ INT16 cgfx_SetFontSize(CoreGfxBase *CoreGfxBase, pCGfxFont pfont, INT16 height, 
 CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *name, UINT16 height, UINT16 width, const pCGfxLogFont plogfont);
 void cgfx_GetScreenInfo(CoreGfxBase *CoreGfxBase, CRastPort *rp, pCGfxScreenInfo psi);
 
+void cgfx_Poly(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, int count, CGfxPoint *points);
+void cgfx_FillPoly(CoreGfxBase *CoreGfxBase, CRastPort *rp, int count, CGfxPoint *pointtable);
+
+void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 angle1, INT32 angle2, int type);
+void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 ax, INT32 ay, INT32 bx, INT32 by, int type);
+void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, INT32 rx, INT32 ry, BOOL fill);
+
 void SVGA_Init(CoreGfxBase *CoreGfxBase);
 
 static volatile APTR FuncTab[] = 
@@ -111,6 +118,11 @@ static volatile APTR FuncTab[] =
 	(void(*)) cgfx_SetFontSize,
 	(void(*)) cgfx_CreateFont,
 	(void(*)) cgfx_GetScreenInfo,
+	(void(*)) cgfx_Poly,
+	(void(*)) cgfx_FillPoly,
+	(void(*)) cgfx_ArcAngle,
+	(void(*)) cgfx_Arc,
+	(void(*)) cgfx_Ellipse,
 	(APTR) ((UINT32)-1)
 };
 

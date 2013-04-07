@@ -13,7 +13,7 @@ void ts_drawrow(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 x2, INT
 
 static inline void drawpoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 {
-	if (ClipPoint(rp, x, y)) rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Foreground);
+	if (ClipPoint(rp, x, y)) rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Foreground);
 }
 
 void drawrow(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 x2, INT32 y);
@@ -110,7 +110,7 @@ static short isin[360] = {
   -177, -160, -142, -124, -107, -89, -71, -53, -35, -17
 };
 
-void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 angle1, INT32 angle2, int type)
+void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x0, INT32 y0, INT32 rx, INT32 ry, INT32 angle1, INT32 angle2, int type)
 {
 	int s = angle1 / 64;
 	int e = angle2 / 64;
@@ -119,6 +119,7 @@ void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0,
 	int lx = 0, ly = 0;
 	int i;
 	CGfxPoint	pts[3];
+	PixMap *psd = rp->crp_PixMap;
 
 	if ((s% 360) == (e % 360)) {
 		s = 0;
@@ -153,9 +154,9 @@ void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0,
 				pts[2].x = x0;
 				pts[2].y = y0;
 				/* note: doesn't handle patterns... FIXME*/
-				FillPoly(psd, 3, pts);
+				FillPoly(rp, 3, pts);
 			} else	/* MWARC*/
-				Line(psd, lx, ly, x, y, TRUE);
+				Line(rp, lx, ly, x, y, TRUE);
 		} else {
 			fx = x;
 			fy = y;
@@ -167,15 +168,13 @@ void cgfx_ArcAngle(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0,
 	if (type & OUTLINE) 
 	{
 		/* draw two lines from center to arc endpoints*/
-		Line(psd, x0, y0, fx, fy, TRUE);
-		Line(psd, x0, y0, lx, ly, TRUE);
+		Line(rp, x0, y0, fx, fy, TRUE);
+		Line(rp, x0, y0, lx, ly, TRUE);
 	}
 	FixCursor(psd);
 }
 #define CoreGfxBase slice->_CoreGfxBase
-static int
-clip_line(SLICE *slice, INT32 xe, INT32 ye, int dir, INT32 y, INT32 *x0,
-	INT32 *x1)
+static int clip_line(SLICE *slice, INT32 xe, INT32 ye, int dir, INT32 y, INT32 *x0, INT32 *x1)
 {
 #if 1
 	/*
@@ -208,12 +207,12 @@ slice->ax, slice->ay, slice->bx, slice->by, slice->adir, slice->bdir);*/
 				*x1 = x;
 			return 0;
 		} else {
-			if (dir > 0) {
-				if (x <= *x0)
-					return 0;
-			} else {
-				if (x >= *x1)
-					return 0;
+			if (dir > 0) 
+			{
+				if (x <= *x0) return 0;
+			} else 
+			{
+				if (x >= *x1) return 0;
 			}
 		}
 		return 3;
@@ -224,8 +223,7 @@ slice->ax, slice->ay, slice->bx, slice->by, slice->adir, slice->bdir);*/
 /* relative offsets, direction from left to right. */
 /* Mode indicates if we are in fill mode (1) or line mode (0) */
 
-static void
-draw_line(SLICE *slice, INT32 x0, INT32 y, INT32 x1, int mode)
+static void draw_line(SLICE *slice, INT32 x0, INT32 y, INT32 x1, int mode)
 {
 	int	dbl = (slice->adir > 0 && slice->bdir < 0);
 	int 	discard, ret;
@@ -252,7 +250,7 @@ draw_line(SLICE *slice, INT32 x0, INT32 y, INT32 x1, int mode)
 			        if (slice->psd->crp_FillMode != FILL_SOLID && mode) 
 				  ts_drawpoint(slice->_CoreGfxBase, slice->psd, slice->x0, slice->y0);
 				else 
-				  drawpoint(slice->_CoreGfxBase,slice->psd, slice->x0, slice->y0);
+				  drawpoint(slice->_CoreGfxBase, slice->psd, slice->x0, slice->y0);
 				return;
 			}
 		}
@@ -316,7 +314,7 @@ static void
 drawarcsegment(SLICE *slice, INT32 xp, INT32 yp, int drawon)
 {
 	UINT32 dm = 0;
-	int dc = 0;
+	UINT32 dc = 0;
 
 	switch (slice->type) {
 	case ELLIPSEFILL:
@@ -365,8 +363,7 @@ drawarcsegment(SLICE *slice, INT32 xp, INT32 yp, int drawon)
 }
 
 /* General routine to plot points on an arc.  Used by arc, pie and ellipse*/
-static void
-drawarc(SLICE *slice)
+static void drawarc(SLICE *slice)
 {
 	INT32 xp, yp;		/* current point (based on center) */
 	INT32 rx, ry;
@@ -393,8 +390,7 @@ drawarc(SLICE *slice)
 	dx = 0;
 	dy = TwoAsquared * ry;
 
-	if (slice->psd->crp_FillMode != FILL_SOLID)
-	  set_ts_origin(slice->psd, slice->x0 - rx, slice->y0 - ry);
+	if (slice->psd->crp_FillMode != FILL_SOLID) set_ts_origin(slice->psd, slice->x0 - rx, slice->y0 - ry);
 
 	while (dx < dy) {
 
@@ -415,7 +411,6 @@ drawarc(SLICE *slice)
 				bit = (bit + 1) % slice->psd->crp_DashCount;
 			} else
 				drawon = 1;
-
 			drawarcsegment(slice, xp, yp, drawon);
 		}
 
@@ -431,13 +426,15 @@ drawarc(SLICE *slice)
 
 	d += ((3L * (Asquared - Bsquared) / 2L - (dx + dy)) >> 1);
 
-	while (yp >= 0) {
-	        if (slice->psd->crp_DashCount) {
-	          drawon = (slice->psd->crp_DashMask & (1 << bit)) ? 1 : 0;
-		  bit = (bit + 1) % slice->psd->crp_DashCount;
-		}
-	        else drawon = 1;
-
+	while (yp >= 0) 
+	{
+		if (slice->psd->crp_DashCount) 
+		{
+			drawon = (slice->psd->crp_DashMask & (1 << bit)) ? 1 : 0;
+			bit = (bit + 1) % slice->psd->crp_DashCount;
+		} else 
+			drawon = 1;
+			
 		drawarcsegment(slice, xp, yp, drawon);
 		if (d < 0) {
 			xp++;
@@ -448,7 +445,6 @@ drawarc(SLICE *slice)
 		dy -= TwoAsquared;
 		d += (Asquared - dy);
 	}
-
 }
 #undef CoreGfxBase
 /**
@@ -473,8 +469,8 @@ drawarc(SLICE *slice)
  *
  * FIXME: Buggy w/small angles
  */
-void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry,
-	INT32 ax, INT32 ay, INT32 bx, INT32 by, int type)
+ #define SysBase CoreGfxBase->SysBase
+void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT32 rx, INT32 ry,INT32 ax, INT32 ay, INT32 bx, INT32 by, int type)
 {
 	INT32	adir, bdir;
 	SLICE	slice;
@@ -535,6 +531,7 @@ void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT3
 	slice.adir = adir;
 	slice.bdir = bdir;
 	slice.type = type;
+	slice._CoreGfxBase = CoreGfxBase;
 
 	drawarc(&slice);
 
@@ -543,8 +540,8 @@ void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT3
 		Line(psd, x0, y0, x0+ax, y0+ay, TRUE);
 		Line(psd, x0, y0, x0+bx, y0+by, TRUE);
 	}
-
-	FixCursor(psd);
+	PixMap *pix =psd->crp_PixMap;
+	FixCursor(pix);
 }
 
 /**
@@ -562,7 +559,7 @@ void cgfx_Arc(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x0, INT32 y0, INT3
 void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, INT32 rx, INT32 ry, BOOL fill)
 {
 	SLICE	slice;
-
+	PixMap	*pix = psd->crp_PixMap;
 	if (rx < 0 || ry < 0) return;
 
 	/* Check if the ellipse bounding box is either totally visible
@@ -590,9 +587,10 @@ void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, IN
 	slice.rx = rx;
 	slice.ry = ry;
 	slice.type = fill? ELLIPSEFILL: ELLIPSE;
+	slice._CoreGfxBase = CoreGfxBase;
 	/* other elements unused*/
 
 	drawarc(&slice);
-	FixCursor(psd);
+	FixCursor(pix);
 }
 

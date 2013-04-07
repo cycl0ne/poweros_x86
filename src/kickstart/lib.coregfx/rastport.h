@@ -27,6 +27,7 @@ typedef struct CGfxTile {
 	INT32	width;
 	INT32	height;
 	struct PixMap	*pixmap;
+	struct CRastPort *rp;
 } CGfxTile;
 
 typedef struct CRastPort {

@@ -37,7 +37,7 @@ UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase)
 	PCISetMemEnable(&VgaGfxBase->pciAddr, TRUE);
 	VgaGfxBase->indexPort = PCIGetBARAddr(&VgaGfxBase->pciAddr, 0) + SVGA_INDEX_PORT;
 	VgaGfxBase->valuePort = PCIGetBARAddr(&VgaGfxBase->pciAddr, 0) + SVGA_VALUE_PORT;
-	DPrintF("index port: %x, value port: %x\n", VgaGfxBase->indexPort, VgaGfxBase->valuePort);
+//	DPrintF("index port: %x, value port: %x\n", VgaGfxBase->indexPort, VgaGfxBase->valuePort);
 
 	/* This should be SVGA II according to the PCI device_id,
 	 * but just in case... */
@@ -46,22 +46,22 @@ UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase)
 		DPrintF("SVGA_REG_ID is %ld, not %d\n", id, SVGA_REG_ID);
 		return FALSE;
 	}
-	DPrintF("SVGA_REG_ID OK\n");
+//	DPrintF("SVGA_REG_ID OK\n");
 
 	/* Grab some info */
 	VgaGfxBase->maxWidth = ReadReg(VgaGfxBase, SVGA_REG_MAX_WIDTH);
 	VgaGfxBase->maxHeight = ReadReg(VgaGfxBase, SVGA_REG_MAX_HEIGHT);
-	DPrintF("max resolution: %d x %d\n", VgaGfxBase->maxWidth, VgaGfxBase->maxHeight);
+//	DPrintF("max resolution: %d x %d\n", VgaGfxBase->maxWidth, VgaGfxBase->maxHeight);
 	VgaGfxBase->fbDma = (void *)ReadReg(VgaGfxBase, SVGA_REG_FB_START);
 	VgaGfxBase->fb = (void *)ReadReg(VgaGfxBase, SVGA_REG_FB_START);
 	VgaGfxBase->fbSize = ReadReg(VgaGfxBase, SVGA_REG_VRAM_SIZE);
-	DPrintF("frame buffer: %p, size %x\n", VgaGfxBase->fbDma, VgaGfxBase->fbSize);
+//	DPrintF("frame buffer: %p, size %x\n", VgaGfxBase->fbDma, VgaGfxBase->fbSize);
 	VgaGfxBase->fifoDma = (void *)ReadReg(VgaGfxBase, SVGA_REG_MEM_START);
 	VgaGfxBase->fifo = (void *)ReadReg(VgaGfxBase, SVGA_REG_MEM_START);
 	VgaGfxBase->fifoSize = ReadReg(VgaGfxBase, SVGA_REG_MEM_SIZE) & ~3;
-	DPrintF("fifo: %x, size %x\n", VgaGfxBase->fifoDma, VgaGfxBase->fifoSize);
+//	DPrintF("fifo: %x, size %x\n", VgaGfxBase->fifoDma, VgaGfxBase->fifoSize);
 	VgaGfxBase->capabilities = ReadReg(VgaGfxBase, SVGA_REG_CAPABILITIES);
-	PrintCapabilities(VgaGfxBase, VgaGfxBase->capabilities);
+//	PrintCapabilities(VgaGfxBase, VgaGfxBase->capabilities);
 	VgaGfxBase->fifoMin = (VgaGfxBase->capabilities & SVGA_CAP_EXTENDED_FIFO) ? ReadReg(VgaGfxBase, SVGA_REG_MEM_REGS) : 4;
 	return TRUE;
 }

@@ -47,6 +47,7 @@ void cgfx_SetStippleBitmap(CoreGfxBase *CoreGfxBase, CRastPort *rp, UINT16 *stip
 void cgfx_SetTilePixmap(CoreGfxBase *CoreGfxBase, CRastPort *rp, PixMap *src,INT32 width, INT32 height)
 {
 	rp->crp_Tile.pixmap = src;
+	rp->crp_Tile.rp		= rp;
 	if (!src) {
 		rp->crp_Tile.width = 0;
 		rp->crp_Tile.height = 0;
@@ -110,7 +111,7 @@ static void tile_drawrect(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT3
 		while (dw) {
 			int cw = rp->crp_Tile.width - ((tilex + px) % rp->crp_Tile.width);
 			if (cw > dw) cw = dw;
-//FIXME!!			Blit(rp, sx + px, sy + py, cw, ch, rp->crp_Tile.pixmap, (tilex + px) % rp->crp_Tile.width, (tiley + py) % rp->crp_Tile.height, ROP_COPY);
+			Blit(rp, sx + px, sy + py, cw, ch, rp->crp_Tile.rp, (tilex + px) % rp->crp_Tile.width, (tiley + py) % rp->crp_Tile.height, ROP_COPY);
 			dw -= cw;
 			px += cw;
 		}
@@ -152,27 +153,27 @@ void ts_drawpoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 	/* FIXME:  Should we just skip the pixel instead? */
 	if (bx < 0 || by < 0) 
 	{
-		rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Foreground);
+		rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Foreground);
 		return;
 	}
 
 	switch (rp->crp_FillMode) {
 	case FILL_OPAQUE_STIPPLE:
 		if (!BIT_SET(rp->crp_Stipple.bitmap, (bx % rp->crp_Stipple.width), (by % rp->crp_Stipple.height)))
-			rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Background);
+			rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Background);
 		else
-			rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Foreground);
+			rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Foreground);
 		break;
 
 	case FILL_STIPPLE:
 		if (BIT_SET(rp->crp_Stipple.bitmap, (bx % rp->crp_Stipple.width), (by % rp->crp_Stipple.height)))
-			rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Foreground);
+			rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Foreground);
 		break;
 
 	case FILL_TILE:
 		/* Read the bit from the PSD and write it to the current PSD */
 		/* FIXME:  This does no checks for depth correctness         */
-//FIX!!		rp->crp_PixMap->DrawPixel(rp, x, y, rp->crp_Tile.pixmap->ReadPixel(rp->crp_Tile.pixmap, (bx % rp->crp_Tile.width), (by % rp->crp_Tile.height)));
+		rp->crp_PixMap->_DrawPixel(rp, x, y, rp->crp_Tile.pixmap->_ReadPixel(rp->crp_Tile.rp, (bx % rp->crp_Tile.width), (by % rp->crp_Tile.height)));
 		break;
 	}
 }

@@ -378,6 +378,79 @@ void nxDraw3dBox(APTR CoreGfxBase, struct CRastPort *rp, int x, int y, int w, in
 	SetForegroundColor(rp, old);
 }
 
+static void test_Arc(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *rp)
+{
+	int x = 40;
+	int y = 40;
+	int rx = 30;
+	int ry = 30;
+	int xoff = (rx + 10) * 2;
+
+#if 1
+	/* filled arc*/
+	SetForegroundColor(rp, RGB(0,250,0));
+	ArcAngle(rp, x, y, 3, 3, 0, 0, PIE);
+
+	SetForegroundColor(rp, RGB(0,0,0));
+	ArcAngle(rp, x, y, 3, 3, 0, 0, ARC);
+	Point(rp, x, y);
+
+#else
+	GrSetGCForeground(gc, GREEN);
+	GrArc(wid, gc, x, y, rx, ry, 0, -30, -30, 0, GR_PIE);
+	GrArc(wid, gc, x+5, y, rx, ry, 30, 0, 0, -30, GR_PIE);
+	GrArc(wid, gc, x, y+5, rx, ry, -30, 0, 0, 30, GR_PIE);
+	GrArc(wid, gc, x+5, y+5, rx, ry, 0, 30, 30, 0, GR_PIE);
+#endif
+	/* outlined arc*/
+	DPrintF("outlined arc\n");
+	SetForegroundColor(rp, RGB(0,250,0));
+	x += xoff;
+	Arc(rp, x, y, rx, ry, 0, -30, -30, 0, ARCOUTLINE);
+	Arc(rp, x+5, y, rx, ry, 30, 0, 0, -30, ARCOUTLINE);
+	Arc(rp, x, y+5, rx, ry, -30, 0, 0, 30, ARCOUTLINE);
+	Arc(rp, x+5, y+5, rx, ry, 0, 30, 30, 0, ARCOUTLINE);
+
+	/* arc only*/
+	DPrintF("arc only\n");
+	x += xoff;
+	Arc(rp, x, y, rx, ry, 0, -30, -30, 0, ARC);
+	Arc(rp, x+5, y, rx, ry, 30, 0, 0, -30, ARC);
+	Arc(rp, x, y+5, rx, ry, -30, 0, 0, 30, ARC);
+	Arc(rp, x+5, y+5, rx, ry, 0, 30, 30, 0, ARC);
+}
+
+static UINT32 next = 1;
+#define	RAND_MAX	0x7fffffff
+
+int rand()
+{
+	return ((next = next * 1103515245 + 12345) % ((UINT32)RAND_MAX + 1));
+}
+
+void srand(UINT32 seed)
+{
+	next = seed;
+}
+
+static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *rp)
+{
+	INT32	x;
+	INT32	y;
+	INT32	rx;
+	INT32	ry;
+	UINT32	pixelval;
+
+	x = rand() % 640;
+	y = rand() % 480;
+	rx = (rand() % 10) + 5;
+	ry = (rx * 100) / 100;	/* make it appear circular */
+	
+	pixelval = rand();
+
+	SetForegroundColor(rp, RGB(rand(),rand(),rand()));
+	Ellipse(rp, x, y, rx, ry, TRUE);	
+}
 
 static void test_MousePointer(APTR SysBase)
 {
@@ -399,6 +472,9 @@ static void test_MousePointer(APTR SysBase)
 
 nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230, 221));
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
+
+test_Arc(SysBase, CoreGfxBase, rp);
+for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);	
 
 	DPrintF("coregfx: %x\n", CoreGfxBase);
 	INT32 x=0, y=0;
@@ -458,6 +534,8 @@ nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204,
 
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
+	DPrintF("TestTask_________________________________________________\n");
+	
 	DPrintF("Binary  Output: %b\n", 0x79);
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
