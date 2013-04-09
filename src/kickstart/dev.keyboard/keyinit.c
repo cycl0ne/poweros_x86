@@ -80,7 +80,7 @@ static const struct Resident ROMTag =
 extern void (*commandVector[])(struct IOStdReq *, KbdBase *);
 
 
-static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
+static INT32 ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 {
 	SysBase *SysBase = KbdBase->SysBase;
 	UINT16 key = scancode & 0x007f;
@@ -121,8 +121,8 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 		// Check for Numeric
 		// Numeric can have the follwing values:
 		// 47, 48, 49, 4a, 4b, 4c, 4d, 4e, 4f, 50, 51, 52, 53, 
-		if ((key > 0x47 && key < 0x53) &&
-			(key > 0x47+0x80 && key < 0x53+0x80))
+		if ((key > 0x46 && key < 0x54) &&
+			(key > 0x46+0x80 && key < 0x54+0x80))
 		{
 			qualifier |= IEQUALIFIER_NUMERICPAD;
 		}
@@ -151,7 +151,7 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 		//DPrintF("BufferHead: %d BufferTail: %d\n", KbdBase->BufHead, KbdBase->BufTail);
 		//DPrintF("Buffer: %x  %x\n", KbdBase->BufQueue[KbdBase->BufTail], KbdBase->BufQueue[KbdBase->BufTail+1]);
 		
-		if (KbdBase->Unit.unit_Flags & DUB_STOPPED) return;
+		if (KbdBase->Unit.unit_Flags & DUB_STOPPED) return 0;
 		
 		//DPrintF("commandVector\n");
 
@@ -163,6 +163,7 @@ static void ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 	{
 		DPrintF("Keycode value too high. Is %d. Should be < %d\n", key, HIGH_KEYCODE);
 	}
+	return 1;
 }
 
 static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
@@ -173,7 +174,7 @@ static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 	unsigned char scancode;
 	while(inb(KEY_PENDING) & 2);
 	scancode = inb(KEY_DEVICE);
-	ProcessKey(scancode, KbdBase);
+	INT32 ret = ProcessKey(scancode, KbdBase);
 	//
 	// Reset CAUSE Handler *Not Implemented*
 
@@ -189,7 +190,7 @@ static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 
 	//monitor_write_hex((UINT32)SysBase);
 	//monitor_write_hex((UINT32)Data);
-	return 1;
+	return ret;
 }
 
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase)
@@ -210,7 +211,8 @@ static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struc
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	KbdBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
-	
+	DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
+
 	// Initialise the reset handler list
 	NewList((struct List *)&KbdBase->HandlerList);
 

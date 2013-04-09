@@ -45,7 +45,7 @@ UINT32 cgfx_SetForegroundColor(CoreGfxBase *CoreGfxBase, CRastPort *rp, UINT32 f
 
 	rp->crp_Foreground = FindColor(rp, fg);
 	rp->crp_ForegroundRGB = fg;
-	DPrintF("Findcolor: Old: %x, Found: %x\n", fg, rp->crp_Foreground);
+//	DPrintF("Findcolor: Old: %x, Found: %x\n", fg, rp->crp_Foreground);
 	return oldfg;
 }
 
@@ -85,7 +85,7 @@ void cgfx_SetDash(CoreGfxBase *CoreGfxBase, CRastPort *rp, UINT32 *mask, UINT32 
 UINT32 cgfx_FindColor(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, UINT32 c)
 {
 	PixMap *psd = rp->crp_PixMap;
-DPrintF("psd->PixType: %x\n", psd->pixtype);
+//DPrintF("psd->PixType: %x\n", psd->pixtype);
 	switch(psd->pixtype)
 	{
 		case PF_TRUECOLOR8888:

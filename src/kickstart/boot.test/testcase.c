@@ -443,13 +443,14 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 
 	x = rand() % 640;
 	y = rand() % 480;
-	rx = (rand() % 10) + 5;
+	rx = (rand() % 100) + 5;
 	ry = (rx * 100) / 100;	/* make it appear circular */
 	
 	pixelval = rand();
 
 	SetForegroundColor(rp, RGB(rand(),rand(),rand()));
 	Ellipse(rp, x, y, rx, ry, TRUE);	
+//	for(int i=0; i<1000000;i++);
 }
 
 static void test_MousePointer(APTR SysBase)
@@ -474,7 +475,7 @@ nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230,
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
 
 test_Arc(SysBase, CoreGfxBase, rp);
-for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);	
+//for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);	
 
 	DPrintF("coregfx: %x\n", CoreGfxBase);
 	INT32 x=0, y=0;
@@ -532,6 +533,41 @@ for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);
 	}	
 }
 
+struct InputEvent *inputcode(struct InputEvent *ie, struct SysBase *SysBase)
+{
+	if (ie->ie_Class != IECLASS_TIMER)	DPrintF("rcvd ieclass: %d", ie->ie_Class);
+	return ie;
+}
+
+#include "inputdev.h"
+
+struct Interrupt input;
+
+static void test_InputDev(struct SysBase *SysBase)
+{
+	INT32 ret = 0;
+	struct MsgPort *mp	= CreateMsgPort();
+	struct IOStdReq *io	= CreateIORequest(mp, sizeof(struct IOStdReq));;
+
+	ret = OpenDevice("input.device", 0, (struct IORequest *)io, 0);
+	if (ret != 0) 
+	{
+		DPrintF("OpenDevice input.device failed!\n");
+		return;
+	}
+	input.is_Data = SysBase;
+	input.is_Code = (void *(*)())inputcode;
+	input.is_Node.ln_Name = "Testinput";
+	input.is_Node.ln_Pri = 50;
+	io->io_Command = IND_ADDHANDLER; /* add a new request */
+	io->io_Error = 0;
+	io->io_Actual = 0;	
+	io->io_Data = &input;
+	io->io_Flags = 0;
+	io->io_Length = 0;//sizeof(struct InputEvent);
+	DoIO((struct IORequest *)io);
+}
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("TestTask_________________________________________________\n");
@@ -548,8 +584,9 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
 
-	test_MousePointer(SysBase);
-
+//	test_MousePointer(SysBase);
+	test_InputDev(SysBase);
+	
 //	test_Srini(SysBase);
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }

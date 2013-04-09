@@ -60,7 +60,7 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 
 void lib_SendIO(SysBase *SysBase, struct IORequest *iORequest)
 {
-  iORequest->io_Flags=0;
+  //iORequest->io_Flags=0;
   iORequest->io_Message.mn_Node.ln_Type=NT_MESSAGE;
   (((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
 }

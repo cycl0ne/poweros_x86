@@ -22,7 +22,8 @@ void QueueCommand(struct IOStdReq *io, SysBase *SysBase)
 		PutMsg(&unit->unit_MsgPort, &io->io_Message);
 		//DPrintF("DEBUG| Head %x, Adress Node %x\n", unit->unit_MsgPort.mp_MsgList.lh_Head, &io->io_Message.mn_Node);
 
-		if (GetHead(&unit->unit_MsgPort.mp_MsgList) != &io->io_Message.mn_Node) {
+		if (GetHead(&unit->unit_MsgPort.mp_MsgList) != &io->io_Message.mn_Node) 
+		{
 			SET_BITS(io->io_Flags, IOF_QUEUED);
 		} else {
 			SET_BITS(io->io_Flags, IOF_CURRENT);
@@ -34,8 +35,10 @@ void QueueCommand(struct IOStdReq *io, SysBase *SysBase)
 
 void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase)
 {
+	//DPrintF("EndCommand\n");
 	UINT32 ipl = Disable();
 	if (TEST_BITS(io->io_Flags, IOF_DONE)) {
+		DPrintF("iof_done\n");
 		Enable(ipl);
 		return;		
 	}
@@ -48,15 +51,17 @@ void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase)
 			Enable(ipl);
 			//Still quick? Return
 			if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+			//DPrintF("EndCommand ReplyMsg1\n");
 			ReplyMsg(&io->io_Message);
 			return;
 		}
 	}
-	
+
 	Remove(&io->io_Message.mn_Node);
 	if (IsMsgPortEmpty(&io->io_Unit->unit_MsgPort)) {
 		Enable(ipl);
 		if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+		//DPrintF("EndCommand ReplyMsg2 %x\n", io);
 		ReplyMsg(&io->io_Message);
 		return;
 	}
@@ -64,6 +69,7 @@ void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase)
 	if (tmp!=NULL) SET_BITS(tmp->io_Flags, IOF_CURRENT);
 	Enable(ipl);
 	if (TEST_BITS(io->io_Flags, IOF_QUICK)) return;
+	//DPrintF("EndCommand ReplyMsg3 %x\n", io);
 	ReplyMsg(&io->io_Message);
 	return;		
 }
@@ -107,13 +113,12 @@ static void MDReadEvent(struct IOStdReq *io, MDBase *MDBase)
 //		DPrintF("io_Data: %x ---", ioloop->io_Data);
 		UINT32 ieSize = ioloop->io_Length / sizeof(struct InputEvent);
 		UINT8 i = 0;
-
 		do {
 			ie[i].ie_Code		= MDBase->BufQueue[MDBase->BufHead];
 			ie[i].ie_Qualifier	= MDBase->BufQueue[MDBase->BufHead+1];
 			ie[i].ie_X			= MDBase->BufQueue[MDBase->BufHead+2];
 			ie[i].ie_Y			= MDBase->BufQueue[MDBase->BufHead+3];
-			ie[i].ie_TimeStamp.tv_micro = MDBase->BufQueue[MDBase->BufHead+4];
+//			ie[i].ie_TimeStamp.tv_micro = MDBase->BufQueue[MDBase->BufHead+4];
 
 			MDBase->BufHead += 4;
 			MDBase->BufHead &= MDBUFSIZE-1;
@@ -123,18 +128,18 @@ static void MDReadEvent(struct IOStdReq *io, MDBase *MDBase)
 			ie[i].ie_SubClass	= 0;
 			ie[i].ie_NextEvent	= &ie[i+1];
 			ie[i].ie_TimeStamp.tv_secs  = 0;
+			i++;
 			if (i+1 > ieSize) 
 			{
 				ipl = Disable();
 				break;
 			}
-			i++;
 			ipl = Disable();
 		}  while (MDBase->BufHead != MDBase->BufTail);
-		
+		i--;
 		Enable(ipl);
 		ie[i].ie_NextEvent = NULL;
-		ioloop->io_Actual = ieSize * sizeof(struct InputEvent);
+		ioloop->io_Actual = i * sizeof(struct InputEvent);
 		EndCommand(0, ioloop, SysBase);
 		
 		if (IsMsgPortEmpty(&unit->unit_MsgPort)) {

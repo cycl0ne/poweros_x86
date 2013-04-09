@@ -73,6 +73,7 @@ void IDSetMTrig(struct IOStdReq *io, IDBase *IDBase)
 
 void IDAddHandler(struct IOStdReq *io, IDBase *IDBase)
 {
+//	DPrintF("IDAddHandler\n");
 	Enqueue(&IDBase->id_HandlerList, (struct Node *)io->io_Data);
 	EndCommand(0, io, SysBase);	
 }
@@ -106,7 +107,7 @@ void DispatchEvents(IDBase *IDBase, struct InputEvent *ie)
 
 static void readTimer(IDBase *IDBase)
 {
-	struct TimeRequest *io	= (struct TimeRequest *)&IDBase->id_TIOR;
+	struct TimeRequest *io	= &IDBase->id_TIOR;
 	io->tr_node.io_Command	= TR_ADDREQUEST;
 	io->tr_node.io_Flags	= 0;
 	io->tr_time.tv_secs		= 0;
@@ -120,25 +121,88 @@ static void readKeyboard(IDBase *IDBase)
 	struct InputEvent *ie = NULL;
 	if (IDBase->id_KRActiveMask)
 	{
+//		DPrintF("ActiveMask ff\n");
 		io = &IDBase->id_K2IOR;
 		ie = &IDBase->id_K2Data;
 		IDBase->id_KRActiveMask = 0x00;
+		io->io_Message.mn_Node.ln_Pad = 0x00;
 	} else
 	{
+//		DPrintF("ActiveMask 00 %x\n", &IDBase->id_K1IOR);
 		io = &IDBase->id_K1IOR;
 		ie = &IDBase->id_K1Data;
 		IDBase->id_KRActiveMask = 0xff;
+		io->io_Message.mn_Node.ln_Pad = 0xff;
 	}
-	
 	io->io_Command	= KBD_READEVENT;
 	io->io_Flags	= 0;
 	io->io_Length	= sizeof(struct InputEvent);
 	io->io_Data		= ie;
+//	DPrintF("SendIO KB: %x\n",io);
 	SendIO((struct IORequest *)io);
+}
+
+static void gotKeyboard(IDBase *IDBase)
+{
+	if (IDBase->id_KRActiveMask)
+	{
+		DispatchEvents(IDBase, &IDBase->id_K2Data);
+	} else
+	{
+		DispatchEvents(IDBase, &IDBase->id_K1Data);
+	}
+	readKeyboard(IDBase);
+}
+
+
+static void ReadMouse(IDBase *IDBase)
+{
+	if (NULL == IDBase->id_MIOR.io_Device) return;
+	IDBase->id_MIOR.io_Command 	= MD_READEVENT;
+	IDBase->id_MIOR.io_Length	= sizeof(struct InputEvent) * MOUSEAHEAD;
+	IDBase->id_MIOR.io_Data		= &IDBase->id_MData;
+	IDBase->id_MIOR.io_Flags	= 0;
+	SendIO((struct IORequest *)&IDBase->id_MIOR);
 }
 
 #define CheckForMsg(a) (((struct MsgPort)a).mp_MsgList.lh_Head->ln_Succ != NULL)
 #define GetMessage(a) (struct IOStdRequest *)(((struct MsgPort)a).mp_MsgList.lh_Head->ln_Succ)
+
+static void TypeMouse(IDBase *IDBase)
+{
+	if (NULL == IDBase->id_MIOR.io_Device) return;
+	IDBase->id_MIOR.io_Command 	= MD_SETCTYPE;
+	IDBase->id_MIOR.io_Length	= 1;
+	IDBase->id_MIOR.io_Data		= &IDBase->id_MType;
+	IDBase->id_MIOR.io_Flags	&= IOF_QUICK;
+	SendIO((struct IORequest *)&IDBase->id_MIOR);
+	WaitIO((struct IORequest *)&IDBase->id_MIOR);
+}
+
+static void TrigMouse(IDBase *IDBase)
+{
+	if (NULL == IDBase->id_MIOR.io_Device) return;
+	IDBase->id_MIOR.io_Command 	= MD_SETTRIGGER;
+	IDBase->id_MIOR.io_Length	= 8;
+	IDBase->id_MIOR.io_Data		= &IDBase->id_MTrig;
+	IDBase->id_MIOR.io_Flags	&= IOF_QUICK;
+	SendIO((struct IORequest *)&IDBase->id_MIOR);
+	WaitIO((struct IORequest *)&IDBase->id_MIOR);
+}
+
+static void openGameport(IDBase *IDBase)
+{
+//	DPrintF("Open Gameport\n");
+	if (OpenDevice("mouseport.device", IDBase->id_MPort, (struct IORequest*)&IDBase->id_MIOR, 0) != 0)
+	{
+		IDBase->id_MIOR.io_Device = NULL;
+		DPrintF("Mouse failed open\n");
+	}
+	TypeMouse(IDBase);
+	TrigMouse(IDBase);
+	ReadMouse(IDBase);
+	return;	
+}
 
 static void gotTimer(IDBase *IDBase)
 {
@@ -151,9 +215,29 @@ static void gotTimer(IDBase *IDBase)
 	readTimer(IDBase);
 }
 
-static void gotKeyboard(IDBase *IDBase)
+static void gotMouse(IDBase *IDBase)
 {
-	
+	INT32 size 	= IDBase->id_MIOR.io_Actual;
+	INT32 i		= 0;
+	while (1)
+	{
+		//DPrintF("-GotM(%d / %d)",i, size);
+		DispatchEvents(IDBase, &IDBase->id_MData[i++]);
+		size -= sizeof(struct InputEvent);
+		if (size <= 0) break;
+	}
+	ReadMouse(IDBase);
+#if 0
+	INT32 d5 = IDBase->id_MIOR.io_Actual;
+	INT32 d0 = IDBase->id_MData[0].ie_Qualifier;
+	INT32 idQual = IDBase->id_Qualifier;
+	INT32 old = idQual;
+	d0 &= ID_MOUSEMASK;
+	idQual &= ((~ID_MOUSEMASK)&0xffff);
+	idQual |= d0;
+	IDBase->id_MIOR[0].ie_Qualifier = idQual;
+	IDBase->id_Qualifier = idQual;
+#endif
 }
 
 static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
@@ -163,7 +247,7 @@ static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
 	{
 		if (CheckForMsg(IDBase->Unit.unit_MsgPort))
 		{
-			struct IOStdReq *tmp = (struct IOStdReq *)GetHead(&IDBase->Unit.unit_MsgPort);
+			struct IOStdReq *tmp = (struct IOStdReq *)GetHead(&IDBase->Unit.unit_MsgPort.mp_MsgList);
 			tmp->io_Flags &= ~IOB_QUICK;
 			switch(tmp->io_Command)
 			{
@@ -211,6 +295,15 @@ static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
 					case 1:
 						gotTimer(IDBase);
 						break;
+					case 2:
+						gotMouse(IDBase);
+						break;
+					case 3:
+						gotKeyboard(IDBase);
+						break;
+					case 4:
+						//gotRepeat(IDBase);
+						break;
 					default:
 						DPrintF("ID-> wrong msg\n");
 						break;
@@ -220,7 +313,6 @@ static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
 		}
 	}
 }
-
 
 #undef SysBase
 static INT8 id_InitMsgPort(struct MsgPort *mport, SysBase *SysBase)
@@ -248,24 +340,19 @@ UINT32 idev_InputTask(IDBase *IDBase, APTR SysBase)
 	IDBase->id_K1IOR.io_Message.mn_ReplyPort 		= port;
 	IDBase->id_K2IOR.io_Message.mn_ReplyPort 		= port;
 	IDBase->id_RIOR.tr_node.io_Message.mn_ReplyPort = port;
-
 	signalIE = id_InitMsgPort(port, SysBase);	
 
 	IDBase->id_TIOR.tr_node.io_Message.mn_Length= 1;
 	IDBase->id_MIOR.io_Message.mn_Length  		= 2;
 	IDBase->id_K1IOR.io_Message.mn_Length 		= 3;
-	IDBase->id_K2IOR.io_Message.mn_Length 		= 4;
-	IDBase->id_RIOR.tr_node.io_Message.mn_Length= 5;
-DPrintF("Signal Init of input.device\n");
+	IDBase->id_K2IOR.io_Message.mn_Length 		= 3;
+	IDBase->id_RIOR.tr_node.io_Message.mn_Length= 4;
+
 	Signal(IDBase->id_BootTask, SIGF_SINGLE);
-
-DPrintF("wait for somebody\n");	
+	//Wait for someone to use us.
 	UINT32 rcvd = Wait((1<<signalUnit)|(1<<signalIE));
-DPrintF("Got one\n");	
 
-	//openGameport(IDBase);	
-	//lot of work still here
-
+	openGameport(IDBase);
 	readTimer(IDBase);
 	readKeyboard(IDBase);
 	readKeyboard(IDBase);
