@@ -47,8 +47,8 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 {
 	if (iORequest == NULL) return -1;
 	if (iORequest->io_Device == NULL) return -1;
-	iORequest->io_Flags=IOF_QUICK;
-	iORequest->io_Message.mn_Node.ln_Type = 0;
+	iORequest->io_Flags = IOF_QUICK;
+	iORequest->io_Message.mn_Node.ln_Type = NT_MESSAGE;
 
 	//DPrintF("DoIO: %x\n",iORequest->io_Device[-5]); //->dd_Library.lib_Node.ln_Name
 	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
@@ -60,7 +60,7 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 
 void lib_SendIO(SysBase *SysBase, struct IORequest *iORequest)
 {
-  iORequest->io_Flags=0;
+  //iORequest->io_Flags=0;
   iORequest->io_Message.mn_Node.ln_Type=NT_MESSAGE;
   (((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
 }

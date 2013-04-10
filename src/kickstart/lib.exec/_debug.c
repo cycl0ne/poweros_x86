@@ -9,10 +9,10 @@ static void move_cursor()
 {
     // The screen is 80 characters wide...
     UINT16 cursorLocation = cursor_y * 80 + cursor_x;
-    pio_write_8((volatile UINT8 *)0x3D4, 14);                  // Tell the VGA board we are setting the high cursor byte.
-    pio_write_8((volatile UINT8 *)0x3D5, cursorLocation >> 8); // Send the high cursor byte.
-    pio_write_8((volatile UINT8 *)0x3D4, 15);                  // Tell the VGA board we are setting the low cursor byte.
-    pio_write_8((volatile UINT8 *)0x3D5, cursorLocation);      // Send the low cursor byte.
+    pio_write_8((volatile UINT16 *)0x3D4, 14);                  // Tell the VGA board we are setting the high cursor byte.
+    pio_write_8((volatile UINT16 *)0x3D5, cursorLocation >> 8); // Send the high cursor byte.
+    pio_write_8((volatile UINT16 *)0x3D4, 15);                  // Tell the VGA board we are setting the low cursor byte.
+    pio_write_8((volatile UINT16 *)0x3D5, cursorLocation);      // Send the low cursor byte.
 }
 
 static void scroll()

@@ -5,6 +5,9 @@
 #include "sysbase.h"
 #include "io.h"
 
+void QueueCommand(struct IOStdReq *io, SysBase *SysBase);
+void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase);
+
 #define	 MD_READEVENT	   (CMD_NONSTD+0)
 #define	 MD_ASKCTYPE	   (CMD_NONSTD+1)
 #define	 MD_SETCTYPE	   (CMD_NONSTD+2)
@@ -33,6 +36,20 @@
 #define UTF_KEYUPS		1
 // Buffer for 64 Mousecycles (4 things buffered * 64 = 256)
 #define MDBUFSIZE		256
+
+/* gpt_Keys */
+#define	 GPTB_DOWNKEYS	   0
+#define	 GPTF_DOWNKEYS	   (1<<0)
+#define	 GPTB_UPKEYS	   1
+#define	 GPTF_UPKEYS	   (1<<1)
+
+#define	 GPCT_ALLOCATED	   -1	 /* allocated by another user */
+#define	 GPCT_NOCONTROLLER 0
+#define	 GPCT_MOUSE	   1
+#define	 GPCT_RELJOYSTICK  2
+#define	 GPCT_ABSJOYSTICK  3
+/****** Errors ******/
+#define	 GPDERR_SETCTYPE   1	 /* this controller not valid at this time */
 
 #define IOF_QUEUED (1<<4)
 #define IOF_CURRENT (1<<5)

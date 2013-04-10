@@ -38,6 +38,7 @@ __attribute__((no_instrument_function)) void main_bsp(void)
 	config.memory_attribute = MEMF_FAST;
 	config.memory_name = "Fast Memory\n";
 
+#if 0
 	monitor_write("[main_bsp] ExecInit\n");
 	monitor_write_hex((UINT32)config.base);
 	monitor_put('\n');
@@ -45,6 +46,7 @@ __attribute__((no_instrument_function)) void main_bsp(void)
 	monitor_put('\n');
 	monitor_write_hex((UINT32)config.stack_base);
 	monitor_put('\n');
+#endif
 	
 	context_save(&ctx);
 	context_set(&ctx, FADDR(ExecInit), config.stack_base, 4096);

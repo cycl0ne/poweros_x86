@@ -9,14 +9,19 @@ static void printit(INT32 chr, APTR ptr)
 {
 	monitor_put(chr);
 }
+static void raw_printit(INT32 chr, APTR SysBase)
+{
+	RawPutChar(chr);
+}
+
+BOOL enabled = FALSE;
 
 void lib_DPrintF(struct SysBase *SysBase, char *fmt, ...)
 {
-	//RawDoFmt(FormatString, DataStream, PutChProc, PutChData);
-//	Disable();
+	if (!enabled) {RawIOInit(); enabled = TRUE;}
 	va_list pvar;
 	va_start(pvar, fmt);
-	RawDoFmt(fmt, pvar, printit, NULL);
+	RawDoFmt(fmt, pvar, raw_printit, SysBase);
+//	RawDoFmt(fmt, pvar, printit, NULL);
 	va_end(pvar);
-//	Enable(0);
 }

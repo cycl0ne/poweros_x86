@@ -5,8 +5,8 @@
 #include "io.h"
 #include "inputevent.h"
 
-void QueueCommand(struct IORequest *io, SysBase *SysBase);
-void EndCommand(UINT32 error, struct IORequest *io, SysBase *SysBase);
+void QueueCommand(struct IOStdReq *io, SysBase *SysBase);
+void EndCommand(UINT32 error, struct IOStdReq *io, SysBase *SysBase);
 
 extern void (*commandVector[])(struct IORequest *, KbdBase *);
 extern INT8 commandQuick[];
@@ -50,8 +50,9 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *io)
 	if (cmd > KBD_READEVENT) cmd = 0; // Invalidate the command.
 	if (commandQuick[cmd] >= 0)
 	{
-		QueueCommand(io, SysBase);
-		if (io->io_Flags & IOF_CURRENT == 0)
+		QueueCommand((struct IOStdReq*)io, SysBase);
+		// Check if we are the first in Queue, if not, just return
+		if (!TEST_BITS(io->io_Flags, IOF_CURRENT))
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
 			return;
@@ -59,7 +60,7 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *io)
 		if (KbdBase->Unit.unit_Flags & DUB_STOPPED != 0)
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
-			return;			
+			return;	
 		}
 	}
 	commandVector[cmd](io, KbdBase);
@@ -67,5 +68,5 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *io)
 
 void kdev_AbortIO(struct IORequest *ioreq, KbdBase *KbdBase)
 {
-	EndCommand(IOERR_ABORTED, ioreq, SysBase);
+	EndCommand(IOERR_ABORTED, (struct IOStdReq*)ioreq, SysBase);
 }

@@ -1,5 +1,6 @@
 #ifndef io_h
 #define io_h
+#include "types.h"
 
 #ifndef ports_h
 #include "ports.h"
@@ -29,7 +30,7 @@ typedef struct IOStdReq {
     UINT32  io_Length;		    /* requested number bytes transferred*/
     APTR    io_Data;		    /* points to data area */
     UINT32  io_Offset;		    /* offset for block structured devices */
-} IOStdReq;
+} IOStdReq, *pIOStdReq;
 
 /* library vector offsets for device reserved vectors */
 #define DEV_BEGINIO	(-20)

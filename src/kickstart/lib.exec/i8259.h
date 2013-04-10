@@ -1,10 +1,10 @@
 #ifndef i8259_h
 #define i8259_h
 
-#define PIC_PIC0PORT1  ((volatile UINT8 *) 0x20U)
-#define PIC_PIC0PORT2  ((volatile UINT8 *) 0x21U)
-#define PIC_PIC1PORT1  ((volatile UINT8 *) 0xa0U)
-#define PIC_PIC1PORT2  ((volatile UINT8 *) 0xa1U)
+#define PIC_PIC0PORT1  ((volatile UINT16 *) 0x20U)
+#define PIC_PIC0PORT2  ((volatile UINT16 *) 0x21U)
+#define PIC_PIC1PORT1  ((volatile UINT16 *) 0xa0U)
+#define PIC_PIC1PORT2  ((volatile UINT16 *) 0xa1U)
 
 #define PIC_NEEDICW4  (1 << 0)
 #define PIC_ICW1      (1 << 4)

@@ -32,7 +32,8 @@ void ExecInit(void)
 		monitor_write("[PANIC] No SysBase created\n");
 		for(;;);
 	}
-
+	DPrintF("\n%s ______________________________________\n", config.arch_name);
+	
 //	monitor_write("[SysBase]\n");
 //	monitor_write_hex((UINT32)SysBase);
 //	monitor_put('\n');

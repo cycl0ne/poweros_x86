@@ -82,6 +82,10 @@ clean:
 
 buildrepo:
 	$(call make-repo)
+	
+vmware:
+	qemu-img convert -f raw harddisk.img -O vmdk kernel.vmdk
+	cp kernel.vmdk ~/vmware/Other/Other.vmdk
 
 # Create obj directory structure
 define make-repo

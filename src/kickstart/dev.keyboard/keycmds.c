@@ -72,11 +72,11 @@ static void KDReadEvent(struct IOStdReq *io, KbdBase *KbdBase)
 
 	while(1)
 	{
-		//DPrintF("[io %x]", ioloop->io_Message.mn_Node.ln_Name);
+		//DPrintF("[KDRE: io %x]", ioloop);//ioloop->io_Message.mn_Node.ln_Name);
 		struct Unit *unit = ioloop->io_Unit;
 		UINT32	ipl = Disable();
 		if (TEST_BITS(ioloop->io_Flags, IOF_SERVICING)) {
-			DPrintF("IOF_Servicing\n");
+			DPrintF("KB_IOF_Servicing: %x\n", ioloop); //ioloop->io_Message.mn_Node.ln_Pad);
 			Enable(ipl);
 			break;
 		}
@@ -91,17 +91,18 @@ static void KDReadEvent(struct IOStdReq *io, KbdBase *KbdBase)
 			ioloop = (struct IOStdReq *)GetHead(&unit->unit_MsgPort.mp_MsgList);
 			continue;
 		}
-		
+
 		if (KbdBase->BufHead == KbdBase->BufTail) {
-			//DPrintF("[Kbd]Buffer Empty ioloop %x (ID %d)\n", ioloop->io_Message.mn_Node.ln_Name, SysBase->IDNestCnt);
+			//DPrintF("[Kbd]Buffer Empty ioloop %x\n", ioloop);
 			ioloop->io_Flags &= ~(IOF_SERVICING|IOF_QUICK);
 			Enable(ipl);
 			break;
 		}
-		
+
 		struct InputEvent *ie = (struct InputEvent *)ioloop->io_Data;
 		UINT32 ieSize = ioloop->io_Length / sizeof(struct InputEvent);
 		UINT8 i = 0;
+
 
 		do {
 			ie[i].ie_Code = KbdBase->BufQueue[KbdBase->BufHead];
@@ -119,28 +120,31 @@ static void KDReadEvent(struct IOStdReq *io, KbdBase *KbdBase)
 			ie[i].ie_TimeStamp.tv_secs = 0;
 			ie[i].ie_NextEvent = &ie[i+1];
 
-			if (i+1 > ieSize) 
+			i++;
+			if (i > ieSize) 
 			{
 				ipl = Disable();
 				break;
 			}
-			i++;
 			ipl = Disable();
 		}  while (KbdBase->BufHead != KbdBase->BufTail);
-		
 		Enable(ipl);
+		i--;
 		ie[i].ie_NextEvent = NULL;
-		ioloop->io_Actual = ieSize * sizeof(struct InputEvent);
+		ioloop->io_Actual = i * sizeof(struct InputEvent);
 		EndCommand(0, ioloop, SysBase);
 		
 		if (IsMsgPortEmpty(&unit->unit_MsgPort)) {
+			//DPrintF("Empty MsgPort leaving\n");
 			//DPrintF("[kd]No Waiters [%x][%x]\n", KbdBase->BufTail, KbdBase->BufHead);
 			break; // leave loop
 		}
-		struct Task *task = FindTask(NULL);
+		//DPrintF("DEBUG| Head %x\n", unit->unit_MsgPort.mp_MsgList.lh_Head);
+		//struct Task *task = FindTask(NULL);
 		//DPrintF("[kd]Waiter found. Task currently running[%s]\n", task->Node.ln_Name);
 		ioloop = (struct IOStdReq *)GetHead(&unit->unit_MsgPort.mp_MsgList);
-		continue;
+		//DPrintF("ioloop: %x\n", ioloop);
+		//continue;
 	}
 }
 
