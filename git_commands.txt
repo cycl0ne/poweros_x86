@@ -1,0 +1,41 @@
+- goto github website and login
+- goto claus's repository in github webpage
+- click on fork.
+- https://github.com/snayaksnayak/poweros_x86.git gets created.
+- now goto working folder in snayak's PC
+- #git clone https://github.com/snayaksnayak/poweros_x86.git
+- cd poweros_x86
+- #git remote show origin
+- #git remote add upstream https://github.com/cycl0ne/poweros_x86.git
+- #git remote show upstream
+
+- #git checkout -b a_feature_branch
+- #git branch -va
+- #touch hello.c (create new file hello.c)
+- #geany hi.c (modify existing file hi.c)
+- #git meld (to see the diff)
+- #git status
+- #git add hi.c hello.c (these new or modified files will be commited next)
+- #git checkout -- hurray.c (to undo changes in hurray.c)
+- #git status
+- #git commit -m "comment"
+- #git clean -dnx | cut -c 14- (to check unversioned files and dirs)
+- #git clean -dxf (to remove unversioned files and dirs) (consider #echo > ./.gitignore)
+- #git log --graph --abbrev-commit --decorate --all --full-history --pretty=format:"%h%x09%d%x20%s"
+- #git checkout master
+- #git branch -va
+- #git merge --no-ff a_feature_branch
+- #git push origin master
+- #git push -u origin a_feature_branch
+
+- loop above steps.
+
+- #git fetch upstream
+- #git merge --no-ff upstream/master
+- #git mergetool
+- #git status
+- #git commit -m "comment"
+- #git push origin master
+
+- Goto github website and check.
+
