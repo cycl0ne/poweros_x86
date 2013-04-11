@@ -584,8 +584,8 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
 
-//	test_MousePointer(SysBase);
-	test_InputDev(SysBase);
+	test_MousePointer(SysBase);
+//	test_InputDev(SysBase);
 	
 //	test_Srini(SysBase);
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");

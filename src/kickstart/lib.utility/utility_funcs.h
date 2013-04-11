@@ -76,7 +76,11 @@ char *Strcpy(pUtility UtilBase, char *to, const char *from);
 #define Strlen(a)					(((INT32 (*)(pUtility UtilBase, const char *str))						_GETVECADDR(UtilBase,32))(UtilBase,a))
 #define Strncpy(a,b,c)				(((UINT8*(*)(pUtility UtilBase, char *dst, const char *src, INT32 n))	_GETVECADDR(UtilBase,33))(UtilBase,a,b,c))
 #define Stricmp(a,b)				(((INT32 (*)(pUtility UtilBase, const char *s1, const char *s2))		_GETVECADDR(UtilBase,34))(UtilBase,a,b))
-#define Strnicmp(a,b,c)				(((INT32 (*)(pUtility UtilBase, const char *s1, const char *s2, INT32 n))		_GETVECADDR(UtilBase,35))(UtilBase,a,b,c))
+#define Strnicmp(a,b,c)				(((INT32 (*)(pUtility UtilBase, const char *s1, const char *s2, INT32 n))	_GETVECADDR(UtilBase,35))(UtilBase,a,b,c))
 #define Strcmp(a,b)					(((INT32 (*)(pUtility UtilBase, const char *s1, const char *s2))			_GETVECADDR(UtilBase,36))(UtilBase,a,b))
 #define Strcpy(a,b)					(((char *(*)(pUtility UtilBase, char *to, const char *from))				_GETVECADDR(UtilBase,37))(UtilBase,a,b))
 
+#define Rand()						(((INT32(*)(pUtility UtilBase))					_GETVECADDR(UtilBase,38))(UtilBase))
+#define Random()					(((INT32(*)(pUtility UtilBase))					_GETVECADDR(UtilBase,39))(UtilBase))
+#define SRand(a)					(((void (*)(pUtility UtilBase,UINT32 seed))		_GETVECADDR(UtilBase,40))(UtilBase,a))
+#define SRandom(a)					(((void (*)(pUtility UtilBase,UINT32 seed))		_GETVECADDR(UtilBase,41))(UtilBase,a))

@@ -211,7 +211,7 @@ static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struc
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	KbdBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
-	DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
+	//DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
 
 	// Initialise the reset handler list
 	NewList((struct List *)&KbdBase->HandlerList);

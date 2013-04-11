@@ -20,7 +20,9 @@ struct ClockData
 typedef struct UtilityBase {
 	struct Library	Library;
 	APTR			SysBase;
-	APTR			MasterSpace;
+	APTR			RootSpace;
+	UINT32			SeedNext;
+	UINT32			RandSeed;
 } Uility, *pUtility;
 
 #endif

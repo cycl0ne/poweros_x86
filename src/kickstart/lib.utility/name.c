@@ -2,6 +2,46 @@
 #include "semaphores.h"
 #include "utility_funcs.h"
 
+#if 0
+static void hexdump(APTR SysBase, unsigned char *buf,int len)
+{
+	int cnt3,cnt4;
+	int cnt=0;
+	int cnt2=0;
+	UINT8 *temp = buf;
+	do
+	{
+		DPrintF("%08X | ", temp); //cnt);
+		for (cnt3=0;cnt3<16;cnt3++)
+		{
+			if (cnt<len)
+			{
+				DPrintF("%02X ",buf[cnt++]);
+				temp++;
+			}
+			else
+				DPrintF("   ");
+		}
+		DPrintF("| ");
+		for (cnt4=0;cnt4<cnt3;cnt4++)
+		{
+			if (cnt2==len)
+				break;
+			if (buf[cnt2]<0x20)
+				DPrintF(".");
+			else
+				if (buf[cnt2]>0x7F && buf[cnt2]<0xC0)
+					DPrintF(".");
+				else
+					DPrintF("%c",buf[cnt2]);
+			cnt2++;
+		}
+		DPrintF("\n");
+	}
+	while (cnt!=len);
+}
+#endif
+
 #define SysBase UtilBase->SysBase
 
 struct NameSpace
@@ -15,6 +55,7 @@ struct NamedObj_Node
 {
 	struct Node	non_Node;
 	UINT16		non_UseCount;
+	UINT16		non_Pad;
 };
 
 struct NamedObj_Sub
@@ -30,26 +71,25 @@ struct NamedObj
 	struct NamedObj_Sub		no_Nos;
 };
 
-
-#define _OBJ( o )		((struct NamedObj *)(o))
-#define  NOS( _obj )	( (struct NamedObj_Sub *) (_OBJ(_obj)+1) )
-#define  NON( o )		( (struct NamedObj_Node *)(_OBJ(o)   -1) )
+#define _OBJ( o )			((struct NamedObj *)(o))
+#define BASEOBJECT( _obj )	( (struct NamedObject *) (_OBJ(_obj)+1) )
+#define SYSTEM( o )			(_OBJ(o) - 1)
 
 STRPTR util_NamedObjectName(pUtility UtilBase, struct NamedObject *nos)
 {
 	if (nos)
 	{
-		struct NamedObj_Node *tmp = NON(nos);
-		return tmp->non_Node.ln_Name;
+		struct NamedObj *tmp = SYSTEM(nos);
+		return tmp->no_Non.non_Node.ln_Name;
 	}
 }
 
 static struct NameSpace *getNameSpace(pUtility UtilBase, struct NamedObject *nameSpace)
 {
-	struct NameSpace *ns = NOS(UtilBase->MasterSpace)->nos_NameSpace;
+	struct NameSpace *ns = SYSTEM(UtilBase->RootSpace)->no_Nos.nos_NameSpace;
 	if (nameSpace)
 	{
-		ns = NOS(nameSpace)->nos_NameSpace;
+		ns = SYSTEM(nameSpace)->no_Nos.nos_NameSpace;
 	}
 	return ns;
 }
@@ -91,13 +131,13 @@ struct NamedObject *util_FindNamedObject(pUtility UtilBase, struct NamedObject *
 	if (lastObject == NULL) 
 		tmp = (struct NamedObj *)ns->ns_Entries.mlh_Head;
 	else
-		tmp = (struct NamedObj *)NON(lastObject)->non_Node.ln_Succ;
+		tmp = (struct NamedObj *)SYSTEM(lastObject)->no_Non.non_Node.ln_Succ;
 
 	tmp = searchns(UtilBase, tmp, ns, name);
 	if (tmp)
 	{
 		tmp->no_Non.non_UseCount++;
-		ret = (struct NamedObject *) NOS(tmp);
+		ret = (struct NamedObject *) BASEOBJECT(tmp);
 	}
 	ReleaseSemaphore(&ns->ns_Semaphore);
 	return ret;
@@ -109,7 +149,7 @@ BOOL util_AddNamedObject(pUtility UtilBase, struct NamedObject *nameSpace, struc
 	if (ns == NULL) return FALSE;
 	if (object == NULL) return FALSE;
 	
-	struct NamedObj *tmp = (struct NamedObj *)NON(object);
+	struct NamedObj *tmp = (struct NamedObj *)SYSTEM(object);
 	ObtainSemaphore(&ns->ns_Semaphore);
 	if ((ns->ns_Flags & NSF_NODUPS)==1)
 	{
@@ -133,7 +173,7 @@ BOOL util_AttemptRemNamedObject(pUtility UtilBase, struct NamedObject *nos)
 BOOL util_RemNamedObject(pUtility UtilBase, struct NamedObject *object, struct Message *message)
 {
 	Forbid();
-	struct NameSpace *ns = NOS(object)->nos_NameSpace;
+	struct NameSpace *ns = SYSTEM(object)->no_Nos.nos_NameSpace;
 	if (ns == NULL)
 	{
 		if (message != NULL) 
@@ -146,19 +186,19 @@ BOOL util_RemNamedObject(pUtility UtilBase, struct NamedObject *object, struct M
 	}
 	if (message == NULL) 
 	{
-		if (NON(object)->non_UseCount != 1)
+		if (SYSTEM(object)->no_Non.non_UseCount != 1)
 		{
 			Permit();
 			return TRUE;
 		}
 	}
 
-	NOS(object)->nos_NameSpace = NULL;
+	SYSTEM(object)->no_Nos.nos_NameSpace = NULL;
 	ObtainSemaphore(&ns->ns_Semaphore);
-	Remove(&NON(object)->non_Node);
+	Remove(&SYSTEM(object)->no_Non.non_Node);
 	if (message != NULL)
 	{
-		NOS(object)->nos_RemoveMsg = message;
+		SYSTEM(object)->no_Nos.nos_RemoveMsg = message;
 		message->mn_Node.ln_Name = (STRPTR)object;
 	}
 	ReleaseSemaphore(&ns->ns_Semaphore);
@@ -171,10 +211,10 @@ BOOL util_ReleaseNamedObject(pUtility UtilBase, struct NamedObject *object)
 	if (!object) return TRUE;
 
 	Forbid();
-	NON(object)->non_UseCount--;
-	if (NON(object)->non_UseCount == 0) 
+	SYSTEM(object)->no_Non.non_UseCount--;
+	if (SYSTEM(object)->no_Non.non_UseCount == 0) 
 	{ 
-		if (NOS(object)->nos_RemoveMsg != NULL) ReplyMsg(NOS(object)->nos_RemoveMsg);
+		if (SYSTEM(object)->no_Nos.nos_RemoveMsg != NULL) ReplyMsg(SYSTEM(object)->no_Nos.nos_RemoveMsg);
 	}
 	Permit();
 	return TRUE;
@@ -184,7 +224,6 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 {
 	if (name == NULL) return NULL;
 	UINT32 ns = GetTagData(ANO_NameSpace, FALSE, tagList);
-	
 	if (ns == TRUE) ns = sizeof(struct NameSpace);
 	
 	UINT32 us = GetTagData(ANO_UserSpace, 0, tagList);
@@ -195,8 +234,9 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 	UINT32 allocSize = ns + us + sizeof(struct NamedObj) + nameSize + 1;
 
 	UINT8 *mem = AllocVec(allocSize, MEMF_PUBLIC|MEMF_CLEAR);
-	if (mem == NULL) return NULL;
+	UINT8 *test = mem;
 
+	if (mem == NULL) return NULL;	
 	struct NamedObj *object = (struct NamedObj *) mem;
 	mem += sizeof(struct NamedObj);
 
@@ -207,18 +247,17 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 	object->no_Non.non_Node.ln_Name = mem;
 	Strcpy(mem, name);
 	mem += nameSize+1;
-	struct NamedObject *ret = (struct NamedObject *)NOS(object);
+	struct NamedObject *ret = (struct NamedObject *)BASEOBJECT(object); //&object->no_Nos;
 
 	if (us)
 	{
 		UINT32 align = (UINT32)mem;
 		align = (align+3) & ~0x03;
-		//mem =  ((UINT32)mem+3) & ~0x03; // Align
-		NOS(object)->nos_Object = (UINT8*)align;
+		SYSTEM(ret)->no_Nos.nos_Object = (UINT8*)align;
 	}
 	
 	UINT32 flags = GetTagData(ANO_Flags, 0, tagList);
-	struct NameSpace *namSp = NOS(ret)->nos_NameSpace;
+	struct NameSpace *namSp = SYSTEM(ret)->no_Nos.nos_NameSpace;
 	if (namSp != NULL)
 	{
 		namSp->ns_Flags = flags;
@@ -226,12 +265,12 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 		InitSemaphore(&namSp->ns_Semaphore);
 	} 
 	INT8 prio = GetTagData(ANO_Priority, 0, tagList);
-	NON(object)->non_Node.ln_Pri = prio;
-	NON(object)->non_UseCount = 1;
+	SYSTEM(ret)->no_Non.non_Node.ln_Pri = prio;
+	SYSTEM(ret)->no_Non.non_UseCount = 1;
 	return ret;
 }
 
 void util_FreeNamedObject(pUtility UtilBase, struct NamedObject *object)
 {
-	if (object) FreeVec(NON(object));
+	if (object) FreeVec(SYSTEM(object));
 }
