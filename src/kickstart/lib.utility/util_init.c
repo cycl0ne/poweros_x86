@@ -1,5 +1,6 @@
 #include "types.h"
 #include "utility.h"
+#include "utility_funcs.h"
 
 #define LIBRARY_VERSION_STRING "\0$VER: utility.library 0.1 ("__DATE__")\r\n";
 #define LIBRARY_VERSION 0
@@ -52,6 +53,11 @@ INT32 util_Strnicmp(pUtility UtilBase, const char *s1, const char *s2, INT32 n);
 INT32 util_Strcmp(pUtility UtilBase, const char *s1, const char *s2);
 char *util_Strcpy(pUtility UtilBase, char *to, const char *from);
 
+int util_Rand(pUtility UtilBase);
+INT32 util_Random(pUtility UtilBase);
+void util_SRandom(pUtility UtilBase,UINT32 seed);
+void util_SRand(pUtility UtilBase, UINT32 seed);
+
 static volatile APTR FuncTab[] = 
 {
 	(void(*)) util_OpenLib,
@@ -91,6 +97,10 @@ static volatile APTR FuncTab[] =
 	(void(*)) util_Strnicmp,
 	(void(*)) util_Strcmp,
 	(void(*)) util_Strcpy,
+	(void(*)) util_Rand,
+	(void(*)) util_Random,
+	(void(*)) util_SRand,
+	(void(*)) util_SRandom,
 	(APTR) ((UINT32)-1)
 };
 
@@ -107,14 +117,20 @@ static const volatile struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK,
+	RTF_AUTOINIT|RTF_COLDSTART,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
-	95,
+	103,
 	(char *)name,
 	(char*)&version[7],
 	0,
 	&InitTab
+};
+
+static struct TagItem utilTags[] = 
+{
+	{ANO_NameSpace, 1},
+	{TAG_DONE, 0}
 };
 
 static pUtility util_Init(pUtility UtilBase, UINT32 *segList, APTR SysBase)
@@ -127,6 +143,11 @@ static pUtility util_Init(pUtility UtilBase, UINT32 *segList, APTR SysBase)
 	UtilBase->Library.lib_Revision = LIBRARY_REVISION;
 	UtilBase->Library.lib_IDString = (STRPTR)&version[7];	
 	UtilBase->SysBase	= SysBase;
+	
+	UtilBase->RootSpace = AllocNamedObjectA("rootspace", utilTags);
+	// Initialize the two random generators.
+	UtilBase->RandSeed = 937186357;
+	UtilBase->SeedNext = 1;
 	return UtilBase;
 }
 
