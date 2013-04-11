@@ -17,7 +17,7 @@ APTR vglib_ExtFuncLib(VgaGfxBase *VgaGfxBase);
 
 void SVGA_Init(VgaGfxBase *VgaGfxBase);
 
-static volatile APTR FuncTab[] = 
+static volatile APTR FuncTab[] =
 {
 	(void(*)) vglib_OpenLib,
 	(void(*)) vglib_CloseLib,
@@ -35,12 +35,12 @@ static const volatile APTR InitTab[4]=
 	(APTR)vglib_Init
 };
 
-static const volatile struct Resident ROMTag = 
+static const volatile struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK,
+	RTF_SINGLETASK | RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	100,
@@ -60,7 +60,7 @@ static VgaGfxBase *vglib_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, APTR SysB
 	VgaGfxBase->Library.lib_Node.ln_Name = (STRPTR)name;
 	VgaGfxBase->Library.lib_Version = LIBRARY_VERSION;
 	VgaGfxBase->Library.lib_Revision = LIBRARY_REVISION;
-	VgaGfxBase->Library.lib_IDString = (STRPTR)&version[7];	
+	VgaGfxBase->Library.lib_IDString = (STRPTR)&version[7];
 	VgaGfxBase->SysBase	= SysBase;
 
 	struct ExpansionBase *ExpansionBase = (struct ExpansionBase *)OpenLibrary("expansion.library", 0);
