@@ -21,7 +21,7 @@ UINT32 util_CalcDate(pUtility UtilBase, UINT32 year, UINT32 month, UINT32 day)
 	return (year*365) + (year/4) - (year/100) + (year/400) + (month/10) + day -1;
 }
 
-void util_Os2Date(pUtility UtilBase, UINT32 amiga, struct ClockData *cd)
+void util_Os2Date(pUtility UtilBase, UINT32 ostime, struct ClockData *cd)
 {
 	INT32 year;
 	INT32 month;
@@ -32,13 +32,13 @@ void util_Os2Date(pUtility UtilBase, UINT32 amiga, struct ClockData *cd)
 	INT32 absday;
 	INT32 work;
 
-	second  = amiga % 60;
-	minute  = amiga / 60;
+	second  = ostime % 60;
+	minute  = ostime / 60;
 	hour    = minute / 60;
 	minute %= 60;
 	hour   %= 24;
 
-	absday  = amiga / (60 * 60 * 24);
+	absday  = ostime / (60 * 60 * 24);
 	absday += CALC_DATE(1978,1,1);
 
 	cd->wday  = (absday+3)%7;
@@ -92,5 +92,5 @@ UINT32 util_CheckDate(pUtility UtilBase, struct ClockData *date)
 		(date->day	== date2.day) &&
 		(date->month== date2.month) &&
 		(date->year	== date2.year)) return date1;
-	return NULL;
+	return 0;
 }
