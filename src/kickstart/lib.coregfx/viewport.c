@@ -77,8 +77,10 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 			apix->flags &= ~PSF_SCREEN;
 		}
 		// Activate new View
-		DPrintF("SVGA_SetDisplayMode(%d, %d, %d)\n", view->width, view->height, view->bpp);
 		view->fbAddr = SVGA_SetDisplayMode(CoreGfxBase->VgaGfxBase, view->width, view->height, view->bpp);
+		DPrintF("SVGA_SetDisplayMode(%d, %d, %d) %x\n", view->width, view->height, view->bpp, view->fbAddr);
+		
+//		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
 		// Copy new View to FB
 		memcpy32(view->fbAddr, view->vp->PixMap->addr, view->fbSize);
 		// Save old addr of Pixmap

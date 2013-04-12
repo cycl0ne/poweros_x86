@@ -110,7 +110,7 @@ struct Resident TimerRomTag =
 	RTC_MATCHWORD,
 	&TimerRomTag,
 	&TimerEndResident,
-	RTF_COLDSTART,
+	RTF_COLDSTART|RTF_AUTOINIT,
 	VERSION,
 	NT_DEVICE,
 	50,

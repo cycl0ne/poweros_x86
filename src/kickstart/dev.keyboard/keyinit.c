@@ -56,7 +56,7 @@ static const struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART,
+	RTF_COLDSTART|RTF_AUTOINIT,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	45,

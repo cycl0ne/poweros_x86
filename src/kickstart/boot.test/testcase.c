@@ -69,6 +69,45 @@ struct TestStruct {
 	struct InputEvent ie[10];
 };
 
+
+static void hexdump(APTR SysBase, unsigned char *buf,int len)
+{
+	int cnt3,cnt4;
+	int cnt=0;
+	int cnt2=0;
+	UINT8 *temp = buf;
+	do
+	{
+		DPrintF("%08X | ", temp); //cnt);
+		for (cnt3=0;cnt3<16;cnt3++)
+		{
+			if (cnt<len)
+			{
+				DPrintF("%02X ",buf[cnt++]);
+				temp++;
+			}
+			else
+				DPrintF("   ");
+		}
+		DPrintF("| ");
+		for (cnt4=0;cnt4<cnt3;cnt4++)
+		{
+			if (cnt2==len)
+				break;
+			if (buf[cnt2]<0x20)
+				DPrintF(".");
+			else
+				if (buf[cnt2]>0x7F && buf[cnt2]<0xC0)
+					DPrintF(".");
+				else
+					DPrintF("%c",buf[cnt2]);
+			cnt2++;
+		}
+		DPrintF("\n");
+	}
+	while (cnt!=len);
+}
+
 #include "alerts.h"
 
 static void test_mouse(SysBase *SysBase)
@@ -455,21 +494,37 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 
 static void test_MousePointer(APTR SysBase)
 {
+	UINT32 xres = 1280;
+	UINT32 yres = 1024;
+	
 	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
 	if (!CoreGfxBase) { DPrintF("Failed to open library\n"); return; }
-	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, 640, 480, IF_BGRA8888, FPM_Displayable, NULL,0 );
+	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, xres, yres, IF_BGRA8888, FPM_Displayable, NULL,0 ); //IF_BGR888
 	struct CRastPort *rp = cgfx_InitRastPort(CoreGfxBase, pix);
 	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
 	SetForegroundColor(rp, RGB(150,150,150));
-	FillRect(rp, 0, 0, 639, 479);
+	FillRect(rp, 0, 0, xres, yres);
 //	if (pix) memset32(pix->addr, 0x0, pix->size/4);
 
 	DPrintF("cgfx_CreateView()\n");
-	struct View *view	= cgfx_CreateView(CoreGfxBase, 640, 480, 32);
+	struct View *view	= cgfx_CreateView(CoreGfxBase, xres, yres, 32);//24);
 	struct ViewPort *vp = cgfx_CreateVPort(CoreGfxBase, pix, 0, 0);
 	cgfx_MakeVPort(CoreGfxBase, view, vp);
 	DPrintF("LoadView()\n");
 	cgfx_LoadView(CoreGfxBase, view);
+/*
+	UINT32 size = view->width * view->height;
+	UINT32 *fb = (UINT32*)view->fbAddr;
+	for (UINT32 i = 0; i< size; i++) fb[i] = 0xFFFF0000;
+*/
+	SetForegroundColor(rp, RGB(255,0,0));
+	FillRect(rp, 0, 0, xres, yres);
+	hexdump(SysBase, view->fbAddr + 0x10000, 0x200);
+//		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
+
+
+DPrintF("Fill Screen\n");
+for(;;);
 
 nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230, 221));
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
@@ -568,6 +623,48 @@ static void test_InputDev(struct SysBase *SysBase)
 	DoIO((struct IORequest *)io);
 }
 
+void d_showtask(struct SysBase *SysBase)
+{
+	struct Task *dev;
+	DPrintF("PowerOS Registered Tasks :\n\n");
+	dev = FindTask(NULL);
+	DPrintF("Run ----------------------------\n");
+	DPrintF("Name : %s\n",dev->Node.ln_Name);
+	DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+	DPrintF("Type : %X\n",dev->Node.ln_Type);
+		
+	DPrintF("Ready --------------------------\n");
+	ForeachNode(&SysBase->TaskReady,dev)
+	{
+		DPrintF("Name : %s\n",dev->Node.ln_Name);
+		DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+		DPrintF("Type : %X\n",dev->Node.ln_Type);
+	}
+	DPrintF("Wait  --------------------------\n");
+	ForeachNode(&SysBase->TaskWait,dev)
+	{
+		DPrintF("Name : %s\n",dev->Node.ln_Name);
+		DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+		DPrintF("Type : %X\n",dev->Node.ln_Type);
+	}
+}
+
+void d_showint(int addr, struct SysBase *SysBase)
+{
+	struct Interrupt *irq;
+	if (addr >= 16) return;
+	DPrintF("Interrupt [%X] :\n",addr);
+	ForeachNode(&SysBase->IntVectorList[addr],irq)
+	{
+		DPrintF("-------------------------------\n");
+		DPrintF("Addr : %x\n",&irq->is_Node);
+		DPrintF("Name : %s\n",irq->is_Node.ln_Name);
+		DPrintF("Prio : %d\n",irq->is_Node.ln_Pri);
+		DPrintF("Type : %X\n",irq->is_Node.ln_Type);
+		DPrintF("Funct: %x\n",irq->is_Code);
+  }
+}
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("TestTask_________________________________________________\n");
@@ -583,6 +680,8 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	test_AlertTest(SysBase);
 //	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
+
+d_showtask(SysBase);
 
 	test_MousePointer(SysBase);
 //	test_InputDev(SysBase);

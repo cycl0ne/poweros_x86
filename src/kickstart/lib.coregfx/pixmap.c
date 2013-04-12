@@ -263,7 +263,7 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 		DPrintF("AllocVec on Pixmap failed.\n");
 		return NULL;
 	}
-
+DPrintF("Got Memory for Pixmap: %x\n",pmd);
 	pmd->flags = PSF_MEMORY;			/* reset PSF_SCREEN or PSF_ADDRMALLOC flags*/
 	pmd->portrait = PORTRAIT_NONE; /* don't rotate offscreen pixmaps*/
 	pmd->addr = NULL;
@@ -277,8 +277,13 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 	if (!pixels) 
 	{
 		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
+		if (pixels == NULL) 
+		{
+			DPrintF("EMERGENCY!! NO MEMORY FOR PIXMAP!! size: %d, %x\n", size, size);
+			for(;;);
+		}
 		pmd->flags |= PSF_ADDRMALLOC;
-		//DPrintF("Allocated Pixels Addr: %x\n", pixels);
+		DPrintF("Allocated Pixels Addr: %x (size: %d)\n", pixels, size);
 	}
 	if (!pixels) 
 	{
@@ -298,6 +303,7 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 	pmd->pixtype = pixtype;		/* save pixtype for proper colorval creation*/
 	pmd->ncolors = (pmd->bpp >= 24)? (1 << 24): (1 << pmd->bpp);
 	pmd->_GetScreenInfo = gen_getscreeninfo;
+	pmd->basedata = CoreGfxBase->VgaGfxBase;
 	return pmd;
 }
 

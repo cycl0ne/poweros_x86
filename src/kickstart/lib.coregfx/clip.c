@@ -4,6 +4,7 @@
 #include "regions.h"
 #include "region_funcs.h"
 
+#define SysBase CoreGfxBase->SysBase
 #define RegionBase CoreGfxBase->RegionBase
 
 void cgfx_SetClipRegion(CoreGfxBase *CoreGfxBase, CRastPort *rp, ClipRegion *reg)
@@ -19,6 +20,7 @@ void cgfx_SetClipRegion(CoreGfxBase *CoreGfxBase, CRastPort *rp, ClipRegion *reg
 		rp->crp_ClipMaxX = MAX_COORD;
 		rp->crp_ClipMaxY = MAX_COORD;
 		rp->crp_ClipResult = FALSE;
+		DPrintF("SetClipRegion: FALSE\n");
 		return;
 	}
 
@@ -47,8 +49,10 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 	  (y >= rp->crp_ClipMinY) && (y <= rp->crp_ClipMaxY)) 
 	{
 		if (rp->crp_ClipResult) CheckCursor(psd, x, y, x, y);
+		DPrintF("CACHI :)\n");
 		return rp->crp_ClipResult;
 	}
+DPrintF("ClipCache0\n");
 
 	  /* If the point is outside of the screen area, then it is not
 	   * plottable, and the clip cache rectangle is the whole half-plane
@@ -103,7 +107,7 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 		CheckCursor(psd, x, y, x, y);
 		return TRUE;
 	}
-
+DPrintF("ClipCache\n");
 	/* We need to scan the list of clip rectangles to calculate a new
 	* clip cache rectangle containing this point, and the result. First
 	* see if the point lies within any of the clip rectangles. If so,
@@ -122,6 +126,7 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 			return TRUE;
 		}
 	}
+DPrintF("ClipCache2\n");
 
 	/* The point is not plottable. Scan the clip rectangles again to
 	* determine a rectangle containing more non-plottable points.
@@ -145,16 +150,25 @@ BOOL cgfx_ClipPoint(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y)
 		temp = rect->bottom - 1;
 		if ((y > temp) && (temp >= rp->crp_ClipMinY)) rp->crp_ClipMinY = temp + 1;
 	}
+DPrintF("ClipCache3\n");
 	rp->crp_ClipResult = FALSE;
 	return FALSE;
 }
 
 INT32 cgfx_ClipArea(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2)
 {
-	if ((x1 < rp->crp_ClipMinX) || (x1 > rp->crp_ClipMaxX) || (y1 < rp->crp_ClipMinY) || (y1 > rp->crp_ClipMaxY)) ClipPoint(rp, x1, y1);
-
+	DPrintF("ClipArea %d, %d, %d, %d\n", x1, y1, x2, y2);
+	DPrintF("RP: %d, %d, %d, %d\n",rp->crp_ClipMinX,rp->crp_ClipMinY, rp->crp_ClipMaxX,rp->crp_ClipMaxY);
+	if ((x1 < rp->crp_ClipMinX) || (x1 > rp->crp_ClipMaxX) || (y1 < rp->crp_ClipMinY) || (y1 > rp->crp_ClipMaxY)) 
+	{
+		DPrintF("Clippoint %d, %d\n", x1, y1);
+		ClipPoint(rp, x1, y1);
+	}
+	DPrintF("ClipArea %d, %d, %d, %d\n", x1, y1, x2, y2);
+	DPrintF("RP: %d, %d, %d, %d\n",rp->crp_ClipMinX,rp->crp_ClipMinY, rp->crp_ClipMaxX,rp->crp_ClipMaxY);
 	if ((x2 >= rp->crp_ClipMinX) && (x2 <= rp->crp_ClipMaxX) && (y2 >= rp->crp_ClipMinY) && (y2 <= rp->crp_ClipMaxY)) 
 	{
+		DPrintF("ClipResult: %x", rp->crp_ClipResult);
 		if (!rp->crp_ClipResult) return CLIP_INVISIBLE;
 		CheckCursor(rp->crp_PixMap, x1, y1, x2, y2);
 		return CLIP_VISIBLE;

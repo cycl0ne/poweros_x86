@@ -289,14 +289,17 @@ void cgfx_FillRect(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, 
 	/* See if the rectangle is either totally visible or totally
 	 * invisible. If so, then the rectangle drawing is easy.
 	 */
+DPrintF("Check Clip\n");
 	switch (ClipArea(rp, x1, y1, x2, y2)) 
 	{
 		case CLIP_VISIBLE:
+		DPrintF("Call psd->FillRect with %d, %d, %d, %d\n",x1, y1, x2, y2);
 		psd->_FillRect(rp, x1, y1, x2, y2, rp->crp_Foreground);
 		FixCursor(rp->crp_PixMap);
 		return;
 
 	case CLIP_INVISIBLE:
+		DPrintF("Clip Invisible\n");
 		return;
 	}
 
