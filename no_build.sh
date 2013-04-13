@@ -13,4 +13,4 @@ umount /dev/loop10
 losetup -d /dev/loop10
 
 #../qemu/bin/qemu -L ../qemu/share/ -no-kqemu -m 64 -hda ./harddisk.img
-qemu -m 64 -vga vmware -serial stdio -hda ./harddisk.img
+qemu-system-i386 -m 64 -vga vmware -serial stdio -hda ./harddisk.img
