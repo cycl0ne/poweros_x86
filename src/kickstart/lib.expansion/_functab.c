@@ -31,7 +31,7 @@ void PCI_SetBAR(ExpansionBase *ExpBase, const PCIAddress *addr, INT32 index, UIN
 UINT32 PCI_GetBARAddr(ExpansionBase *ExpBase, const PCIAddress *addr, INT32 index);
 void PCI_SetMemEnable(ExpansionBase *ExpBase, const PCIAddress *addr, BOOL enable);
 
-static volatile APTR FuncTab[] = 
+static volatile APTR FuncTab[] =
 {
 	(void(*)) exp_OpenLib,
 	(void(*)) exp_CloseLib,
@@ -54,15 +54,31 @@ static volatile APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct Library ExpansionLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_LIBRARY,
+  .lib_Node.ln_Pri = 110,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = LIBRARY_VERSION,
+  .lib_Revision = LIBRARY_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[7]
+};
+
 static const volatile APTR InitTab[4]=
 {
 	(APTR)sizeof(struct ExpansionBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&ExpansionLibData,
 	(APTR)exp_Init
 };
 
-static const volatile struct Resident ROMTag = 
+static const volatile struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -79,23 +95,16 @@ static const volatile struct Resident ROMTag =
 
 static struct ExpansionBase *exp_Init(struct ExpansionBase *ExpansionBase, UINT32 *segList, APTR SysBase)
 {
-	ExpansionBase->Library.lib_OpenCnt = 0;
-	ExpansionBase->Library.lib_Node.ln_Pri = -100;
-	ExpansionBase->Library.lib_Node.ln_Type = NT_LIBRARY;
-	ExpansionBase->Library.lib_Node.ln_Name = (STRPTR)name;
-	ExpansionBase->Library.lib_Version = LIBRARY_VERSION;
-	ExpansionBase->Library.lib_Revision = LIBRARY_REVISION;
-	ExpansionBase->Library.lib_IDString = (STRPTR)&version[7];	
 	ExpansionBase->SysBase	= SysBase;
 	ExpansionBase->DosBase	= NULL; // For later use
 
 	NewListType(&ExpansionBase->BoardList, NT_PCILIST);
 	InitSemaphore(&ExpansionBase->BoardListLock);
 
-	NewListType(&ExpansionBase->MountList, NT_DOSLIST);	
+	NewListType(&ExpansionBase->MountList, NT_DOSLIST);
 	InitSemaphore(&ExpansionBase->MountListLock);
 
-	return ExpansionBase;	
+	return ExpansionBase;
 }
 
 static const char EndResident = 0;

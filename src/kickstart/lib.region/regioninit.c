@@ -63,11 +63,27 @@ static volatile APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct Library RegionLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_LIBRARY,
+  .lib_Node.ln_Pri = 95,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = LIBRARY_VERSION,
+  .lib_Revision = LIBRARY_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[7]
+};
+
 static const volatile APTR InitTab[4]=
 {
 	(APTR)sizeof(RegionBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&RegionLibData,
 	(APTR)region_Init
 };
 
@@ -88,13 +104,6 @@ static const volatile struct Resident ROMTag =
 
 static RegionBase *region_Init(RegionBase *RegionBase, UINT32 *segList, APTR SysBase)
 {
-	RegionBase->Library.lib_OpenCnt = 0;
-	RegionBase->Library.lib_Node.ln_Pri = 0;
-	RegionBase->Library.lib_Node.ln_Type = NT_LIBRARY;
-	RegionBase->Library.lib_Node.ln_Name = (STRPTR)name;
-	RegionBase->Library.lib_Version = LIBRARY_VERSION;
-	RegionBase->Library.lib_Revision = LIBRARY_REVISION;
-	RegionBase->Library.lib_IDString = (STRPTR)&version[7];
 	RegionBase->SysBase	= SysBase;
 	return RegionBase;
 }

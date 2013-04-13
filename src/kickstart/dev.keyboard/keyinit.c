@@ -31,7 +31,7 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *ioreq);
 void kdev_AbortIO(KbdBase *kdev_, struct IORequest *ioreq);
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase);
 
-static APTR FuncTab[] = 
+static APTR FuncTab[] =
 {
 	(void(*)) kdev_OpenDev,
 	(void(*)) kdev_CloseDev,
@@ -43,15 +43,31 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct Library KbdLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_DEVICE,
+  .lib_Node.ln_Pri = 45,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = DEVICE_VERSION,
+  .lib_Revision = DEVICE_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[7]
+};
+
 static const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct KbdBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&KbdLibData,
 	(APTR)kdev_Init
 };
 
-static const struct Resident ROMTag = 
+static const struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -120,7 +136,7 @@ static INT32 ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 		}
 		// Check for Numeric
 		// Numeric can have the follwing values:
-		// 47, 48, 49, 4a, 4b, 4c, 4d, 4e, 4f, 50, 51, 52, 53, 
+		// 47, 48, 49, 4a, 4b, 4c, 4d, 4e, 4f, 50, 51, 52, 53,
 		if ((key > 0x46 && key < 0x54) &&
 			(key > 0x46+0x80 && key < 0x54+0x80))
 		{
@@ -140,7 +156,7 @@ static INT32 ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 			tail -=2;
 			tail &= (KBBUFSIZE-1);
 		}
-		
+
 		KbdBase->BufQueue[tail] = key;
 		qualifier |= KbdBase->Shifts;
 		//DPrintF("Writing Buffer key: %x qual: %x (tail: %x)\n", key, qualifier, tail);
@@ -150,9 +166,9 @@ static INT32 ProcessKey(UINT16 scancode, KbdBase *KbdBase)
 
 		//DPrintF("BufferHead: %d BufferTail: %d\n", KbdBase->BufHead, KbdBase->BufTail);
 		//DPrintF("Buffer: %x  %x\n", KbdBase->BufQueue[KbdBase->BufTail], KbdBase->BufQueue[KbdBase->BufTail+1]);
-		
+
 		if (KbdBase->Unit.unit_Flags & DUB_STOPPED) return 0;
-		
+
 		//DPrintF("commandVector\n");
 
 		if (!IsMsgPortEmpty(&KbdBase->Unit.unit_MsgPort)) {
@@ -197,24 +213,16 @@ static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struc
 {
 	DPrintF("Keyboard Init...\n");
 
-	KbdBase->Device.dd_Library.lib_OpenCnt = 0;
-	KbdBase->Device.dd_Library.lib_Node.ln_Pri = 0;
-	KbdBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
-	KbdBase->Device.dd_Library.lib_Node.ln_Name = (STRPTR)name;
-	KbdBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
-	KbdBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
-	KbdBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
-	
 	KbdBase->SysBase	= SysBase;
 	KbdBase->Flags		= 0;
-	
+
 	// Initialise Unit Command Queue
 	NewList((struct List *)&KbdBase->Unit.unit_MsgPort.mp_MsgList);
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	KbdBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
 	DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
-	
+
 	// Initialise the reset handler list
 	NewList((struct List *)&KbdBase->HandlerList);
 

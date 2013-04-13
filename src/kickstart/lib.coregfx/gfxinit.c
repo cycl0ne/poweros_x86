@@ -126,12 +126,27 @@ static volatile APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct Library CoreGfxLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_LIBRARY,
+  .lib_Node.ln_Pri = 90,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = LIBRARY_VERSION,
+  .lib_Revision = LIBRARY_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[7]
+};
 
 static const volatile APTR InitTab[4]=
 {
 	(APTR)sizeof(CoreGfxBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&CoreGfxLibData,
 	(APTR)cgfx_Init
 };
 
@@ -164,13 +179,6 @@ extern CGfxCoreFont gen_fonts[4];
 
 static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR SysBase)
 {
-	CoreGfxBase->Library.lib_OpenCnt = 0;
-	CoreGfxBase->Library.lib_Node.ln_Pri = -100;
-	CoreGfxBase->Library.lib_Node.ln_Type = NT_LIBRARY;
-	CoreGfxBase->Library.lib_Node.ln_Name = (STRPTR)name;
-	CoreGfxBase->Library.lib_Version = LIBRARY_VERSION;
-	CoreGfxBase->Library.lib_Revision = LIBRARY_REVISION;
-	CoreGfxBase->Library.lib_IDString = (STRPTR)&version[7];
 	CoreGfxBase->SysBase	= SysBase;
 
 	CoreGfxBase->VgaGfxBase = OpenLibrary("vgagfx.library", 0);

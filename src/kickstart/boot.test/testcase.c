@@ -13,11 +13,33 @@
 static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, struct SysBase *SysBase);
 static void test_TestTask(APTR data, struct SysBase *SysBase);
 
+static const char name[] = "test";
+static const char version[] = "test 0.1\n";
+static const char EndResident;
+#define DEVICE_VERSION 0
+#define DEVICE_REVISION 1
+
 struct TestBase
 {
 	struct Library TestLib;
 	SysBase	*SysBase;
 	Task *WorkerTask;
+};
+
+static const struct Library TestLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_DEVICE,
+  .lib_Node.ln_Pri = -100,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = DEVICE_VERSION,
+  .lib_Revision = DEVICE_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[0]
 };
 
 static volatile APTR FuncTab[] =
@@ -29,16 +51,10 @@ static const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct TestBase),
 	(APTR)FuncTab,  // Array of function (Library/Device)
-	(APTR)NULL,
+	(APTR)&TestLibData,
 	(APTR)test_Init
 };
 
-
-static const char name[] = "test";
-static const char version[] = "test 0.1\n";
-static const char EndResident;
-#define DEVICE_VERSION 0
-#define DEVICE_REVISION 1
 
 static const struct Resident ROMTag =
 {

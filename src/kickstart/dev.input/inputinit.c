@@ -28,7 +28,7 @@ void idev_AbortIO(IDBase *IDBase, struct IORequest *ioreq);
 static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct SysBase *SysBase);
 
 
-static APTR FuncTab[] = 
+static APTR FuncTab[] =
 {
 	(void(*)) idev_OpenDev,
 	(void(*)) idev_CloseDev,
@@ -40,15 +40,31 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct Library IDLibData =
+{
+  .lib_Node.ln_Name = (APTR)&name[0],
+  .lib_Node.ln_Type = NT_DEVICE,
+  .lib_Node.ln_Pri = 40,
+
+  .lib_OpenCnt = 0,
+  .lib_Flags = 0,
+  .lib_NegSize = 0,
+  .lib_PosSize = 0,
+  .lib_Version = DEVICE_VERSION,
+  .lib_Revision = DEVICE_REVISION,
+  .lib_Sum = 0,
+  .lib_IDString = (APTR)&version[7]
+};
+
 static const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct IDBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&IDLibData,
 	(APTR)idev_Init
 };
 
-static const struct Resident ROMTag = 
+static const struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -67,21 +83,13 @@ UINT32 idev_InputTask(APTR data, struct SysBase *SysBase);
 
 static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct SysBase *SysBase)
 {
-	IDBase->Device.dd_Library.lib_OpenCnt = 0;
-	IDBase->Device.dd_Library.lib_Node.ln_Pri = 0;
-	IDBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
-	IDBase->Device.dd_Library.lib_Node.ln_Name = (STRPTR)name;
-	IDBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
-	IDBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
-	IDBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
-	
 	IDBase->SysBase	= SysBase;
 
 	NewList(&IDBase->Unit.unit_MsgPort.mp_MsgList);
 
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
-	
+
 	IDBase->id_Thresh.tv_secs	= 0;
 	IDBase->id_Thresh.tv_micro	= 800000;
 	IDBase->id_Period.tv_secs	= 0;
@@ -92,7 +100,7 @@ static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct S
 	IDBase->id_MTrig.Keys	= GPTF_DOWNKEYS|GPTF_UPKEYS;
 	IDBase->id_MTrig.XDelta	= 1;
 	IDBase->id_MTrig.YDelta	= 1;
-	
+
 /*
 ID_QUALMASK	EQU	$00FF
 ID_KEYMASK	EQU	$07FF
@@ -128,7 +136,7 @@ void idev_BeginIO(IDBase *IDBase, struct IORequest *io)
 	UINT8 cmd = io->io_Command;
 	io->io_Flags &= (~(IOF_QUEUED|IOF_CURRENT|IOF_SERVICING|IOF_DONE))&0x0ff;
 	io->io_Error = 0;
-	
+
 	if (cmd > MD_SETTRIGGER) cmd = 0; // Invalidate the command.
 
 	if (inputCmdQuick[cmd] >= 0)
@@ -144,7 +152,7 @@ void idev_BeginIO(IDBase *IDBase, struct IORequest *io)
 		if (TEST_BITS(IDBase->Unit.unit_Flags, DUB_STOPPED))
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
-			return;	
+			return;
 		}
 		// we are first in Queue, now we are Quick, otherwise we come from the IS Routine
 	}

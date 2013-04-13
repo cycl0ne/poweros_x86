@@ -11,6 +11,7 @@
 
 void INTERN_MakeFunctions(APTR target, APTR functionArray);
 UINT32 INTERN_CountFunc(APTR functionArray);
+void INTERN_InitStruct(APTR structInit, struct Library *lib);
 
 APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 {
@@ -103,13 +104,13 @@ struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcTable, APTR structIni
     /* Build jumptable */
     MakeFunctions(library, funcTable,(UINT32)NULL); // Function Pointers only
 
-    library->lib_NegSize=(UINT16)negativeLibrarySize;  // Negsize
-    library->lib_PosSize=(UINT16)dataSize; // and DataSize the correct Values
-
     if(structInit!=NULL)
 	{
-		//InitStruct(structInit,library,0); // Create Structure
+		INTERN_InitStruct(structInit, library); // Create Structure
 	}
+
+    library->lib_NegSize=(UINT16)negativeLibrarySize;  // Negsize
+    library->lib_PosSize=(UINT16)dataSize; // and DataSize the correct Values
 
     if(libInit!=NULL)
     {

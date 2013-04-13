@@ -15,6 +15,14 @@ APTR lib_Allocate(SysBase *SysBase, struct MemHeader *mh, UINT32 nbytes);
 SysBase *g_SysBase;
 extern APTR FuncTab[];
 
+void INTERN_InitStruct(APTR structInit, APTR lib)
+{
+	if(structInit != NULL)
+	{
+		*((struct Library*)lib) = *((struct Library*)structInit);
+	}
+}
+
 void INTERN_MakeFunctions(APTR target, APTR functionArray)
 {
 		INT32 n = 1;
