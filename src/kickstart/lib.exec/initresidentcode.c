@@ -18,6 +18,9 @@ void lib_InitResidentCode(struct SysBase * SysBase, UINT32 startClass)
 		case RTF_SINGLETASK:
 			DPrintF("------------RTF_SINGLETASK---------------\n");
 			break;
+		case RTF_TESTCASE:
+			DPrintF("------------RTF_TESTCASE---------------\n");
+			break;
 	}
 
 	ForeachNode(&SysBase->ResidentList, res)

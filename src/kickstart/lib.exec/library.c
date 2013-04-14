@@ -64,6 +64,8 @@ void lib_SumLibrary(SysBase *SysBase, struct Library *library)
   UINT16 oldflags;
   UINT32 sum;
 
+	DPrintF("library ptr = %p\n", library);
+
   Forbid();
 
   if((library->lib_Flags&LIBF_SUMUSED)&&!(library->lib_Flags&LIBF_SUMMING)){
@@ -83,9 +85,12 @@ void lib_SumLibrary(SysBase *SysBase, struct Library *library)
     /* Build checksum. Note: library bases are LONG aligned */
     sum=0;
     /* Get start of jumptable */
-    lp=(UINT32 *)((UINT8 *)library+library->lib_NegSize);
+    lp=(UINT32 *)((UINT8 *)library-library->lib_NegSize);
+    DPrintF("lp neg size = %u\n", library->lib_NegSize);
+    DPrintF("lp start = %p\n", lp);
     /* And sum it up */
     while(lp<(UINT32 *)library) sum+=*lp++;
+    DPrintF("lp end = %p\n", lp);
     /* Summing complete. Arbitrate again. */
     Forbid();
     /* Remove summing flag */

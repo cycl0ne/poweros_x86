@@ -112,6 +112,10 @@ struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcTable, APTR structIni
     library->lib_NegSize=(UINT16)negativeLibrarySize;  // Negsize
     library->lib_PosSize=(UINT16)dataSize; // and DataSize the correct Values
 
+    DPrintF("library negative size = %u\n", negativeLibrarySize);
+    DPrintF("library = %p\n", library);
+    DPrintF("library positive size = %u\n", dataSize);
+
     if(libInit!=NULL)
     {
 		library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) libInit)(library, (APTR)segList, SysBase));
