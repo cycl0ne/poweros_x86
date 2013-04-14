@@ -41,6 +41,7 @@ For getting new things from cycl0ne's repository:
     #git status
     #git commit -m "comment"
     #git meld e91bdff ee6d110 (to see diff between two commits e91bdff and ee6d110)
+    #git meld HEAD~1 HEAD (to see diff between HEAD-1 and HEAD)
     #git push origin master
     Goto github website and check your master updated.
 

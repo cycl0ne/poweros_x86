@@ -40,20 +40,20 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
-static const struct Library IDLibData =
+static const struct IDBase IDLibData =
 {
-  .lib_Node.ln_Name = (APTR)&name[0],
-  .lib_Node.ln_Type = NT_DEVICE,
-  .lib_Node.ln_Pri = 40,
+  .Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
+  .Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+  .Device.dd_Library.lib_Node.ln_Pri = 40,
 
-  .lib_OpenCnt = 0,
-  .lib_Flags = 0,
-  .lib_NegSize = 0,
-  .lib_PosSize = 0,
-  .lib_Version = DEVICE_VERSION,
-  .lib_Revision = DEVICE_REVISION,
-  .lib_Sum = 0,
-  .lib_IDString = (APTR)&version[7]
+  .Device.dd_Library.lib_OpenCnt = 0,
+  .Device.dd_Library.lib_Flags = 0,
+  .Device.dd_Library.lib_NegSize = 0,
+  .Device.dd_Library.lib_PosSize = 0,
+  .Device.dd_Library.lib_Version = DEVICE_VERSION,
+  .Device.dd_Library.lib_Revision = DEVICE_REVISION,
+  .Device.dd_Library.lib_Sum = 0,
+  .Device.dd_Library.lib_IDString = (APTR)&version[7]
 };
 
 static const APTR InitTab[4]=

@@ -26,20 +26,20 @@ struct TestBase
 	Task *WorkerTask;
 };
 
-static const struct Library TestLibData =
+static const struct TestBase TestLibData =
 {
-  .lib_Node.ln_Name = (APTR)&name[0],
-  .lib_Node.ln_Type = NT_DEVICE,
-  .lib_Node.ln_Pri = -100,
+  .TestLib.lib_Node.ln_Name = (APTR)&name[0],
+  .TestLib.lib_Node.ln_Type = NT_DEVICE,
+  .TestLib.lib_Node.ln_Pri = -100,
 
-  .lib_OpenCnt = 0,
-  .lib_Flags = 0,
-  .lib_NegSize = 0,
-  .lib_PosSize = 0,
-  .lib_Version = DEVICE_VERSION,
-  .lib_Revision = DEVICE_REVISION,
-  .lib_Sum = 0,
-  .lib_IDString = (APTR)&version[0]
+  .TestLib.lib_OpenCnt = 0,
+  .TestLib.lib_Flags = 0,
+  .TestLib.lib_NegSize = 0,
+  .TestLib.lib_PosSize = 0,
+  .TestLib.lib_Version = DEVICE_VERSION,
+  .TestLib.lib_Revision = DEVICE_REVISION,
+  .TestLib.lib_Sum = 0,
+  .TestLib.lib_IDString = (APTR)&version[0]
 };
 
 static volatile APTR FuncTab[] =
