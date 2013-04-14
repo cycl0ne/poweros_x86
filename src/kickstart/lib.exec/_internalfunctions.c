@@ -5,12 +5,13 @@
 */
 #include "exec_funcs.h"
 #include "sysbase.h"
+#include "memory.h"
 #include "arch_config.h"
 #include "_debug.h"
 
 
 // We need this in the initialisation phase to be called directly.
-APTR lib_Allocate(SysBase *SysBase, struct MemHeader *mh, UINT32 nbytes);
+APTR lib_Allocate(SysBase *SysBase, pMemHeader mh, UINT32 nbytes);
 
 SysBase *g_SysBase;
 extern APTR FuncTab[];
@@ -44,46 +45,36 @@ static UINT32 INTERN_CountFunc(APTR functionArray)
 	return n*4; //Evil, on 64 bit this should be 8 ! :-P
 }
 
-struct MemHeader *INTERN_CreateMemHead(arch_config *config)
-{
-	struct MemHeader *mem;
-	mem = (struct MemHeader *) config->memory_base;
-	
-	mem->mh_Node.ln_Pri  = config->memory_prio;
-	mem->mh_Node.ln_Name = config->memory_name;
-	mem->mh_Node.ln_Type = NT_MEMORY;
-	mem->mh_Attr = config->memory_attribute;  
-	mem->mh_First = NULL;
-
-	mem->mh_Start = (struct MemChunk *)((UINT8 *)mem+(sizeof(struct MemHeader)));
-	mem->mh_First = mem->mh_Start+1;
-	mem->mh_Start->mc_Bytes = 0;
-	mem->mh_Start->mc_Next = mem->mh_First;
-	mem->mh_First->mc_Next = mem->mh_Start;
-	mem->mh_First->mc_Bytes = ((((UINT8 *)config->memory_base + config->memory_size)) - ((UINT8*)config->memory_base) -sizeof(MemChunk))/sizeof(MemChunk);
-	mem->mh_Lower = mem->mh_First;
-	mem->mh_Upper = (APTR)((UINT8 *) config->memory_base + config->memory_size);
-	mem->mh_Free  = mem->mh_First->mc_Bytes;//size-(sizeof(struct MemHeader));
-
-	return mem;
-}
+pMemHeader CreateMemoryHead(UINT32 start_addr, UINT32 end_addr, UINT32 attr);
 
 SysBase *INTERN_CreateSysBase(arch_config *config)
 {
-	SysBase *SysBase = NULL;
-	struct MemHeader *memHead = NULL;	
+	struct SysBase *SysBase = NULL;
+	pMemHeader memHead = NULL;	
 	UINT32 negativeLibrarySize = INTERN_CountFunc(&FuncTab);
 	
-	memHead = INTERN_CreateMemHead(config);
+//	monitor_write("[PANIC] CreateMH.................");	
+	memHead = CreateMemoryHead((UINT32)config->memory_base, (UINT32)config->memory_base+config->memory_size, config->memory_attribute);
+//	monitor_write("ok\n");
 	
-	SysBase = lib_Allocate(NULL, memHead, negativeLibrarySize + sizeof(SysBase));
+	memHead->mh_Node.ln_Name= config->memory_name;
+	memHead->mh_Node.ln_Pri	= config->memory_prio;
+//	monitor_write("[PANIC] Allocate.................");	
+//	monitor_write_hex((UINT32) memHead);
+//	monitor_write("....");
+	SysBase = lib_Allocate(NULL, memHead, negativeLibrarySize + sizeof(struct SysBase));
+//	monitor_write_hex((UINT32) sizeof(struct SysBase));
+//	monitor_write("....ok\n");
+
 	if (SysBase == NULL)
 	{
 		monitor_write("[PANIC] No Memory for SysBase\n");
 		for(;;);
 	}
 	
-	SysBase += negativeLibrarySize;
+	SysBase = (struct SysBase *)((UINT32) SysBase + negativeLibrarySize);
+//	monitor_write_hex((UINT32) SysBase);
+//	monitor_write("....ok\n");
 	INTERN_MakeFunctions(SysBase, &FuncTab);
 	
 	// FROM NOW ON YOU CAN USE JUMPTABLE SYSBASE BUT BE CAREFUL, NOT EVERYTHING INITIALISED!
@@ -115,7 +106,8 @@ SysBase *INTERN_CreateSysBase(arch_config *config)
 	
 	SysBase->TDNestCnt = 0;
 	SysBase->IDNestCnt = -1;
-	
+	SysBase->thisTask = NULL;
+
 	monitor_write(config->arch_name);
 	monitor_write("______________________________________\n");
 
@@ -123,8 +115,7 @@ SysBase *INTERN_CreateSysBase(arch_config *config)
 
 	// Init Exception Vectors Lists
 	for (int i=0; i<16; i++) NewListType((struct List *)&SysBase->IntVectorList[i], NT_INTERRUPT);
-		
-		
+
 	// Enqueue our exec.library to the library list
 	Enqueue(&SysBase->LibList, &SysBase->LibNode.lib_Node);
 	g_SysBase = SysBase;

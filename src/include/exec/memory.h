@@ -3,23 +3,7 @@
 
 #include "types.h"
 #include "list.h"
-
-typedef struct MemChunk
-{
-   struct MemChunk *mc_Next;
-   UINT32           mc_Bytes;
-}MemChunk;
-
-typedef struct MemHeader
-{
-   struct Node       mh_Node;
-   UINT32            mh_Attr;
-   APTR              mh_Lower;
-   APTR              mh_Upper;
-   UINT32            mh_Free;
-   struct MemChunk  *mh_First;
-   struct MemChunk  *mh_Start;
-}MemHeader;
+#include "tasks.h"
 
 #define MEMF_ANY		(0L)	/* Any type of memory will do */
 #define MEMF_PUBLIC		(1L<<0)
@@ -27,10 +11,37 @@ typedef struct MemHeader
 #define MEMF_FAST		(1L<<2)
 
 #define MEMF_CLEAR		(1L<<16)
-#define MEMF_ALIGN8		(1L<<17)
-#define MEMF_ALIGN16	(1L<<18)
-#define MEMF_ALIGN32	(1L<<19)
-#define MEMF_ALIGN64	(1L<<20)
+
+typedef struct MemHeader
+{
+	struct Node	mh_Node;
+	UINT32		mh_Attr;
+	UINT32		mh_Lower;
+	UINT32		mh_Upper;
+	UINT32		mh_Free;
+	UINT32		mh_MaxMemory;
+	struct List	mh_List;
+	struct List	mh_ListUsed;
+}MemHeader, *pMemHeader;
+
+#define MCHC_MAGIC 0xDEADBEEF
+#define MCHF_BLOCK (1<<0)
+#define MCHF_HOLE  (1<<1)
+
+typedef struct MemChunkHead
+{
+	struct MinNode	mch_Node;
+	UINT32			mch_Magic;	// MagicNumber to find MemHead in Memory
+	Task			*mch_Task;	// Task that allocated me
+	UINT32			mch_Flags;	// All kind of Flags, see MCHF_xxx
+	UINT32			mch_Size;		// Size of Memory incl. MemFoot
+} MemCHead, *pMemCHead;
+
+typedef struct MemChunkFoot
+{
+	UINT32		mcf_Magic;	// Magic number, same as in MemHead.
+	pMemCHead	mcf_Head; 	// Pointer to the block header.
+} MemCFoot, *pMemCFoot;
 
 #define ALIGN_DOWN(s, a)  ((s) & ~((a) - 1))
 #define ALIGN_UP(s, a)  (((s) + ((a) - 1)) & ~((a) - 1))

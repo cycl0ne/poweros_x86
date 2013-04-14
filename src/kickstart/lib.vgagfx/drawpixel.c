@@ -132,11 +132,14 @@ UINT32 SVGA_ReadPixel32(struct CRastPort *rp, INT32 x,INT32 y)
 	return *((UINT32*)addr);
 }
 
+#define SysBase g_SysBase
 void SVGA_DrawHorzLine32(struct CRastPort *rp, INT32 x1, INT32 x2, INT32 y, UINT32 c)
 {
+//	DPrintF("DrawHorzLine\n");
 	struct PixMap *psd = rp->crp_PixMap;
 	register unsigned char *addr = psd->addr + y * psd->pitch + (x1 << 2);
 	int width = x2-x1+1;
+//	DPrintF("DrawHorzLine %x, %x, %x\n", addr, rp, psd);
 	
 	if(rp->crp_Mode == ROP_COPY)
 	{
@@ -178,10 +181,14 @@ void SVGA_DrawVertLine32(struct CRastPort *rp, INT32 x, INT32 y1, INT32 y2, UINT
 
 void SVGA_DrawFillRect(struct CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2, UINT32 c)
 {
+//	DPrintF("DrawFillRect\n");
 	int X1 = x1;
 	int Y1 = y1;
 		while(y1 <= y2)
+		{
+//			DPrintF("y1:%d ", y1);
 			rp->crp_PixMap->_DrawHorzLine(rp, x1, x2, y1++, c);
+		}
 }
 
 void SVGA_Update(struct PixMap *pix, INT32 x, INT32 y, INT32 width, INT32 height)

@@ -1,5 +1,6 @@
 #include "coregfx.h"
 #include "pixmap.h"
+#include "memory.h"
 #include "exec_funcs.h"
 
 #define SysBase CoreGfxBase->SysBase
@@ -175,6 +176,12 @@ static BOOL mapmemgc(PixMap *mempsd, INT32 w, INT32 h, int planes, int bpp, int 
 	return 1;
 }
 
+static inline void
+memset(void *dest, UINT8 value, UINT32 size)
+{
+   asm volatile ("cld; rep stosb" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
+}
+
 
 PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize)
 {
@@ -276,7 +283,10 @@ DPrintF("Got Memory for Pixmap: %x\n",pmd);
 	
 	if (!pixels) 
 	{
-		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
+		DPrintF("Allocate Pixels..........");
+		pixels = AllocVec(size, MEMF_FAST);
+		DPrintF("Ok\n");
+//		memset(pixels, 0x0, size);
 		if (pixels == NULL) 
 		{
 			DPrintF("EMERGENCY!! NO MEMORY FOR PIXMAP!! size: %d, %x\n", size, size);

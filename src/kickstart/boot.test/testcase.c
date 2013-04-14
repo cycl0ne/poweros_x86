@@ -6,7 +6,7 @@
 #include "mouseport.h"
 #include "keyboard.h"
 #include "inputevent.h"
-
+#include "memory.h"
 // This is a Testsuite for implementations on the OS.
 // Since we boot out of the ROM, we need an Resident Structure
 
@@ -321,16 +321,12 @@ static void test_RawIO(SysBase *SysBase)
 	Alert(AN_MemCorrupt, "End of Test RawIO\n");
 }
 
+static inline void memset32(void *dest, UINT32 value, UINT32 size) { asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory"); }
+
 BOOL VmwSetVideoMode(UINT32 Width, UINT32 Height, UINT32 Bpp, SysBase *SysBase);
 
 #include "vgagfx.h"
 #include "vmware.h"
-
-static inline void
-memset32(void *dest, UINT32 value, UINT32 size)
-{
-   asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
-}
 
 void test_vgagfx(APTR SysBase)
 {
@@ -492,17 +488,34 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 //	for(int i=0; i<1000000;i++);
 }
 
-static void test_MousePointer(APTR SysBase)
+static void test_MousePointer(SysBase *SysBase)
 {
-	UINT32 xres = 1280;
-	UINT32 yres = 1024;
-	
+	UINT32 xres = 640;//1280;
+	UINT32 yres = 480;//1024;
+//	UINT32 *temp = AllocVec(1280*2*1024, MEMF_FAST);
+//	DPrintF ("Temp allocated\n");
 	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
 	if (!CoreGfxBase) { DPrintF("Failed to open library\n"); return; }
 	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, xres, yres, IF_BGRA8888, FPM_Displayable, NULL,0 ); //IF_BGR888
+DPrintF("AllocPixmap.......ok\n");
 	struct CRastPort *rp = cgfx_InitRastPort(CoreGfxBase, pix);
 	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
 	SetForegroundColor(rp, RGB(150,150,150));
+
+	pMemCHead node;	
+    struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
+    
+	ForeachNode(&mh->mh_ListUsed, node)
+	{
+		Task *task = node->mch_Task;
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+	}
+
+	ForeachNode(&mh->mh_List, node)
+	{
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+	}
+
 	FillRect(rp, 0, 0, xres, yres);
 //	if (pix) memset32(pix->addr, 0x0, pix->size/4);
 
@@ -517,14 +530,14 @@ static void test_MousePointer(APTR SysBase)
 	UINT32 *fb = (UINT32*)view->fbAddr;
 	for (UINT32 i = 0; i< size; i++) fb[i] = 0xFFFF0000;
 */
-	SetForegroundColor(rp, RGB(255,0,0));
-	FillRect(rp, 0, 0, xres, yres);
-	hexdump(SysBase, view->fbAddr + 0x10000, 0x200);
+//	SetForegroundColor(rp, RGB(255,0,0));
+//	FillRect(rp, 0, 0, xres, yres);
+//	hexdump(SysBase, view->fbAddr + 0x10000, 0x200);
 //		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
 
 
-DPrintF("Fill Screen\n");
-for(;;);
+//DPrintF("Fill Screen\n");
+//for(;;);
 
 nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230, 221));
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
@@ -562,6 +575,8 @@ test_Arc(SysBase, CoreGfxBase, rp);
 	DPrintF("Doio\n");
 	DoIO((struct IORequest *) io );
 	if (io->io_Error > 0) DPrintF("Io Error [%d]\n", 0);
+
+
 	for(;;)
 	{
 		struct IOStdReq *rcvd_io = io;
@@ -665,6 +680,8 @@ void d_showint(int addr, struct SysBase *SysBase)
   }
 }
 
+void test_new_memory();
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("TestTask_________________________________________________\n");
@@ -682,11 +699,15 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	VmwSetVideoMode(800, 600, 32, SysBase);
 
 d_showtask(SysBase);
+	memset32((APTR)0x230000, 0x00, 0x200000);
 
 	test_MousePointer(SysBase);
+
 //	test_InputDev(SysBase);
 	
 //	test_Srini(SysBase);
+
+//test_new_memory();
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }
 
