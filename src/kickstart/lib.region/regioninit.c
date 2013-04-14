@@ -65,18 +65,17 @@ static volatile APTR FuncTab[] =
 
 static const struct RegionBase RegionLibData =
 {
-  .Library.lib_Node.ln_Name = (APTR)&name[0],
-  .Library.lib_Node.ln_Type = NT_LIBRARY,
-  .Library.lib_Node.ln_Pri = 95,
-
-  .Library.lib_OpenCnt = 0,
-  .Library.lib_Flags = 0,
-  .Library.lib_NegSize = 0,
-  .Library.lib_PosSize = 0,
-  .Library.lib_Version = LIBRARY_VERSION,
-  .Library.lib_Revision = LIBRARY_REVISION,
-  .Library.lib_Sum = 0,
-  .Library.lib_IDString = (APTR)&version[7]
+	.Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Library.lib_Node.ln_Type = NT_LIBRARY,
+	.Library.lib_Node.ln_Pri = 95,
+	.Library.lib_OpenCnt = 0,
+	.Library.lib_Flags = 0,
+	.Library.lib_NegSize = 0,
+	.Library.lib_PosSize = 0,
+	.Library.lib_Version = LIBRARY_VERSION,
+	.Library.lib_Revision = LIBRARY_REVISION,
+	.Library.lib_Sum = 0,
+	.Library.lib_IDString = (APTR)&version[7]
 };
 
 static const volatile APTR InitTab[4]=

@@ -43,18 +43,20 @@ static APTR FuncTab[] =
 
 static const struct MDBase MDLibData =
 {
-  .Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
-  .Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
-  .Device.dd_Library.lib_Node.ln_Pri = 60,
+	.Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+	.Device.dd_Library.lib_Node.ln_Pri = 60,
 
-  .Device.dd_Library.lib_OpenCnt = 0,
-  .Device.dd_Library.lib_Flags = 0,
-  .Device.dd_Library.lib_NegSize = 0,
-  .Device.dd_Library.lib_PosSize = 0,
-  .Device.dd_Library.lib_Version = DEVICE_VERSION,
-  .Device.dd_Library.lib_Revision = DEVICE_REVISION,
-  .Device.dd_Library.lib_Sum = 0,
-  .Device.dd_Library.lib_IDString = (APTR)&version[7]
+	.Device.dd_Library.lib_OpenCnt = 0,
+	.Device.dd_Library.lib_Flags = 0,
+	.Device.dd_Library.lib_NegSize = 0,
+	.Device.dd_Library.lib_PosSize = 0,
+	.Device.dd_Library.lib_Version = DEVICE_VERSION,
+	.Device.dd_Library.lib_Revision = DEVICE_REVISION,
+	.Device.dd_Library.lib_Sum = 0,
+	.Device.dd_Library.lib_IDString = (APTR)&version[7],
+
+	.Flags = 0
 };
 
 static const APTR InitTab[4]=
@@ -85,7 +87,6 @@ void arch_ps2m_init(void);
 static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct SysBase *SysBase)
 {
 	MDBase->SysBase	= SysBase;
-	MDBase->Flags		= 0;
 
 	// Initialise Unit Command Queue
 	NewList((struct List *)&MDBase->Unit.unit_MsgPort.mp_MsgList);

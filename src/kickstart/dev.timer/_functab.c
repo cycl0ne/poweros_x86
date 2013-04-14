@@ -53,15 +53,6 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 {
 	TimerBase->Timer_SysBase = SysBase;
 
-    /* Setup the timer.device data */
-	TimerBase->CurrentTime.tv_secs  = 0;
-	TimerBase->CurrentTime.tv_micro = 0;
-
-	TimerBase->VBlankTime.tv_secs = 0;
-	TimerBase->VBlankTime.tv_micro = 1000000/TICK;//STC_FREQ_HZ / TICK; //TimerPeriod;
-	TimerBase->Elapsed.tv_secs = 0;
-	TimerBase->Elapsed.tv_micro = 0;
-
 	NewList((struct List *) &TimerBase->Lists[UNIT_MICROHZ] );
 	NewList((struct List *) &TimerBase->Lists[UNIT_VBLANK] );
 	NewList((struct List *) &TimerBase->Lists[UNIT_ECLOCK] );
@@ -82,18 +73,26 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 
 static const struct TimerBase TimerDevData =
 {
-  .Device.dd_Library.lib_Node.ln_Name = (APTR)&DevName[0],
-  .Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
-  .Device.dd_Library.lib_Node.ln_Pri = 50,
+	.Device.dd_Library.lib_Node.ln_Name = (APTR)&DevName[0],
+	.Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+	.Device.dd_Library.lib_Node.ln_Pri = 50,
+	.Device.dd_Library.lib_OpenCnt = 0,
+	.Device.dd_Library.lib_Flags = 0,
+	.Device.dd_Library.lib_NegSize = 0,
+	.Device.dd_Library.lib_PosSize = 0,
+	.Device.dd_Library.lib_Version = VERSION,
+	.Device.dd_Library.lib_Revision = REVISION,
+	.Device.dd_Library.lib_Sum = 0,
+	.Device.dd_Library.lib_IDString = (APTR)&Version[7],
 
-  .Device.dd_Library.lib_OpenCnt = 0,
-  .Device.dd_Library.lib_Flags = 0,
-  .Device.dd_Library.lib_NegSize = 0,
-  .Device.dd_Library.lib_PosSize = 0,
-  .Device.dd_Library.lib_Version = VERSION,
-  .Device.dd_Library.lib_Revision = REVISION,
-  .Device.dd_Library.lib_Sum = 0,
-  .Device.dd_Library.lib_IDString = (APTR)&Version[7]
+	.CurrentTime.tv_secs  = 0,
+	.CurrentTime.tv_micro = 0,
+
+	.VBlankTime.tv_secs = 0,
+	.VBlankTime.tv_micro = 1000000/TICK, //STC_FREQ_HZ / TICK; //TimerPeriod;
+
+	.Elapsed.tv_secs = 0,
+	.Elapsed.tv_micro = 0
 };
 
 // ROMTAG Resident

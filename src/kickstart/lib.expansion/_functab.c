@@ -56,18 +56,20 @@ static volatile APTR FuncTab[] =
 
 static const struct ExpansionBase ExpansionLibData =
 {
-  .Library.lib_Node.ln_Name = (APTR)&name[0],
-  .Library.lib_Node.ln_Type = NT_LIBRARY,
-  .Library.lib_Node.ln_Pri = 110,
+	.Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Library.lib_Node.ln_Type = NT_LIBRARY,
+	.Library.lib_Node.ln_Pri = 110,
 
-  .Library.lib_OpenCnt = 0,
-  .Library.lib_Flags = 0,
-  .Library.lib_NegSize = 0,
-  .Library.lib_PosSize = 0,
-  .Library.lib_Version = LIBRARY_VERSION,
-  .Library.lib_Revision = LIBRARY_REVISION,
-  .Library.lib_Sum = 0,
-  .Library.lib_IDString = (APTR)&version[7]
+	.Library.lib_OpenCnt = 0,
+	.Library.lib_Flags = 0,
+	.Library.lib_NegSize = 0,
+	.Library.lib_PosSize = 0,
+	.Library.lib_Version = LIBRARY_VERSION,
+	.Library.lib_Revision = LIBRARY_REVISION,
+	.Library.lib_Sum = 0,
+	.Library.lib_IDString = (APTR)&version[7],
+
+	.DosBase = NULL
 };
 
 static const volatile APTR InitTab[4]=
@@ -96,7 +98,6 @@ static const volatile struct Resident ROMTag =
 static struct ExpansionBase *exp_Init(struct ExpansionBase *ExpansionBase, UINT32 *segList, APTR SysBase)
 {
 	ExpansionBase->SysBase	= SysBase;
-	ExpansionBase->DosBase	= NULL; // For later use
 
 	NewListType(&ExpansionBase->BoardList, NT_PCILIST);
 	InitSemaphore(&ExpansionBase->BoardListLock);
