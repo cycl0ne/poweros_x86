@@ -13,6 +13,14 @@ static inline void removechunk(pMemCHead node)
    node->mch_Node.mln_Pred->mln_Succ = node->mch_Node.mln_Succ;
 }
 
+static inline void addchunktail(List *list, Node *node)
+{
+   node->ln_Succ = (Node *)&list->lh_Tail;
+   node->ln_Pred = list->lh_TailPred;
+   list->lh_TailPred->ln_Succ = node;
+   list->lh_TailPred          = node;
+}
+
 static inline void EnqueueMemChunk(struct List *list, pMemCHead node)
 {
 	pMemCHead next;
@@ -67,7 +75,7 @@ APTR lib_Allocate(SysBase *SysBase, pMemHeader mh, UINT32 size)
 		pMemCFoot block_footer	= (pMemCFoot)  (orig_hole_pos + sizeof(MemCHead) + size);
 		block_footer->mcf_Magic	= MCHC_MAGIC;
 		block_footer->mcf_Head	= block_header;
-
+		addchunktail(&mh->mh_ListUsed, (struct Node *)block_header);
 		mh->mh_Free			-= new_size;
 		
 		if (orig_hole_size - new_size > 0)
@@ -102,7 +110,7 @@ void lib_Deallocate(SysBase *SysBase, pMemHeader mh, void *p)
 	header->mch_Flags	= MCHF_HOLE;
 	header->mch_Task	= NULL;
 	BOOL do_add 		= TRUE;
-	removechunk(header);
+	removechunk(header); // Remove from Used List
 	
 	pMemCFoot test_footer = (pMemCFoot) ( (UINT32)header - sizeof(MemCFoot) );
 	if  (test_footer->mcf_Magic == MCHC_MAGIC && 
@@ -178,7 +186,7 @@ APTR lib_AllocVec(SysBase *SysBase, UINT32 byteSize, UINT32 requirements)
 			pMemCHead node = (pMemCHead)((UINT32)ret-sizeof(MemCHead));
 			if (node->mch_Magic != MCHC_MAGIC) DPrintF("ERROR: AllocVec->NoMagic\n");
 			node->mch_Task	= FindTask(NULL);
-			AddTail(&mh->mh_ListUsed, (struct Node *)node);
+//			AddTail(&mh->mh_ListUsed, (struct Node *)node);
 			if(requirements & MEMF_CLEAR) memset(ret, '\0', byteSize);
 			Permit();
 			return ret;

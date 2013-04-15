@@ -695,7 +695,7 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Free Memory Available          : %x\n", AvailMem(MEMF_FAST|MEMF_FREE));
 	DPrintF("Total Memory Available         : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
 
-
+	DPrintF("SysBase %x\n", SysBase);
 //	test_cgfx(SysBase);
 
 //	test_mouse(SysBase);
