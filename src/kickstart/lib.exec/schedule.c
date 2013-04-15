@@ -44,6 +44,8 @@ static void MakeTaskRun(SysBase *SysBase, Task *Task)
 		SysBase->TDNestCnt = Task->TDNestCnt;
 		SysBase->IDNestCnt = Task->IDNestCnt;
 		if (Task->Launch) Task->Launch(SysBase);
+		UINT32 stack = (UINT32)Task->Stack;
+		if (stack < Task->tc_SPLower) { DPrintF("Stack Overrun!\n"); }
 	} else
 	{
 		DPrintF("PANIC: No Task Ready, where is IDLE?");

@@ -490,8 +490,8 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 
 static void test_MousePointer(SysBase *SysBase)
 {
-	UINT32 xres = 640;//1280;
-	UINT32 yres = 480;//1024;
+	UINT32 xres = 1024;
+	UINT32 yres = 768;
 //	UINT32 *temp = AllocVec(1280*2*1024, MEMF_FAST);
 //	DPrintF ("Temp allocated\n");
 	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
@@ -690,9 +690,10 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
 
+	DPrintF("---------------------------------------------\n");
 	DPrintF("Largest Chunk Memory Available : %x\n", AvailMem(MEMF_FAST|MEMF_LARGEST));
-	DPrintF("Free Memory Available : %x\n", AvailMem(MEMF_FAST|MEMF_FREE));
-	DPrintF("Total Memory Available : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
+	DPrintF("Free Memory Available          : %x\n", AvailMem(MEMF_FAST|MEMF_FREE));
+	DPrintF("Total Memory Available         : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
 
 
 //	test_cgfx(SysBase);
@@ -706,7 +707,7 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //d_showtask(SysBase);
 //	memset32((APTR)0x230000, 0x00, 0x200000);
 
-//	test_MousePointer(SysBase);
+	test_MousePointer(SysBase);
 
 //	test_InputDev(SysBase);
 //	test_Srini(SysBase);
