@@ -12,6 +12,10 @@
 
 #define MEMF_CLEAR		(1L<<16)
 
+#define MEMF_FREE		(1L<<29)
+#define MEMF_LARGEST	(1L<<30)
+#define MEMF_TOTAL		(1L<<31)
+
 typedef struct MemHeader
 {
 	struct Node	mh_Node;

@@ -1,7 +1,7 @@
 #include "types.h"
 #include "sysbase.h"
 #include "memory.h"
-
+#include "arch_config.h"
 #include "exec_funcs.h"
 
 //64 Bit align for the ARM
@@ -165,7 +165,6 @@ void lib_AddMemList(SysBase *SysBase, UINT32 size, UINT32 attribute, INT32 pri, 
 	Enable(ipl);
 }
 
-
 APTR lib_AllocVec(SysBase *SysBase, UINT32 byteSize, UINT32 requirements)
 {
     UINT8 *ret = NULL;
@@ -175,24 +174,12 @@ APTR lib_AllocVec(SysBase *SysBase, UINT32 byteSize, UINT32 requirements)
 	{
 		if (mh->mh_Free >= byteSize)
 		{
-//			DPrintF("Allocate.....");
 			ret = Allocate(mh, byteSize);
-//			DPrintF("ok\n");
 			pMemCHead node = (pMemCHead)((UINT32)ret-sizeof(MemCHead));
 			if (node->mch_Magic != MCHC_MAGIC) DPrintF("ERROR: AllocVec->NoMagic\n");
-//			DPrintF("FindTask.......");
 			node->mch_Task	= FindTask(NULL);
-//			DPrintF("ok\n");
-//			DPrintF("AddTail.......");
 			AddTail(&mh->mh_ListUsed, (struct Node *)node);
-//			DPrintF("ok\n");
-			if(requirements & MEMF_CLEAR) 
-			{
-//				DPrintF("[AllocVec]Clearing Memory %x, %x\n", ret, byteSize);
-				MemSet(ret, '\0', byteSize);
-//				DPrintF("[AllocVec]Cleared\n");				
-			}
-//			DPrintF("going out of permit\n");
+			if(requirements & MEMF_CLEAR) memset(ret, '\0', byteSize);
 			Permit();
 			return ret;
 		}
@@ -220,38 +207,63 @@ void lib_FreeVec(SysBase *SysBase, APTR memoryBlock)
 	}
 }
 
+#define MEMF_PUBLIC		(1L<<0)
+#define MEMF_CHIP		(1L<<1)
+#define MEMF_FAST		(1L<<2)
+
+#define MEMF_FREE		(1L<<29)
+#define MEMF_LARGEST	(1L<<30)
+#define MEMF_TOTAL		(1L<<31)
+
+UINT32 lib_AvailMem(SysBase *SysBase, UINT32 attributes)
+{
+	UINT32	ret = 0;
+	UINT32	physflags = (MEMF_PUBLIC|MEMF_CHIP|MEMF_FAST) & attributes;
+
+	pMemHeader MHNode;
+	Forbid();
+	ForeachNode(&SysBase->MemList, MHNode)
+	{
+		if (MHNode->mh_Attr & physflags)
+		{
+			if (attributes & MEMF_FREE)	ret	+= MHNode->mh_Free;
+			if (attributes & MEMF_TOTAL)ret	+= (MHNode->mh_Upper - MHNode->mh_Lower);
+			if (attributes & MEMF_LARGEST)
+			{
+				pMemCHead chunk = GetTail(&MHNode->mh_List);
+				if (chunk->mch_Size > ret) ret = chunk->mch_Size;
+			}
+		}
+	}
+	Permit();
+	return ret;
+}
+
 void *lib_CopyMemQuick(SysBase *SysBase, const APTR src, APTR dest, int n) 
 {
-	const UINT32 *f = src;
-	UINT32 *t = dest;
-	while (n-- >0) *t++ = *f++;
+//	const UINT32 *f = src;
+//	UINT32 *t = dest;
+//	while (n-- >0) *t++ = *f++;
+	memcpy32(dest, src, n);
 	return dest;
 }
 
 void *lib_CopyMem(SysBase *SysBase,const APTR src,  APTR dest, int n) 
 {
-    const char *f = src;
-    char *t = dest;
-    while (n-- > 0) *t++ = *f++;
-    return dest;
-/*
-	Here could be an ARCH_CALL
-	asm_memcpy(dest, src, n); // fix, should asm_ return a value?
+//    const char *f = src;
+//    char *t = dest;
+//    while (n-- > 0) *t++ = *f++;
+	memcpy(dest, src, n);
 	return dest;
-*/
 }
 
 extern void *asm_memset(void* m, int c, UINT32 n);
 
 void *lib_MemSet(SysBase *SysBase, void* m, int c, UINT32 len) 
 {
-	//Here could be an ARCH_CALL
-
-	//	DPrintF("[MemSet] Clear Memory: %x with %x len %x", m, c, len);
-	char *bb;
-	for (bb = (char *)m; len--; ) *bb++ = c;
+	//char *bb;
+	//for (bb = (char *)m; len--; ) *bb++ = c;
+	memset(m, c, len);
 	return m;
-	//return asm_memset(m, c, len);
-	//DPrintF("[MemSet] Clear Memory: %x with %x len %x", m, c, len);
 }
 

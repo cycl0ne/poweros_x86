@@ -264,7 +264,7 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 
 	PixMap	*mempsd;
 
-	pmd = AllocVec(sizeof(PixMap), MEMF_FAST);
+	pmd = AllocVec(sizeof(PixMap), MEMF_FAST|MEMF_CLEAR);
 	if (!pmd)
 	{
 		DPrintF("AllocVec on Pixmap failed.\n");
@@ -284,7 +284,7 @@ DPrintF("Got Memory for Pixmap: %x\n",pmd);
 	if (!pixels) 
 	{
 		DPrintF("Allocate Pixels..........");
-		pixels = AllocVec(size, MEMF_FAST);
+		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
 		DPrintF("Ok\n");
 //		memset(pixels, 0x0, size);
 		if (pixels == NULL) 

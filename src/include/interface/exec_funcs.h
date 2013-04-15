@@ -248,6 +248,7 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 #define RawPutChar(x)			(((void(*)(APTR, UINT8))				_GETVECADDR(SysBase, 89))(SysBase,x))
 #define RawMayGetChar()			(((INT32(*)(APTR))						_GETVECADDR(SysBase, 90))(SysBase))
 
-#define CopyMemQuick(x, y, z)		(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
+#define CopyMemQuick(x, y, z)	(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
 
+#define AvailMem(x)				(((UINT32(*)(APTR, UINT32))				_GETVECADDR(SysBase, 92))(SysBase,x))
 #endif
