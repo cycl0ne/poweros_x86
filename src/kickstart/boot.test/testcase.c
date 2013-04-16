@@ -54,7 +54,7 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 	TestBase->SysBase = SysBase;
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
 	// For this we initialise a worker Task with Prio 0 
-	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*16, 0); //4kb Stack should be enough
+	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*2, 0); //8kb Stack should be enough
 	return TestBase;
 }
 
