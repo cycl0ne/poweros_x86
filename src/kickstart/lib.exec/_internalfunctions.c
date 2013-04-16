@@ -111,7 +111,7 @@ SysBase *INTERN_CreateSysBase(arch_config *config)
 	monitor_write(config->arch_name);
 	monitor_write("______________________________________\n");
 
-	SysBase->CPU_Stack = AllocVec(4096, MEMF_FAST|MEMF_CLEAR);
+	//SysBase->CPU_Stack = AllocVec(4096, MEMF_FAST|MEMF_CLEAR); Not needed anymore, stack is now in SysBase structure
 
 	// Init Exception Vectors Lists
 	for (int i=0; i<16; i++) NewListType((struct List *)&SysBase->IntVectorList[i], NT_INTERRUPT);

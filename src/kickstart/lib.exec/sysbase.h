@@ -32,8 +32,8 @@ typedef struct SysBase {
 	List		ResidentList;
 	struct Interrupt	*ExcVector[64];
 	List		IntVectorList[16];
-	UINT8			*CPU_Stack;
-	context_t			CPU_Context;
+	UINT8		CPU_Stack[2048];
+	context_t	CPU_Context;
 } SysBase;
 
 #define _CPUSTACK_ 0x1000

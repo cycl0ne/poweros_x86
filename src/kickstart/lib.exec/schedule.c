@@ -175,7 +175,7 @@ void lib_Schedule(SysBase *SysBase)
 #endif
 
 	context_save(&SysBase->CPU_Context);
-	context_set(&SysBase->CPU_Context, FADDR(lib_Dispatch), SysBase->CPU_Stack, _CPUSTACK_);
+	context_set(&SysBase->CPU_Context, FADDR(lib_Dispatch), &SysBase->CPU_Stack, _CPUSTACK_);
 	context_restore(&SysBase->CPU_Context);
 }
 

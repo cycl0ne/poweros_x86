@@ -16,7 +16,7 @@ void lib_Idle(SysBase *SysBase);
 void lib_ExecTask(SysBase *SysBase);
 extern arch_config config;
 
-#define _IDLE_TASK_STACK_ 4096*8
+#define _IDLE_TASK_STACK_ 4096
 #define _EXEC_TASK_STACK_ 4096
 
 void __Debugger()

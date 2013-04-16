@@ -79,30 +79,45 @@ void arch_irq_mask(UINT16 irqmask);
 
 void arch_irq_create(SysBase *SysBase)
 {
-	struct Interrupt *irq;
-
+	struct Interrupt *irq = AllocVec(sizeof(struct Interrupt) * 64, MEMF_FAST|MEMF_CLEAR);
+	DPrintF("irq: %x\n", irq);
 	for (int i = 0; i< 32; i++)
 	{
-		irq = CreateIntServer("System Exception Handler", -10, fault_handler, SysBase);
+		//irq = CreateIntServer("System Exception Handler", -10, fault_handler, SysBase);
+		irq[i].is_Node.ln_Name 	= "System Exception Handler";
+		irq[i].is_Node.ln_Pri	= -10;
+		irq[i].is_Node.ln_Type	= NT_INTERRUPT;
+		irq[i].is_Code			= (APTR)fault_handler;
+		irq[i].is_Data			= SysBase;
 //		monitor_write("Address:");
 //		monitor_write_hex((UINT32)irq);
 //		monitor_put('\n');
 //		monitor_write_hex((UINT32)&SysBase->ExcVector[i]);
 //		monitor_put('\n');
-		SysBase->ExcVector[i] = irq;		
+//		SysBase->ExcVector[i] = &irq[i];
 	}
 
 	for (int i = 32; i< 48; i++)
 	{
-		irq = CreateIntServer("System IRQ Server", -10, arch_irq_server, SysBase);
-		SysBase->ExcVector[i] = irq;
+		irq[i].is_Node.ln_Name 	= "System IRQ Server";
+		irq[i].is_Node.ln_Pri	= -10;
+		irq[i].is_Node.ln_Type	= NT_INTERRUPT;
+		irq[i].is_Code			= (APTR)arch_irq_server;
+		irq[i].is_Data			= SysBase;
+//		irq = CreateIntServer("System IRQ Server", -10, arch_irq_server, SysBase);
+//		SysBase->ExcVector[i] = &irq[i];
 		arch_irq_mask(1<< (i-32));
 	}
 
 	for (int i = 48; i< 64; i++)
 	{
-		irq = CreateIntServer("System Exception Handler", -10, null_handler, SysBase);
-		SysBase->ExcVector[i] = irq;		
+		irq[i].is_Node.ln_Name 	= "System Exception Handler";
+		irq[i].is_Node.ln_Pri	= -10;
+		irq[i].is_Node.ln_Type	= NT_INTERRUPT;
+		irq[i].is_Code			= (APTR)null_handler;
+		irq[i].is_Data			= SysBase;
+//		irq = CreateIntServer("System Exception Handler", -10, null_handler, SysBase);
+//		SysBase->ExcVector[i] = &irq[i];		
 	}
 	arch_irq_mask(0xffff);
 	arch_irq_unmask(1<<IRQ_PIC1);
