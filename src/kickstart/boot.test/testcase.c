@@ -19,7 +19,7 @@ struct TestBase
 	Task *WorkerTask;
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct TestBase),
 	(APTR)NULL,  // Array of function (Library/Device)
@@ -34,7 +34,7 @@ static const char EndResident;
 #define DEVICE_VERSION 0
 #define DEVICE_REVISION 1
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -55,13 +55,14 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
 	// For this we initialise a worker Task with Prio 0 
 	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*2, 0); //8kb Stack should be enough
+	DPrintF("Test finished\n");
 	return TestBase;
 }
 
 #define IsMsgPortEmpty(x) \
 	( ((x)->mp_MsgList.lh_TailPred) == (struct Node *)(&(x)->mp_MsgList) )
 
-#if 0
+#if 1
 // WE NEED TO DO THIS BECAUSE OF WALL
 struct InputEvent g_ie;
 
@@ -470,6 +471,7 @@ void srand(UINT32 seed)
 	next = seed;
 }
 
+#if 0
 static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *rp)
 {
 	INT32	x;
@@ -489,11 +491,12 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 	Ellipse(rp, x, y, rx, ry, TRUE);	
 //	for(int i=0; i<1000000;i++);
 }
+#endif
 
 static void test_MousePointer(SysBase *SysBase)
 {
-	UINT32 xres = 1024;
-	UINT32 yres = 768;
+	INT32 xres = 1024;
+	INT32 yres = 768;
 //	UINT32 *temp = AllocVec(1280*2*1024, MEMF_FAST);
 //	DPrintF ("Temp allocated\n");
 	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
@@ -577,13 +580,14 @@ test_Arc(SysBase, CoreGfxBase, rp);
 	DPrintF("Doio\n");
 	DoIO((struct IORequest *) io );
 	if (io->io_Error > 0) DPrintF("Io Error [%d]\n", 0);
+//	DPrintF("GotIO\n");
 
 
 	for(;;)
 	{
 		struct IOStdReq *rcvd_io = io;
-		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
-		//DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
+//		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
+//		DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
 		
 		rcvd_io->io_Command = MD_READEVENT; /* add a new request */
 		rcvd_io->io_Error = 0;
@@ -594,12 +598,12 @@ test_Arc(SysBase, CoreGfxBase, rp);
 		
 		x+=ie.ie_X;
 		y-=ie.ie_Y;
-		if (x>640) x=640;
+		if (x>xres) x=xres;
 		if (x<0) x= 0;
-		if (y>480) y=480;
+		if (y>yres) y=yres;
 		if (y<0) y= 0;
 		MoveCursor(x,y);
-		//DPrintF("x:%d, y:%d \n",x, y);
+//		DPrintF("x:%d, y:%d \n",x, y);
 //for(;;);
 		DoIO((struct IORequest *) io );
 	}	
@@ -698,22 +702,24 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Total Memory Available         : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
 
 	DPrintF("SysBase %x\n", SysBase);
+	DPrintF("SysBase->IDNestcnt %x\n", SysBase->IDNestCnt);
+//	asm("cli");
+	test_MousePointer(SysBase);
 
 //	test_cgfx(SysBase);
 
-//	test_mouse(SysBase);
-//	test_keyboard(SysBase);
-//	test_AlertTest(SysBase);
-//	test_RawIO(SysBase);
+	test_mouse(SysBase);
+	test_keyboard(SysBase);
+	test_AlertTest(SysBase);
+	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
 
 //d_showtask(SysBase);
 //	memset32((APTR)0x230000, 0x00, 0x200000);
+hexdump(SysBase, 0x0, 100);
 
-//	test_MousePointer(SysBase);
-
-//	test_InputDev(SysBase);
-//	test_Srini(SysBase);
+	test_InputDev(SysBase);
+	test_Srini(SysBase);
 //test_new_memory();
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }

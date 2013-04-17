@@ -59,7 +59,7 @@ static IntuitionBase *intu_Init(IntuitionBase *IBase, UINT32 *segList, APTR SysB
 	IBase->ib_Library.lib_IDString = (STRPTR)&version[7];	
 	IBase->ib_SysBase	= SysBase;
 
-	initIntuition(IBase);
+//	initIntuition(IBase);
 	return IBase;
 }
 

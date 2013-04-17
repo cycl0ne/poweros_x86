@@ -41,7 +41,7 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct MDBase),
 	(APTR)FuncTab,
@@ -49,7 +49,7 @@ static const APTR InitTab[4]=
 	(APTR)mdev_Init
 };
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -84,12 +84,12 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 	MDBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	MDBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	MDBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
-
+	MDBase->Unit.unit_Flags &= ~DUB_STOPPED;
 	MDBase->BufHead = MDBase->BufTail = 0;
 
 	arch_ps2m_init();
 	
-	//DPrintF("PS/2 mouse driver installed\n");
+//	DPrintF("PS/2 mouse driver installed\n");
 
 	MDBase->IS = CreateIntServer((STRPTR)"IRQ12 mouse.device", IS_PRIORITY, mouse_handler, MDBase);
 	AddIntServer(IRQ_MOUSE, MDBase->IS);

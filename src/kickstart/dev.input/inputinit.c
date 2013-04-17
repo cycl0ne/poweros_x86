@@ -40,7 +40,7 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct IDBase),
 	(APTR)FuncTab,
@@ -48,7 +48,7 @@ static const APTR InitTab[4]=
 	(APTR)idev_Init
 };
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,

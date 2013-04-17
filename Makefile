@@ -20,7 +20,7 @@ PLATFORM = x86
 #ASFLAGS = -g
 
 #test version
-CFLAGS =  -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Werror -Wall
+CFLAGS =  -O0 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Werror -Wall
 ASFLAGS =
 
 

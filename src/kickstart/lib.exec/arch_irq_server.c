@@ -14,19 +14,21 @@ __attribute__((no_instrument_function))  void arch_irq_server(unsigned int exc_n
 	if (irqNum > 15) return; // We only have 15 IRQs
 	
 	struct Interrupt *irq;
-//	monitor_write("IRQ:");
-//	monitor_write_hex(irqNum);
+//	monitor_write("IRQsrv:");
+//	monitor_write_hex((UINT32)irqNum);
 //	monitor_put(' ');
 
 	ForeachNode(&SysBase->IntVectorList[irqNum], irq)
 	{
-		//if (irqNum != 0) DPrintF("SysBase: %x Data: %x\n", SysBase, irq->is_Data);
+//		monitor_write_hex((UINT32)irq);
+//		if (irqNum != 33) DPrintF("SysBase: %x Data: %x Code %x IRQ %x\n", SysBase, irq->is_Data, irq->is_Code, irqNum);
 		if (irq->is_Code(irqNum, irq->is_Data, SysBase)) 
 		{
 			irq->is_Count++;
 			break;
 		}
 	}
+	//DPrintF("------------------------------------->eoi\n");
 	arch_irq_eoi(1<<irqNum);	// Send an ACK to PIC
 	return;	
 }

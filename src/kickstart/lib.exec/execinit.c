@@ -69,12 +69,14 @@ void ExecInit(void)
 	InitResidentCode(RTF_SINGLETASK);
 	DPrintF("[INIT] Activating SysBase Permit/Enable -> Leaving SingleTask\n");
 	Permit();
-	//asm volatile("sti");
+//	asm volatile("sti");
 	//UINT32 ipl = Disable();
 	//Enable(ipl);
 
 	DPrintF("[INIT] Schedule -> leaving Kernel Init\n");
+//	for(;;);
 //d_showtask(SysBase);
+
 	Schedule();
 	DPrintF("[INIT] PONR (point of no return\n");
 	asm volatile("int $0x1");

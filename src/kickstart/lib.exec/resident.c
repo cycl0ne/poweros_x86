@@ -26,13 +26,16 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	// due to the broken code down there we implemented this hack
 	if (resident->rt_Flags & RTF_TESTCASE) 
 	{
+		DPrintF("Resident TestCase\n");
+		library = AllocVec(init->dSize, MEMF_CLEAR);
 		return library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) init->init)(library, segList, SysBase));
 	}
-	
+
 	/* Depending on the autoinit flag...  BROKEN HERE. We dont check it correctly*/	
 	if(resident->rt_Flags)
 	{
     	library = MakeLibrary(init->vectors, init->structure, NULL, init->dSize,(UINT32) segList);
+
 
 	    if(library != NULL)
 	    {
@@ -122,7 +125,7 @@ struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcInit, APTR structInit
     while(*fp++!=(void *)-1) negsize+=LIB_VECTSIZE;
   }
 
-  library=(struct Library *)AllocVec(dataSize+negsize,MEMF_FAST);//MEMF_CLEAR);
+  library=(struct Library *)AllocVec(dataSize+negsize,MEMF_FAST|MEMF_CLEAR);
   /* And initilize the library */
 
   if(library!=NULL)
