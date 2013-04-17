@@ -30,7 +30,7 @@ __attribute__((no_instrument_function)) BOOL TimerVBLIRQServer(UINT32 number, AP
 //__attribute__((no_instrument_function)) BOOL Timer3IRQServer(UINT32 number, istate* istate, TimerBase *TimerBase, APTR SysBase);
 
 
-APTR timer_FuncTab[] =
+APTR timer_FuncTab[] = 
 {
  (void(*)) timer_OpenDev,
  (void(*)) timer_CloseDev,
@@ -52,7 +52,7 @@ APTR timer_FuncTab[] =
 struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, struct SysBase *SysBase)
 {
 	TimerBase->Timer_SysBase = SysBase;
-
+	
 	NewList((struct List *) &TimerBase->Lists[UNIT_MICROHZ] );
 	NewList((struct List *) &TimerBase->Lists[UNIT_VBLANK] );
 	NewList((struct List *) &TimerBase->Lists[UNIT_ECLOCK] );
@@ -67,7 +67,7 @@ struct TimerBase *timer_InitDev(struct TimerBase *TimerBase, UINT32 *segList, st
 	// EClock Timer
 //	TimerBase->Timer1IntServer = CreateIntServer(DevName, TIMER_INT_PRI, Timer1IRQServer, TimerBase);
 //	AddIntServer(IRQ_TIMER1, TimerBase->Timer1IntServer);
-
+	
 	return TimerBase;
 }
 
@@ -102,9 +102,9 @@ struct InitTable
 	APTR	FunctionTable;
 	APTR	DataTable;
 	APTR	InitFunction;
-} timer_InitTab =
+} timer_InitTab = 
 {
-	sizeof(struct TimerBase),
+	sizeof(struct TimerBase), 
 	timer_FuncTab,
 	(APTR)&TimerDevData,
 	timer_InitDev

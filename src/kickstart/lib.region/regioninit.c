@@ -35,7 +35,7 @@ void reg_XorRegion(RegionBase *RegionBase, ClipRegion *dr, ClipRegion *sra, Clip
 
 void SVGA_Init(RegionBase *RegionBase);
 
-static volatile APTR FuncTab[] =
+static volatile APTR FuncTab[] = 
 {
 	(void(*)) region_OpenLib,
 	(void(*)) region_CloseLib,
@@ -86,7 +86,7 @@ static const volatile APTR InitTab[4]=
 	(APTR)region_Init
 };
 
-static const volatile struct Resident ROMTag =
+static const volatile struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -94,7 +94,7 @@ static const volatile struct Resident ROMTag =
 	RTF_SINGLETASK | RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
-	95,
+	66,
 	(char *)name,
 	(char*)&version[7],
 	0,

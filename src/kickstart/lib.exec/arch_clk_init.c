@@ -57,6 +57,7 @@ void arch_clk_init(SysBase *SysBase)
 {
 	struct Interrupt *irq;
 	irq = CreateIntServer("IRQ0 Clock", -100, clock_handler, SysBase);
+DPrintF("clk_init -> irq: %x\n",irq);
 //	monitor_write("Going to AddIntServer\n");
 //	monitor_write_hex((UINT32)irq);
 //	monitor_write("\nLeaving AddIntServer\n");

@@ -16,6 +16,23 @@ Playing around:
 ===============
 I know that there is only textoutput at the moment, but pe patient :) if you want to test things for yourselve, please go into boot.test. Since there is no disk operations at the moment you need to get booted from the kernel file.
 In boot.test you will find a .c file, inside it is a test_main or something similar. This is your starting point to test the API of the OS. I implemented a small load routine for the ps2mouse device driver. This is why the screens fills when you move your mouse.
+Following output is generated on the STDIO of Qemu:
+
+PowerOS x86 ______________________________________  
+[INIT] RTF_SINGLETASK  
+InitResident expansion.library (0x140240)  
+InitResident vgagfx.library (0x13fec0)  
+[INIT] Activating SysBase Permit/Enable -> Leaving SingleTask  
+[INIT] Schedule -> leaving Kernel Init  
+[EXECTASK] RTF_COLDSTART  
+InitResident utility.library (0x13c0c0)  
+InitResident region.library (0x13ff60)  
+InitResident coregfx.library (0x13f540)  
+InitResident mouseport.device (0x140320)  
+InitResident timer.device (0x140020)  
+InitResident keyboard.device (0x1408e0)  
+InitResident input.device (0x1428c0)  
+InitResident test (0x142980)  
 
 
 Status:

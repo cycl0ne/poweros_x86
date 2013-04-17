@@ -71,7 +71,7 @@ void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, IN
 
 void SVGA_Init(CoreGfxBase *CoreGfxBase);
 
-static volatile APTR FuncTab[] =
+static volatile APTR FuncTab[] = 
 {
 	(void(*)) cgfx_OpenLib,
 	(void(*)) cgfx_CloseLib,
@@ -150,7 +150,7 @@ static const volatile APTR InitTab[4]=
 	(APTR)cgfx_Init
 };
 
-static const volatile struct Resident ROMTag =
+static const volatile struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -158,7 +158,7 @@ static const volatile struct Resident ROMTag =
 	RTF_SINGLETASK | RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
-	90,
+	65,
 	(char *)name,
 	(char*)&version[7],
 	0,
@@ -187,7 +187,7 @@ static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR Sy
 	if (!CoreGfxBase->RegionBase) DPrintF("Failed to open region.library\n");
 
 	CoreGfxBase->ActiveView = NULL; // Initialize to NULL (No View Opened)
-
+	
 	CoreGfxBase->Cursor.buttons = 0;
 	CoreGfxBase->Cursor.xpos = 0;
 	CoreGfxBase->Cursor.ypos = 0;
@@ -204,7 +204,7 @@ static CoreGfxBase *cgfx_Init(CoreGfxBase *CoreGfxBase, UINT32 *segList, APTR Sy
 	CoreGfxBase->Cursor.curminy = CoreGfxBase->Cursor.miny;
 	CoreGfxBase->Cursor.curmaxx = CoreGfxBase->Cursor.curminx + MAX_CURSOR_SIZE - 1;
 	CoreGfxBase->Cursor.curmaxy = CoreGfxBase->Cursor.curminy + MAX_CURSOR_SIZE - 1;
-
+	
 	CoreGfxBase->builtin_fonts = gen_fonts;
 	CoreGfxBase->user_builtin_fonts = NULL;
 

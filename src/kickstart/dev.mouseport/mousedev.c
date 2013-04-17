@@ -29,7 +29,7 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 __attribute__((no_instrument_function)) BOOL mouse_handler(UINT32 number, MDBase *MDBase, APTR SysBase);
 
 
-static APTR FuncTab[] =
+static APTR FuncTab[] = 
 {
 	(void(*)) mdev_OpenDev,
 	(void(*)) mdev_CloseDev,
@@ -67,7 +67,7 @@ static const APTR InitTab[4]=
 	(APTR)mdev_Init
 };
 
-static const struct Resident ROMTag =
+static const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -87,7 +87,7 @@ void arch_ps2m_init(void);
 static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct SysBase *SysBase)
 {
 	MDBase->SysBase	= SysBase;
-
+	
 	// Initialise Unit Command Queue
 	NewList((struct List *)&MDBase->Unit.unit_MsgPort.mp_MsgList);
 	MDBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
@@ -98,7 +98,7 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 	UINT32 status;
 
 	arch_ps2m_init();
-
+	
 	//DPrintF("PS/2 mouse driver installed\n");
 
 	MDBase->IS = CreateIntServer("IRQ12 mouse.device", IS_PRIORITY, mouse_handler, MDBase);
@@ -109,11 +109,10 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 #define SysBase MDBase->SysBase
 void mdev_BeginIO(MDBase *MDBase, struct IORequest *io)
 {
-
 	UINT8 cmd = io->io_Command;
 	io->io_Flags &= (~(IOF_QUEUED|IOF_CURRENT|IOF_SERVICING|IOF_DONE))&0x0ff;
 	io->io_Error = 0;
-
+	
 	if (cmd > MD_SETTRIGGER) cmd = 0; // Invalidate the command.
 
 	if (mouseCmdQuick[cmd] >= 0)
@@ -129,7 +128,7 @@ void mdev_BeginIO(MDBase *MDBase, struct IORequest *io)
 		if (TEST_BITS(MDBase->Unit.unit_Flags, DUB_STOPPED))
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
-			return;
+			return;	
 		}
 		// we are first in Queue, now we are Quick, otherwise we come from the IS Routine
 	}

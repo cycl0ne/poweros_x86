@@ -31,7 +31,7 @@ void PCI_SetBAR(ExpansionBase *ExpBase, const PCIAddress *addr, INT32 index, UIN
 UINT32 PCI_GetBARAddr(ExpansionBase *ExpBase, const PCIAddress *addr, INT32 index);
 void PCI_SetMemEnable(ExpansionBase *ExpBase, const PCIAddress *addr, BOOL enable);
 
-static volatile APTR FuncTab[] =
+static volatile APTR FuncTab[] = 
 {
 	(void(*)) exp_OpenLib,
 	(void(*)) exp_CloseLib,
@@ -80,7 +80,7 @@ static const volatile APTR InitTab[4]=
 	(APTR)exp_Init
 };
 
-static const volatile struct Resident ROMTag =
+static const volatile struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -102,10 +102,10 @@ static struct ExpansionBase *exp_Init(struct ExpansionBase *ExpansionBase, UINT3
 	NewListType(&ExpansionBase->BoardList, NT_PCILIST);
 	InitSemaphore(&ExpansionBase->BoardListLock);
 
-	NewListType(&ExpansionBase->MountList, NT_DOSLIST);
+	NewListType(&ExpansionBase->MountList, NT_DOSLIST);	
 	InitSemaphore(&ExpansionBase->MountListLock);
 
-	return ExpansionBase;
+	return ExpansionBase;	
 }
 
 static const char EndResident = 0;

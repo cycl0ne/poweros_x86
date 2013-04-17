@@ -51,17 +51,20 @@ UINT32 SVGA_CheckCapabilities(VgaGfxBase *VgaGfxBase)
 	/* Grab some info */
 	VgaGfxBase->maxWidth = ReadReg(VgaGfxBase, SVGA_REG_MAX_WIDTH);
 	VgaGfxBase->maxHeight = ReadReg(VgaGfxBase, SVGA_REG_MAX_HEIGHT);
-//	DPrintF("max resolution: %d x %d\n", VgaGfxBase->maxWidth, VgaGfxBase->maxHeight);
+	DPrintF("max resolution: %d x %d\n", VgaGfxBase->maxWidth, VgaGfxBase->maxHeight);
 	VgaGfxBase->fbDma = (void *)ReadReg(VgaGfxBase, SVGA_REG_FB_START);
 	VgaGfxBase->fb = (void *)ReadReg(VgaGfxBase, SVGA_REG_FB_START);
 	VgaGfxBase->fbSize = ReadReg(VgaGfxBase, SVGA_REG_VRAM_SIZE);
-//	DPrintF("frame buffer: %p, size %x\n", VgaGfxBase->fbDma, VgaGfxBase->fbSize);
+	DPrintF("frame buffer: %p, size %x\n", VgaGfxBase->fbDma, VgaGfxBase->fbSize);
 	VgaGfxBase->fifoDma = (void *)ReadReg(VgaGfxBase, SVGA_REG_MEM_START);
 	VgaGfxBase->fifo = (void *)ReadReg(VgaGfxBase, SVGA_REG_MEM_START);
 	VgaGfxBase->fifoSize = ReadReg(VgaGfxBase, SVGA_REG_MEM_SIZE) & ~3;
-//	DPrintF("fifo: %x, size %x\n", VgaGfxBase->fifoDma, VgaGfxBase->fifoSize);
+	DPrintF("fifo: %x, size %x\n", VgaGfxBase->fifoDma, VgaGfxBase->fifoSize);
 	VgaGfxBase->capabilities = ReadReg(VgaGfxBase, SVGA_REG_CAPABILITIES);
-//	PrintCapabilities(VgaGfxBase, VgaGfxBase->capabilities);
+	PrintCapabilities(VgaGfxBase, VgaGfxBase->capabilities);
+	
+	DPrintF("HOSTBPP %d\n",	ReadReg(VgaGfxBase, SVGA_REG_HOST_BITS_PER_PIXEL ));
+
 	VgaGfxBase->fifoMin = (VgaGfxBase->capabilities & SVGA_CAP_EXTENDED_FIFO) ? ReadReg(VgaGfxBase, SVGA_REG_MEM_REGS) : 4;
 	return TRUE;
 }

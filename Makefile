@@ -68,7 +68,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.asm
 
 # Target
 $(PROJECT): buildrepo $(OBJDIR)/kernel.img
-	cp $(OBJDIR)/kernel.img $@
+	cp $(OBJDIR)/kernel.img kernel.img
+	cp $(OBJDIR)/kernel.bin kernel.bin
 
 $(OBJDIR)/kernel.img: $(OBJDIR)/kernel.bin
 	${OBJCOPY} -O binary $< $@
@@ -82,7 +83,7 @@ clean:
 
 buildrepo:
 	$(call make-repo)
-	
+
 vmware:
 	qemu-img convert -f raw harddisk.img -O vmdk kernel.vmdk
 	cp kernel.vmdk ~/vmware/Other/Other.vmdk

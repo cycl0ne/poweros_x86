@@ -65,7 +65,8 @@ Task *lib_TaskCreate(SysBase *SysBase, char *name, APTR codeStart, APTR data, UI
 		return NULL;
 	}
 	newTask->StackSize = stackSize;
-
+	newTask->tc_SPLower = (UINT32) newTask->Stack;
+	newTask->tc_SPUpper = (UINT32) newTask->Stack + stackSize;
 	if (name == NULL) 	newTask->Node.ln_Name = "UnknownTask";
 	else newTask->Node.ln_Name = name;
 	newTask->Node.ln_Pri = pri;

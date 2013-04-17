@@ -134,6 +134,7 @@ typedef struct PixMap {
 	UINT32	pixtype;
 
 	int	portrait;
+	APTR	basedata;
 	void	(*_GetScreenInfo)(struct CRastPort *rp,pCGfxScreenInfo psi);
 
 	void	(*_DrawPixel)(struct CRastPort *psd, INT32 x,INT32 y,UINT32 c);

@@ -10,8 +10,8 @@ void arch_exc_init();
 int arch_main_pre(UINT32 *mboot_ptr)
 {
 	monitor_clear();
+//	monitor_write("[premain] gdtinit()\n");
 	gdt_init();
-	//monitor_write("[premain] gdtinit()\n");
 	arch_exc_init();
 	//monitor_write("[premain] ExcInit()\n");
 }

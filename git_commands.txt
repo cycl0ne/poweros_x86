@@ -45,3 +45,17 @@ For getting new things from cycl0ne's repository:
     #git push origin master
     Goto github website and check your master updated.
 
+delete a local branch
+    #git branch -D gfxtest
+
+undo stagging area changes and working area changes
+	#git reset --hard HEAD
+
+merge from a upstream branch to local branch
+	#git checkout -b gfxtest
+	#git fetch upstream
+	#git merge --no-ff upstream/development
+	#git mergetool
+
+untrack a tracked file
+	#git rm --cached projectFile.txt

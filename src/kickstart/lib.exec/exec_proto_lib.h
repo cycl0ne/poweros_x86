@@ -138,3 +138,5 @@ INT32 lib_RawMayGetChar(struct SysBase *SysBase);
 void lib_RawPutChar(struct SysBase *SysBase, UINT8 chr);
 void lib_RawIOInit(struct SysBase *SysBase);
 void *lib_CopyMemQuick(SysBase *SysBase, const APTR src, APTR dest, int n);
+
+UINT32 lib_AvailMem(SysBase *SysBase, UINT32 attributes);

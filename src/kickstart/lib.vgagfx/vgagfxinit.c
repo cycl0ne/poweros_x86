@@ -17,7 +17,7 @@ APTR vglib_ExtFuncLib(VgaGfxBase *VgaGfxBase);
 
 void SVGA_Init(VgaGfxBase *VgaGfxBase);
 
-static volatile APTR FuncTab[] =
+static volatile APTR FuncTab[] = 
 {
 	(void(*)) vglib_OpenLib,
 	(void(*)) vglib_CloseLib,
@@ -51,7 +51,7 @@ static const volatile APTR InitTab[4]=
 	(APTR)vglib_Init
 };
 
-static const volatile struct Resident ROMTag =
+static const volatile struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
