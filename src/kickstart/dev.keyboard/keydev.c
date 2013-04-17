@@ -57,7 +57,7 @@ void kdev_BeginIO(KbdBase *KbdBase, struct IORequest *io)
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
 			return;
 		}
-		if (KbdBase->Unit.unit_Flags & DUB_STOPPED != 0)
+		if ((KbdBase->Unit.unit_Flags & DUB_STOPPED) != 0)
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
 			return;	

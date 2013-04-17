@@ -100,11 +100,11 @@ typedef struct {
 	UINT32	cpu_count;      /**< Number of processors detected. */
 	volatile INT32 cpu_active;  /**< Number of processors that are up and running. */
 	
-	INT32	*base;
-	INT32	kernel_size;          /**< Size of memory in bytes taken by kernel and stack */
+	UINT32	*base;
+	UINT32	kernel_size;          /**< Size of memory in bytes taken by kernel and stack */
 	
-	INT32	*stack_base;        /**< Base adddress of initial stack */
-	INT32	stack_size;           /**< Size of initial stack */
+	UINT32	*stack_base;        /**< Base adddress of initial stack */
+	UINT32	stack_size;           /**< Size of initial stack */
 	UINT32	*memory_base;
 	UINT32	memory_size;
 	UINT8	memory_prio;

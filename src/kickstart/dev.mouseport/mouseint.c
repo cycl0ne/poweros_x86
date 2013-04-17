@@ -49,7 +49,6 @@ static inline void outb(INT16 _port, INT8 _data)
 
 static INT8 mouse_byte[3];
 static INT8	mouse_cycle = 0;
-static UINT32 test_over = 0;
 
 __attribute__((no_instrument_function)) BOOL mouse_handler(UINT32 number, MDBase *MDBase, APTR SysBase)
 {

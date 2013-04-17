@@ -17,6 +17,9 @@ struct TagItem
 #define TAG_MORE   (2L)
 #define TAG_SKIP   (3L)
 
+#define TAG_USER    ((UINT32)(1L<<31))
+#define TAG_OS	    (16L) 
+
 #define TAGFILTER_AND 0
 #define TAGFILTER_NOT 1
 

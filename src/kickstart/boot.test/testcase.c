@@ -61,6 +61,8 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 #define IsMsgPortEmpty(x) \
 	( ((x)->mp_MsgList.lh_TailPred) == (struct Node *)(&(x)->mp_MsgList) )
 
+#if 0
+// WE NEED TO DO THIS BECAUSE OF WALL
 struct InputEvent g_ie;
 
 struct TestStruct {
@@ -679,7 +681,7 @@ void d_showint(int addr, struct SysBase *SysBase)
 		DPrintF("Funct: %x\n",irq->is_Code);
   }
 }
-
+#endif
 void test_new_memory();
 
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
@@ -696,6 +698,7 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Total Memory Available         : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
 
 	DPrintF("SysBase %x\n", SysBase);
+
 //	test_cgfx(SysBase);
 
 //	test_mouse(SysBase);
@@ -707,7 +710,7 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //d_showtask(SysBase);
 //	memset32((APTR)0x230000, 0x00, 0x200000);
 
-	test_MousePointer(SysBase);
+//	test_MousePointer(SysBase);
 
 //	test_InputDev(SysBase);
 //	test_Srini(SysBase);

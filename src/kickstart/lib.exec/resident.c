@@ -18,7 +18,7 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	};
 	
 	struct init *init = (struct init *)resident->rt_Init;
-	struct Library *library;
+	struct Library *library = NULL;
 	
 	if(resident->rt_MatchWord != RTC_MATCHWORD || resident->rt_MatchTag != resident) return NULL;
 

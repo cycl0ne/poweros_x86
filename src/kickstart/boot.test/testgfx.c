@@ -301,7 +301,7 @@ BOOL VmwSetVideoMode(ULONG Width, ULONG Height, ULONG Bpp, APTR SysBase)
 	PCI_DEVICE_INFO dev;
 	if (DetectVmwareVideoAdapter(&dev))
    {
-      ULONG fb;
+      //ULONG fb;
       PciReadBases(&dev);
       VmwSvgaIndex = dev.Bases[0].Address + SVGA_INDEX_PORT;
       VmwSvgaValue = dev.Bases[0].Address + SVGA_VALUE_PORT;

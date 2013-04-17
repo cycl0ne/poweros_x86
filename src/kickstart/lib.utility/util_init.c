@@ -121,8 +121,8 @@ static const volatile struct Resident ROMTag =
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	103,
-	(char *)name,
-	(char*)&version[7],
+	(STRPTR)name,
+	(STRPTR)&version[7],
 	0,
 	&InitTab
 };
@@ -144,7 +144,7 @@ static pUtility util_Init(pUtility UtilBase, UINT32 *segList, APTR SysBase)
 	UtilBase->Library.lib_IDString = (STRPTR)&version[7];	
 	UtilBase->SysBase	= SysBase;
 	
-	UtilBase->RootSpace = AllocNamedObjectA("rootspace", utilTags);
+	UtilBase->RootSpace = AllocNamedObjectA((STRPTR)"rootspace", utilTags);
 	// Initialize the two random generators.
 	UtilBase->RandSeed = 937186357;
 	UtilBase->SeedNext = 1;

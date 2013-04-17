@@ -60,7 +60,7 @@ void ExecInit(void)
 	// Create two clean Task, one IDLE Task and one Worker Task with Prio 100
 	Task *task1 = TaskCreate("idle", lib_Idle, SysBase, _IDLE_TASK_STACK_, -124); 
 	Task *task2 = TaskCreate("ExecTask", lib_ExecTask, SysBase, _EXEC_TASK_STACK_, 100);
-
+	if (task1 == task2) DPrintF("Couldnt allocate Task\n");
 	if (RomTagScanner(config.base, (UINT32 *)(config.base + config.kernel_size)) == FALSE)
 	{
 		monitor_write("[PANIC] RomTagScanner FAILED!\n");

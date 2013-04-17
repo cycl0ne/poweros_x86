@@ -58,8 +58,8 @@ static const struct Resident ROMTag =
 	DEVICE_VERSION,
 	NT_DEVICE,
 	60,
-	(char *)name,
-	(char*)&version[7],
+	(STRPTR)name,
+	(STRPTR)&version[7],
 	0,
 	&InitTab
 };
@@ -86,13 +86,12 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 	MDBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
 
 	MDBase->BufHead = MDBase->BufTail = 0;
-	UINT32 status;
 
 	arch_ps2m_init();
 	
 	//DPrintF("PS/2 mouse driver installed\n");
 
-	MDBase->IS = CreateIntServer("IRQ12 mouse.device", IS_PRIORITY, mouse_handler, MDBase);
+	MDBase->IS = CreateIntServer((STRPTR)"IRQ12 mouse.device", IS_PRIORITY, mouse_handler, MDBase);
 	AddIntServer(IRQ_MOUSE, MDBase->IS);
 	return MDBase;
 }

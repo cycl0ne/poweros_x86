@@ -152,7 +152,7 @@ INT8 lib_SetTaskPri(SysBase *SysBase, struct Task *task, INT16 pri)
 
 	INT8 old;
 //	DPrintF("[Change Pri] FindTask");
-	if (task = NULL) task = FindTask(NULL);
+	if (task == NULL) task = FindTask(NULL);
 //	DPrintF("[Change Pri] Forbid()");
 	Forbid();
 	old = task->Node.ln_Pri;

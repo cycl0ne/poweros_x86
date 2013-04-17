@@ -7,7 +7,7 @@ void gdt_init();
 void arch_exc_init();
 
 //void arch_main_pre(UINT32 signature, void *info)
-int arch_main_pre(UINT32 *mboot_ptr)
+void arch_main_pre(UINT32 *mboot_ptr)
 {
 	monitor_clear();
 //	monitor_write("[premain] gdtinit()\n");

@@ -26,6 +26,7 @@ struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 x
 		vp->DyOffset= yOffset;
 		//DPrintF("RP: %x ----\n", vp->RastPort);
 	}
+	return vp;
 }
 
 struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 bpp)
@@ -194,7 +195,7 @@ BOOL old = SetUseBackground(rp, FALSE);
 	Text(rp, font, 50, 200, "Hello World", -1, TF_BASELINE);
 	Text(rp, font, 50, 300, "Hello World", -1, TF_TOP);
 	Text(rp, font, 50, 400, "Hello World", -1, TF_BOTTOM);
-
+SetUseBackground(rp, old);
 //DPrintF("Textend\n");
 
 //	MoveCursor(0,0);

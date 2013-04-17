@@ -23,7 +23,6 @@ ClipRegion *reg_AllocRegion(RegionBase *RegionBase)
 
 ClipRegion *reg_AllocRectRegion(RegionBase *RegionBase, INT32 left, INT32 top, INT32 right, INT32 bottom)
 {
-DPrintF("allocregion()\n");
 	ClipRegion *rgn;
 	rgn = AllocRegion();
 	if (rgn) SetRectRegion(rgn, left, top, right, bottom);
