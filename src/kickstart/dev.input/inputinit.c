@@ -40,7 +40,7 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct IDBase),
 	(APTR)FuncTab,
@@ -48,7 +48,7 @@ static const APTR InitTab[4]=
 	(APTR)idev_Init
 };
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -108,7 +108,7 @@ ID_MOUSEMASK	EQU	$F000
 			IDBase->id_K2IOR.io_Unit	= IDBase->id_K1IOR.io_Unit;
 			NewList(&IDBase->id_HandlerList);
 			IDBase->id_BootTask = FindTask(NULL);
-			IDBase->id_Task = TaskCreate(name, idev_InputTask, IDBase, 8192*2, 20);
+			IDBase->id_Task = TaskCreate(name, idev_InputTask, IDBase, 8192, 20);
 			Wait(SIGF_SINGLE);
 			return IDBase;
 		}

@@ -41,7 +41,8 @@ static inline void set_timer(UINT32 hz)
 
 static UINT32 clock_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 {
-	if ((SysBase->TDNestCnt < 0) && (!(IsListEmpty(&SysBase->TaskReady)))) Schedule();
+	if ((SysBase->TDNestCnt < 0) && (!(IsListEmpty(&SysBase->TaskReady))))Schedule();
+//	DPrintF("Clock here\n");
 #if 0
 	clkcnt++;
 	if (clkcnt % 100 == 0)
@@ -57,6 +58,9 @@ void arch_clk_init(SysBase *SysBase)
 {
 	struct Interrupt *irq;
 	irq = CreateIntServer("IRQ0 Clock", -100, clock_handler, SysBase);
+//DPrintF("clk_init -> irq: %x -> %x\n",irq, irq->is_Code);
+
+
 //	monitor_write("Going to AddIntServer\n");
 //	monitor_write_hex((UINT32)irq);
 //	monitor_write("\nLeaving AddIntServer\n");

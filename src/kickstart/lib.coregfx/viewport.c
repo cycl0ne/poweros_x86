@@ -26,6 +26,7 @@ struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 x
 		vp->DyOffset= yOffset;
 		//DPrintF("RP: %x ----\n", vp->RastPort);
 	}
+	return vp;
 }
 
 struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 bpp)
@@ -77,8 +78,10 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 			apix->flags &= ~PSF_SCREEN;
 		}
 		// Activate new View
-		DPrintF("SVGA_SetDisplayMode(%d, %d, %d)\n", view->width, view->height, view->bpp);
 		view->fbAddr = SVGA_SetDisplayMode(CoreGfxBase->VgaGfxBase, view->width, view->height, view->bpp);
+		DPrintF("SVGA_SetDisplayMode(%d, %d, %d) %x\n", view->width, view->height, view->bpp, view->fbAddr);
+		
+//		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
 		// Copy new View to FB
 		memcpy32(view->fbAddr, view->vp->PixMap->addr, view->fbSize);
 		// Save old addr of Pixmap
@@ -192,7 +195,7 @@ BOOL old = SetUseBackground(rp, FALSE);
 	Text(rp, font, 50, 200, "Hello World", -1, TF_BASELINE);
 	Text(rp, font, 50, 300, "Hello World", -1, TF_TOP);
 	Text(rp, font, 50, 400, "Hello World", -1, TF_BOTTOM);
-
+SetUseBackground(rp, old);
 //DPrintF("Textend\n");
 
 //	MoveCursor(0,0);

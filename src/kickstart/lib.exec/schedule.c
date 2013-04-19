@@ -26,6 +26,8 @@ static void MakeTaskReady(SysBase *SysBase, Task *Task)
 	}
 }
 
+#if 0
+Not used anymore!
 static void MakeTaskWait(SysBase *SysBase, Task *Task)
 {
 	if (Task) {
@@ -36,6 +38,7 @@ static void MakeTaskWait(SysBase *SysBase, Task *Task)
 		Enqueue(&SysBase->TaskWait, &Task->Node);
 	}
 }
+#endif
 
 static void MakeTaskRun(SysBase *SysBase, Task *Task)
 {
@@ -44,6 +47,8 @@ static void MakeTaskRun(SysBase *SysBase, Task *Task)
 		SysBase->TDNestCnt = Task->TDNestCnt;
 		SysBase->IDNestCnt = Task->IDNestCnt;
 		if (Task->Launch) Task->Launch(SysBase);
+		UINT32 stack = (UINT32)Task->Stack;
+		if (stack < Task->tc_SPLower) { DPrintF("Stack Overrun!\n"); }
 	} else
 	{
 		DPrintF("PANIC: No Task Ready, where is IDLE?");
@@ -77,12 +82,19 @@ static void BeforeTaskRuns(SysBase *SysBase, Task *Task)
 */
 }
 
+#define debug_schedule 0
+
 void lib_Dispatch(void)
 {
 	SysBase *SysBase = g_SysBase;
 	Task *Task = SysBase->thisTask;
-	if (debug_schedule) DPrintF("[DISPATCH] %s (%x)\n", Task->Node.ln_Name, Task->State);
-
+#if debug_schedule
+	if (debug_schedule) 
+	{
+		DPrintF("[DISPATCH] %s (%x)\n", Task->Node.ln_Name, Task->State);
+		DPrintF("Task: %x\n", Task);
+	}
+#endif	
 	if (Task) {
 		switch(Task->State) {
 		case RUN:
@@ -117,6 +129,7 @@ void lib_Dispatch(void)
 void lib_Schedule(SysBase *SysBase)
 {
 	VUINT32 ipl = Disable();
+#if debug_schedule
 	if (debug_schedule) 
 	{
 		Task *tmp_Task = SysBase->thisTask;
@@ -126,20 +139,22 @@ void lib_Schedule(SysBase *SysBase)
 		DPrintF("Stack Check: %x, Size: %x (%x), Stack Actual: %x", tmp_Task->Stack, tmp_Task->StackSize,
 				tmp_Task->Stack+tmp_Task->StackSize, tmp_Task->SavedContext.sp); 
 	}
-	
+#endif	
 	if ((SysBase->TDNestCnt >= 0) || (IsListEmpty(&SysBase->TaskReady))) {
+#if debug_schedule
 		if (debug_schedule) 
 		{
 			DPrintF("ListEmpty or TDNestCnt\n");
 		}
+#endif
 		Enable(ipl);
 		return;
 	}
 
 	Task *this = SysBase->thisTask;
-
+#if debug_schedule
 	if (debug_schedule) DPrintF("Getting Task %s\n", SysBase->thisTask->Node.ln_Name);
-
+#endif
 	if (SysBase->thisTask) 
 	{
 		if (!context_save(&this->SavedContext)) 
@@ -151,7 +166,8 @@ void lib_Schedule(SysBase *SysBase)
 		}
 		this->SavedContext.ipl = ipl;
 	}
-
+	
+#if debug_schedule
 	if (debug_schedule) 
 	{
 		DPrintF("Going to Dispatch %s\n", SysBase->thisTask->Node.ln_Name);
@@ -159,9 +175,10 @@ void lib_Schedule(SysBase *SysBase)
 		DPrintF("Stack Check: %x, Size: %x (%x), Stack Actual: %x", tmp_Task->Stack, tmp_Task->StackSize,
 				tmp_Task->Stack+tmp_Task->StackSize, tmp_Task->SavedContext.sp); 
 	}
+#endif
 
 	context_save(&SysBase->CPU_Context);
-	context_set(&SysBase->CPU_Context, FADDR(lib_Dispatch), SysBase->CPU_Stack, _CPUSTACK_);
+	context_set(&SysBase->CPU_Context, FADDR(lib_Dispatch), &SysBase->CPU_Stack, _CPUSTACK_);
 	context_restore(&SysBase->CPU_Context);
 }
 

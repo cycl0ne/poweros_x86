@@ -1,5 +1,6 @@
 #include "coregfx.h"
 #include "pixmap.h"
+#include "memory.h"
 #include "exec_funcs.h"
 
 #define SysBase CoreGfxBase->SysBase
@@ -175,11 +176,17 @@ static BOOL mapmemgc(PixMap *mempsd, INT32 w, INT32 h, int planes, int bpp, int 
 	return 1;
 }
 
+static inline void
+memset(void *dest, UINT8 value, UINT32 size)
+{
+   asm volatile ("cld; rep stosb" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
+}
+
 
 PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize)
 {
 	PixMap *pmd;
-	int 	bpp, planes=1, data_format, pixtype;
+	int 	bpp = 32, planes=1, data_format=format, pixtype = PF_TRUECOLORABGR;
 	unsigned int size, pitch;
    
 	if (width <= 0 || height <= 0) return NULL;
@@ -255,15 +262,13 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 		return NULL;	/* fail*/
 	}
 
-	PixMap	*mempsd;
-
-	pmd = AllocVec(sizeof(PixMap), MEMF_FAST);
+	pmd = AllocVec(sizeof(PixMap), MEMF_FAST|MEMF_CLEAR);
 	if (!pmd)
 	{
 		DPrintF("AllocVec on Pixmap failed.\n");
 		return NULL;
 	}
-
+DPrintF("Got Memory for Pixmap: %x\n",pmd);
 	pmd->flags = PSF_MEMORY;			/* reset PSF_SCREEN or PSF_ADDRMALLOC flags*/
 	pmd->portrait = PORTRAIT_NONE; /* don't rotate offscreen pixmaps*/
 	pmd->addr = NULL;
@@ -276,9 +281,17 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 	
 	if (!pixels) 
 	{
+		DPrintF("Allocate Pixels..........");
 		pixels = AllocVec(size, MEMF_FAST|MEMF_CLEAR);
+		DPrintF("Ok\n");
+//		memset(pixels, 0x0, size);
+		if (pixels == NULL) 
+		{
+			DPrintF("EMERGENCY!! NO MEMORY FOR PIXMAP!! size: %d, %x\n", size, size);
+			for(;;);
+		}
 		pmd->flags |= PSF_ADDRMALLOC;
-		//DPrintF("Allocated Pixels Addr: %x\n", pixels);
+		DPrintF("Allocated Pixels Addr: %x (size: %d)\n", pixels, size);
 	}
 	if (!pixels) 
 	{
@@ -298,6 +311,7 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 	pmd->pixtype = pixtype;		/* save pixtype for proper colorval creation*/
 	pmd->ncolors = (pmd->bpp >= 24)? (1 << 24): (1 << pmd->bpp);
 	pmd->_GetScreenInfo = gen_getscreeninfo;
+	pmd->basedata = CoreGfxBase->VgaGfxBase;
 	return pmd;
 }
 

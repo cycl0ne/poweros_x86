@@ -140,12 +140,12 @@ static const volatile struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK,
+	RTW_COLDSTART|RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
-	90,
-	(char *)name,
-	(char*)&version[7],
+	65,
+	(STRPTR)name,
+	(STRPTR)&version[7],
 	0,
 	&InitTab
 };

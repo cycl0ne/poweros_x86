@@ -5,10 +5,13 @@
 #include "arch_config.h"
 #include "exec_funcs.h"
 
+#if 0
 static void printit(INT32 chr, APTR ptr)
 {
 	monitor_put(chr);
 }
+#endif
+
 static void raw_printit(INT32 chr, APTR SysBase)
 {
 	RawPutChar(chr);

@@ -39,9 +39,9 @@ INT32 Strnicmp(pUtility UtilBase, const char *s1, const char *s2, INT32 n);
 INT32 Strcmp(pUtility UtilBase, const char *s1, const char *s2);
 char *Strcpy(pUtility UtilBase, char *to, const char *from);
 
-
-
 #endif
+
+#include "utility.h"
 
 #define NextTagItem(a)				(((struct TagItem *(*)(pUtility UtilBase, const struct TagItem **tagListPtr))				_GETVECADDR(UtilBase, 5))(UtilBase,a))
 #define FindTagItem(a,b)			(((struct TagItem *(*)(pUtility UtilBase, UINT32 tagValue, const struct TagItem *tagList))	_GETVECADDR(UtilBase, 6))(UtilBase,a,b))

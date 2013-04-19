@@ -6,7 +6,7 @@
 #include "alerts.h"
 #include "exec_funcs.h"
 
-struct Library *lib_OpenLibrary(SysBase *SysBase, UINT8 *libName, UINT32 version)
+struct Library *lib_OpenLibrary(SysBase *SysBase, STRPTR libName, UINT32 version)
 {
 	struct Library *library;
 	if (libName == NULL) return NULL;

@@ -70,24 +70,26 @@ typedef void (*Task_Function)(void *SysBase);
 
 typedef struct Task 
 {
-	Node			Node;
-	UINT16		Flags;
-	UINT8		IDNestCnt;
-	UINT8		TDNestCnt;
+	struct Node			Node;
+	UINT16				Flags;
+	UINT8				IDNestCnt;
+	UINT8				TDNestCnt;
 	volatile Task_State	State;
-	UINT32		CPU_Usage;
-	Task_Function	Switch;
-	Task_Function	Launch;
-	UINT32		SigAlloc;
-	UINT32		SigWait;
-	UINT32		SigRecvd;
-	UINT32		SigExcept;
-	APTR			TaskFunc;
-	APTR			TaskArg;
-	context_t		SavedContext;
-	context_t		WaitContext;
-	UINT8		*Stack;
-	UINT32		StackSize;
+	UINT32				CPU_Usage;
+	Task_Function		Switch;
+	Task_Function		Launch;
+	UINT32				SigAlloc;
+	UINT32				SigWait;
+	UINT32				SigRecvd;
+	UINT32				SigExcept;
+	APTR				TaskFunc;
+	APTR				TaskArg;
+	context_t			SavedContext;
+	context_t			WaitContext;
+	UINT8				*Stack;
+	UINT32				tc_SPLower;
+	UINT32				tc_SPUpper;
+	UINT32				StackSize;
 } Task;	
 	
 #endif

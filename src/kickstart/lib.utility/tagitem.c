@@ -88,7 +88,8 @@ void util_RefreshTagItemClones(pUtility UtilBase, struct TagItem *clone, const s
 
 struct TagItem *util_CloneTagItems(pUtility UtilBase, const struct TagItem *tagList)
 {
-    struct TagItem *newList;
+    struct TagItem *newList = NULL;
+
     INT32 numTags = 1;
     if (tagList)
     {
@@ -96,7 +97,8 @@ struct TagItem *util_CloneTagItems(pUtility UtilBase, const struct TagItem *tagL
 	    tmp = tagList;
 	    while (NextTagItem (&tmp) != NULL) numTags++;
     }
-    if (newList = AllocateTagItems(numTags)) RefreshTagItemClones(newList, tagList);
+    newList = AllocateTagItems(numTags);
+    if (newList) RefreshTagItemClones(newList, tagList);
 	return newList;
 }
 

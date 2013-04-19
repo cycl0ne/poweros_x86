@@ -82,6 +82,7 @@ STRPTR util_NamedObjectName(pUtility UtilBase, struct NamedObject *nos)
 		struct NamedObj *tmp = SYSTEM(nos);
 		return tmp->no_Non.non_Node.ln_Name;
 	}
+	return NULL;
 }
 
 static struct NameSpace *getNameSpace(pUtility UtilBase, struct NamedObject *nameSpace)
@@ -103,7 +104,7 @@ static struct NamedObj *searchns(pUtility UtilBase, struct NamedObj *object, str
 		return NULL;
 	}
 
-	if (ns->ns_Flags & NSB_CASE != 0)
+	if ((ns->ns_Flags & NSB_CASE) != 0)
 	{
 		 ret = (struct NamedObj *)FindName((struct List *)object->no_Non.non_Node.ln_Pred, search);
 		 return ret;
@@ -111,7 +112,7 @@ static struct NamedObj *searchns(pUtility UtilBase, struct NamedObj *object, str
 	
 	ForeachNode(object, ret)
 	{
-		if (Stricmp(search, ret->no_Non.non_Node.ln_Name) == 0)
+		if (Stricmp((const char*)search, (const char*)ret->no_Non.non_Node.ln_Name) == 0)
 		{
 			if (ret->no_Non.non_Node.ln_Succ) return ret;
 			return NULL;
@@ -230,11 +231,10 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 	
 	if (us != 0) us +=3;
 	
-	UINT32 nameSize = Strlen(name);
+	UINT32 nameSize = Strlen((const char*)name);
 	UINT32 allocSize = ns + us + sizeof(struct NamedObj) + nameSize + 1;
 
 	UINT8 *mem = AllocVec(allocSize, MEMF_PUBLIC|MEMF_CLEAR);
-	UINT8 *test = mem;
 
 	if (mem == NULL) return NULL;	
 	struct NamedObj *object = (struct NamedObj *) mem;
@@ -244,8 +244,8 @@ struct NamedObject *util_AllocNamedObjectA(pUtility UtilBase, STRPTR name, struc
 		object->no_Nos.nos_NameSpace = (struct NameSpace *)mem;
 		mem += ns;
 	}
-	object->no_Non.non_Node.ln_Name = mem;
-	Strcpy(mem, name);
+	object->no_Non.non_Node.ln_Name = (STRPTR)mem;
+	Strcpy((char *)mem, (const char *)name);
 	mem += nameSize+1;
 	struct NamedObject *ret = (struct NamedObject *)BASEOBJECT(object); //&object->no_Nos;
 

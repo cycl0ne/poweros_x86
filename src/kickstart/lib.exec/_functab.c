@@ -110,7 +110,7 @@ APTR FuncTab[] =
 	(void(*)) lib_RawPutChar,
 	(void(*)) lib_RawMayGetChar,
 	(void(*)) lib_CopyMemQuick,
-	
+	(void(*)) lib_AvailMem,
 	(APTR) ((INT32)-1)
 };
 

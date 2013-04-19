@@ -139,7 +139,7 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 
 #define NewList(x)		(((void(*)(APTR, struct List *)) 								_GETVECADDR(SysBase, 9))(SysBase,x))
 #define Enqueue(x,y)	(((void(*)(APTR, struct List *, struct Node *))					_GETVECADDR(SysBase,10))(SysBase,x,y))
-#define FindName(x,y)	(((struct Node *(*)(APTR, struct List *, UINT8 *))				_GETVECADDR(SysBase,11))(SysBase,x,y))
+#define FindName(x,y)	(((struct Node *(*)(APTR, struct List *, STRPTR))				_GETVECADDR(SysBase,11))(SysBase,x,y))
 #define RemTail(x)		(((struct Node *(*)(APTR, struct List *))						_GETVECADDR(SysBase,12))(SysBase,x))
 #define AddTail(x,y)	(((void(*)(APTR, struct List *, struct Node *))					_GETVECADDR(SysBase,13))(SysBase,x,y))
 #define RemHead(x)		(((struct Node *(*)(APTR, struct List *))						_GETVECADDR(SysBase,14))(SysBase,x))
@@ -148,7 +148,7 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 #define Insert(x,y,z)	(((void(*)(APTR, struct List *, struct Node *, struct Node *))	_GETVECADDR(SysBase,17))(SysBase,x,y,z))
 #define NewListType(x,y)		(((void(*)(APTR, struct List *, UINT8)) _GETVECADDR(SysBase, 18))(SysBase,x,y))
 
-#define FindTask(a)     	(((struct Task*(*)(APTR, UINT8 * ))             				_GETVECADDR(SysBase, 19))(SysBase,a))
+#define FindTask(a)     	(((struct Task*(*)(APTR, STRPTR ))             				_GETVECADDR(SysBase, 19))(SysBase,a))
 #define AddTask(a,b,c,d)	(((struct Task*(*)(APTR, Task *, APTR, APTR, APTR))         _GETVECADDR(SysBase, 20))(SysBase,a,b,c,d))
 
 #define AddMemList(a,b,c,d,e)	(((void(*)(APTR, UINT32, UINT32, INT32, APTR, STRPTR))	_GETVECADDR(SysBase, 21))(SysBase,a,b,c,d,e))
@@ -248,6 +248,7 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 #define RawPutChar(x)			(((void(*)(APTR, UINT8))				_GETVECADDR(SysBase, 89))(SysBase,x))
 #define RawMayGetChar()			(((INT32(*)(APTR))						_GETVECADDR(SysBase, 90))(SysBase))
 
-#define CopyMemQuick(x, y, z)		(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
+#define CopyMemQuick(x, y, z)	(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
 
+#define AvailMem(x)				(((UINT32(*)(APTR, UINT32))				_GETVECADDR(SysBase, 92))(SysBase,x))
 #endif

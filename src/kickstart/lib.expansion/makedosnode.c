@@ -31,11 +31,11 @@ static UINT32 strlen(const char * s)
 	return sc - s;
 }
 
-static char* strcpy(char *dst0, const char *src0)
+static char *strcpy(char *to, const char *from)
 {
-	char *s = dst0;
-	while (*dst0++ = *src0++);
-	return s;
+	char *save = to;
+	for (; (*to = *from) != '\0'; ++from, ++to);
+	return(save);
 }
 
 static void *copymemfast(void* dest, const void* src, int n) 

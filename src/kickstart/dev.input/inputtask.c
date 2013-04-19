@@ -274,10 +274,10 @@ static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
 			}
 		}
 		
-		while(IDBase->Unit.unit_Flags & DUB_STOPPED != 0)
+		while((IDBase->Unit.unit_Flags & DUB_STOPPED) != 0)
 		{
 			sig = Wait(signalStart);
-			if (IDBase->Unit.unit_Flags & DUB_STOPPED == 0) 
+			if ((IDBase->Unit.unit_Flags & DUB_STOPPED) == 0) 
 			{
 				if (sig & signalIE) SetSignal(signalIE, signalIE);
 				break;
@@ -350,8 +350,9 @@ UINT32 idev_InputTask(IDBase *IDBase, APTR SysBase)
 
 	Signal(IDBase->id_BootTask, SIGF_SINGLE);
 	//Wait for someone to use us.
-	UINT32 rcvd = Wait((1<<signalUnit)|(1<<signalIE));
-
+	//UINT32 rcvd = 
+	Wait((1<<signalUnit)|(1<<signalIE));
+	
 	openGameport(IDBase);
 	readTimer(IDBase);
 	readKeyboard(IDBase);

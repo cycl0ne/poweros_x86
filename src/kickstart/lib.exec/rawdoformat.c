@@ -200,6 +200,11 @@ reswitch:
 			lib_int_RawDoFmtNumber(ul, 16, PutCh, PutChData, pad0flag, width);
 			break;
 
+		case 'X':
+			ul = va_arg(ap, UINT32);
+			lib_int_RawDoFmtNumber(ul, 16, PutCh, PutChData, pad0flag, width);
+			break;
+
 		case '0':
 			if(pad0flag == 0 && wflag == 0 && pflag == 0)
 			{

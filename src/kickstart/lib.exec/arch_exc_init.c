@@ -29,7 +29,6 @@ static void idt_set_gate(u8int num, u32int base, u16int sel, u8int flags)
 
 void arch_exc_init()
 {
-	UINT32	i = 0;
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 -1;
 	idt_ptr.base  = (u32int)&idt_entries;
 

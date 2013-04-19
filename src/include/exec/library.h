@@ -20,7 +20,7 @@ typedef struct Library
   UINT16		lib_Version;
   UINT16		lib_Revision;
   UINT32		lib_Sum;
-  UINT8			*lib_IDString;
+  STRPTR		lib_IDString;
 } Library;
 
 #define LIB_OPEN    1

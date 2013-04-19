@@ -29,7 +29,9 @@ SECTIONS
         *(.bss)
         . = ALIGN(4096);
     }
-
+	/DISCARD/ : {
+		*(*);
+	}
 
     end = .; _end = .; __end = .;
 }

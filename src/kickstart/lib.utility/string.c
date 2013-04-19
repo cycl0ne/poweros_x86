@@ -34,7 +34,7 @@ UINT8 *util_Strncpy(pUtility UtilBase, char *dst, const char *src, INT32 n)
 			}
 		} while (--n != 0);
 	}
-	return (dst);
+	return ((UINT8*)dst);
 }
 
 INT32 util_Stricmp(pUtility UtilBase, const char *s1, const char *s2)

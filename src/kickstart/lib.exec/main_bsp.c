@@ -35,7 +35,7 @@ __attribute__((no_instrument_function)) void main_bsp(void)
 	config.memory_base = (UINT32 *)0x200000;//config.stack_base;
 	config.memory_size = (UINT32  )0x2000000;
 	config.memory_prio = 0;
-	config.memory_attribute = MEMF_FAST;
+	config.memory_attribute = MEMF_FAST|MEMF_PUBLIC;
 	config.memory_name = "Fast Memory\n";
 
 #if 0

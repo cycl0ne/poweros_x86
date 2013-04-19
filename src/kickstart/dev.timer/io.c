@@ -94,7 +94,7 @@ static void AddRequest(struct TimerBase *TimerBase, struct TimeRequest *ioreq)
 
 void timer_BeginIO(TimerBase *TimerBase, struct IORequest *ioreq)
 {
-	BOOL Msg = TRUE;
+	//BOOL Msg = TRUE;
     ioreq->io_Message.mn_Node.ln_Type = NT_MESSAGE;
     ioreq->io_Error = 0;
 

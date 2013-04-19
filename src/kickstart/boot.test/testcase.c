@@ -6,7 +6,7 @@
 #include "mouseport.h"
 #include "keyboard.h"
 #include "inputevent.h"
-
+#include "memory.h"
 // This is a Testsuite for implementations on the OS.
 // Since we boot out of the ROM, we need an Resident Structure
 
@@ -19,7 +19,7 @@ struct TestBase
 	Task *WorkerTask;
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct TestBase),
 	(APTR)NULL,  // Array of function (Library/Device)
@@ -34,7 +34,7 @@ static const char EndResident;
 #define DEVICE_VERSION 0
 #define DEVICE_REVISION 1
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -54,13 +54,16 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 	TestBase->SysBase = SysBase;
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
 	// For this we initialise a worker Task with Prio 0 
-	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*16, 0); //4kb Stack should be enough
+	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*2, 0); //8kb Stack should be enough
+//	DPrintF("[INIT] Testinitialisation finished\n");
 	return TestBase;
 }
 
 #define IsMsgPortEmpty(x) \
 	( ((x)->mp_MsgList.lh_TailPred) == (struct Node *)(&(x)->mp_MsgList) )
 
+#if 1
+// WE NEED TO DO THIS BECAUSE OF WALL
 struct InputEvent g_ie;
 
 struct TestStruct {
@@ -68,6 +71,45 @@ struct TestStruct {
 	struct IOStdReq *io[10];
 	struct InputEvent ie[10];
 };
+
+
+static void hexdump(APTR SysBase, unsigned char *buf,int len)
+{
+	int cnt3,cnt4;
+	int cnt=0;
+	int cnt2=0;
+	UINT8 *temp = buf;
+	do
+	{
+		DPrintF("%08X | ", temp); //cnt);
+		for (cnt3=0;cnt3<16;cnt3++)
+		{
+			if (cnt<len)
+			{
+				DPrintF("%02X ",buf[cnt++]);
+				temp++;
+			}
+			else
+				DPrintF("   ");
+		}
+		DPrintF("| ");
+		for (cnt4=0;cnt4<cnt3;cnt4++)
+		{
+			if (cnt2==len)
+				break;
+			if (buf[cnt2]<0x20)
+				DPrintF(".");
+			else
+				if (buf[cnt2]>0x7F && buf[cnt2]<0xC0)
+					DPrintF(".");
+				else
+					DPrintF("%c",buf[cnt2]);
+			cnt2++;
+		}
+		DPrintF("\n");
+	}
+	while (cnt!=len);
+}
 
 #include "alerts.h"
 
@@ -282,16 +324,12 @@ static void test_RawIO(SysBase *SysBase)
 	Alert(AN_MemCorrupt, "End of Test RawIO\n");
 }
 
+static inline void memset32(void *dest, UINT32 value, UINT32 size) { asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory"); }
+
 BOOL VmwSetVideoMode(UINT32 Width, UINT32 Height, UINT32 Bpp, SysBase *SysBase);
 
 #include "vgagfx.h"
 #include "vmware.h"
-
-static inline void
-memset32(void *dest, UINT32 value, UINT32 size)
-{
-   asm volatile ("cld; rep stosl" : "+c" (size), "+D" (dest) : "a" (value) : "memory");
-}
 
 void test_vgagfx(APTR SysBase)
 {
@@ -433,6 +471,7 @@ void srand(UINT32 seed)
 	next = seed;
 }
 
+#if 0
 static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *rp)
 {
 	INT32	x;
@@ -452,24 +491,58 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 	Ellipse(rp, x, y, rx, ry, TRUE);	
 //	for(int i=0; i<1000000;i++);
 }
+#endif
 
-static void test_MousePointer(APTR SysBase)
+static void test_MousePointer(SysBase *SysBase)
 {
+	INT32 xres = 1024;
+	INT32 yres = 768;
+//	UINT32 *temp = AllocVec(1280*2*1024, MEMF_FAST);
+//	DPrintF ("Temp allocated\n");
 	APTR CoreGfxBase = OpenLibrary("coregfx.library", 0);
 	if (!CoreGfxBase) { DPrintF("Failed to open library\n"); return; }
-	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, 640, 480, IF_BGRA8888, FPM_Displayable, NULL,0 );
+	struct PixMap *pix	= cgfx_AllocPixMap(CoreGfxBase, xres, yres, IF_BGRA8888, FPM_Displayable, NULL,0 ); //IF_BGR888
+DPrintF("AllocPixmap.......ok\n");
 	struct CRastPort *rp = cgfx_InitRastPort(CoreGfxBase, pix);
 	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
 	SetForegroundColor(rp, RGB(150,150,150));
-	FillRect(rp, 0, 0, 639, 479);
+
+	pMemCHead node;	
+    struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
+    
+	ForeachNode(&mh->mh_ListUsed, node)
+	{
+		Task *task = node->mch_Task;
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+	}
+
+	ForeachNode(&mh->mh_List, node)
+	{
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+	}
+
+	FillRect(rp, 0, 0, xres, yres);
 //	if (pix) memset32(pix->addr, 0x0, pix->size/4);
 
 	DPrintF("cgfx_CreateView()\n");
-	struct View *view	= cgfx_CreateView(CoreGfxBase, 640, 480, 32);
+	struct View *view	= cgfx_CreateView(CoreGfxBase, xres, yres, 32);//24);
 	struct ViewPort *vp = cgfx_CreateVPort(CoreGfxBase, pix, 0, 0);
 	cgfx_MakeVPort(CoreGfxBase, view, vp);
 	DPrintF("LoadView()\n");
 	cgfx_LoadView(CoreGfxBase, view);
+/*
+	UINT32 size = view->width * view->height;
+	UINT32 *fb = (UINT32*)view->fbAddr;
+	for (UINT32 i = 0; i< size; i++) fb[i] = 0xFFFF0000;
+*/
+//	SetForegroundColor(rp, RGB(255,0,0));
+//	FillRect(rp, 0, 0, xres, yres);
+//	hexdump(SysBase, view->fbAddr + 0x10000, 0x200);
+//		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
+
+
+//DPrintF("Fill Screen\n");
+//for(;;);
 
 nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230, 221));
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
@@ -507,11 +580,14 @@ test_Arc(SysBase, CoreGfxBase, rp);
 	DPrintF("Doio\n");
 	DoIO((struct IORequest *) io );
 	if (io->io_Error > 0) DPrintF("Io Error [%d]\n", 0);
+//	DPrintF("GotIO\n");
+
+
 	for(;;)
 	{
 		struct IOStdReq *rcvd_io = io;
-		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
-		//DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
+//		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
+//		DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
 		
 		rcvd_io->io_Command = MD_READEVENT; /* add a new request */
 		rcvd_io->io_Error = 0;
@@ -522,12 +598,12 @@ test_Arc(SysBase, CoreGfxBase, rp);
 		
 		x+=ie.ie_X;
 		y-=ie.ie_Y;
-		if (x>640) x=640;
+		if (x>xres) x=xres;
 		if (x<0) x= 0;
-		if (y>480) y=480;
+		if (y>yres) y=yres;
 		if (y<0) y= 0;
 		MoveCursor(x,y);
-		//DPrintF("x:%d, y:%d \n",x, y);
+//		DPrintF("x:%d, y:%d \n",x, y);
 //for(;;);
 		DoIO((struct IORequest *) io );
 	}	
@@ -568,6 +644,50 @@ static void test_InputDev(struct SysBase *SysBase)
 	DoIO((struct IORequest *)io);
 }
 
+void d_showtask(struct SysBase *SysBase)
+{
+	struct Task *dev;
+	DPrintF("PowerOS Registered Tasks :\n\n");
+	dev = FindTask(NULL);
+	DPrintF("Run ----------------------------\n");
+	DPrintF("Name : %s\n",dev->Node.ln_Name);
+	DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+	DPrintF("Type : %X\n",dev->Node.ln_Type);
+		
+	DPrintF("Ready --------------------------\n");
+	ForeachNode(&SysBase->TaskReady,dev)
+	{
+		DPrintF("Name : %s\n",dev->Node.ln_Name);
+		DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+		DPrintF("Type : %X\n",dev->Node.ln_Type);
+	}
+	DPrintF("Wait  --------------------------\n");
+	ForeachNode(&SysBase->TaskWait,dev)
+	{
+		DPrintF("Name : %s\n",dev->Node.ln_Name);
+		DPrintF("Prio : %d\n",dev->Node.ln_Pri);
+		DPrintF("Type : %X\n",dev->Node.ln_Type);
+	}
+}
+
+void d_showint(int addr, struct SysBase *SysBase)
+{
+	struct Interrupt *irq;
+	if (addr >= 16) return;
+	DPrintF("Interrupt [%X] :\n",addr);
+	ForeachNode(&SysBase->IntVectorList[addr],irq)
+	{
+		DPrintF("-------------------------------\n");
+		DPrintF("Addr : %x\n",&irq->is_Node);
+		DPrintF("Name : %s\n",irq->is_Node.ln_Name);
+		DPrintF("Prio : %d\n",irq->is_Node.ln_Pri);
+		DPrintF("Type : %X\n",irq->is_Node.ln_Type);
+		DPrintF("Funct: %x\n",irq->is_Code);
+  }
+}
+#endif
+void test_new_memory();
+
 static void test_TestTask(APTR data, struct SysBase *SysBase) 
 {
 	DPrintF("TestTask_________________________________________________\n");
@@ -576,18 +696,51 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
 
+	DPrintF("---------------------------------------------\n");
+	pMemCHead node;	
+    struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
+    
+	ForeachNode(&mh->mh_ListUsed, node)
+	{
+		Task *task = node->mch_Task;
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+	}
+	DPrintF("---------------------------------------------\n");
+
+	ForeachNode(&mh->mh_List, node)
+	{
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+	}
+
+	DPrintF("---------------------------------------------\n");
+	DPrintF("Largest Chunk Memory Available : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_LARGEST), AvailMem(MEMF_FAST|MEMF_LARGEST));
+	DPrintF("Free Memory Available          : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_FREE), AvailMem(MEMF_FAST|MEMF_FREE));
+	DPrintF("Total Memory Available         : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_TOTAL), AvailMem(MEMF_FAST|MEMF_TOTAL));
+
+	DPrintF("SysBase %x\n", SysBase);
+	DPrintF("SysBase->IDNestcnt %x\n", SysBase->IDNestCnt);
+	goto out;
+//for(;;);
+
+//	asm("cli");
+	test_MousePointer(SysBase);
+
 //	test_cgfx(SysBase);
 
-//	test_mouse(SysBase);
-//	test_keyboard(SysBase);
-//	test_AlertTest(SysBase);
-//	test_RawIO(SysBase);
+	test_mouse(SysBase);
+	test_keyboard(SysBase);
+	test_AlertTest(SysBase);
+	test_RawIO(SysBase);
 //	VmwSetVideoMode(800, 600, 32, SysBase);
 
-//	test_MousePointer(SysBase);
+//d_showtask(SysBase);
+//	memset32((APTR)0x230000, 0x00, 0x200000);
+hexdump(SysBase, 0x0, 100);
+
 	test_InputDev(SysBase);
-	
-//	test_Srini(SysBase);
+	test_Srini(SysBase);
+//test_new_memory();
+out:
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }
 

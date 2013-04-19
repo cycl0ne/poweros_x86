@@ -133,7 +133,7 @@ typedef struct {
 	/* End of fontmapper-only variables */
 
 	/* render-dependent full path or facename here*/
-	INT8	lfFaceName[LF_FACESIZE];/* font name, may be aliased*/
+	char	lfFaceName[LF_FACESIZE];/* font name, may be aliased*/
 
 } CGfxLogFont, *pCGfxLogFont;
 

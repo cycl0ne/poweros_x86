@@ -43,7 +43,7 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct KbdBase),
 	(APTR)FuncTab,
@@ -51,12 +51,12 @@ static const APTR InitTab[4]=
 	(APTR)kdev_Init
 };
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART,
+	RTF_COLDSTART|RTF_AUTOINIT,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	45,
@@ -211,7 +211,7 @@ static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struc
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
 	KbdBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	KbdBase->Unit.unit_MsgPort.mp_SigTask = NULL; // Important for our Queue Handling
-	DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
+	//DPrintF("KBD io_Port: %x\n", &KbdBase->Unit.unit_MsgPort);
 
 	// Initialise the reset handler list
 	NewList((struct List *)&KbdBase->HandlerList);
