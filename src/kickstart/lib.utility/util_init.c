@@ -144,11 +144,7 @@ static pUtility util_Init(pUtility UtilBase, UINT32 *segList, APTR SysBase)
 	UtilBase->Library.lib_IDString = (STRPTR)&version[7];	
 	UtilBase->SysBase	= SysBase;
 	
-<<<<<<< HEAD
-	UtilBase->RootSpace = AllocNamedObjectA("rootspace", utilTags);
-=======
 	UtilBase->RootSpace = AllocNamedObjectA((STRPTR)"rootspace", utilTags);
->>>>>>> development
 	// Initialize the two random generators.
 	UtilBase->RandSeed = 937186357;
 	UtilBase->SeedNext = 1;
