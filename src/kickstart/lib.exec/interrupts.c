@@ -26,7 +26,7 @@ void lib_AddIntServer(SysBase *SysBase, UINT32 intNumber, struct Interrupt *isr)
 	Enable(ipl);
 	
 	// Unmask IRQ
-	DPrintF("empty: %d %d\n", intNumber, empty);
+	//DPrintF("empty: %d %d\n", intNumber, empty);
 	if (empty) arch_irq_unmask(1 << intNumber);
 }
 

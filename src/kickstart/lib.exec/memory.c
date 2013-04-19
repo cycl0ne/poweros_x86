@@ -54,7 +54,9 @@ static inline pMemCHead find_smallest_hole(UINT32 size, pMemHeader mh)
 
 APTR lib_Allocate(SysBase *SysBase, pMemHeader mh, UINT32 size)
 {
-	UINT32		new_size = size + sizeof(MemCHead) + sizeof(MemCFoot);
+	size = ALIGN(size);
+	UINT32		new_size = ALIGN(size + sizeof(MemCHead) + sizeof(MemCFoot));
+//	if (SysBase != NULL) DPrintF("newSize: %x %b\n", new_size, new_size);
 	pMemCHead	found = find_smallest_hole(new_size, mh);
 	
 	if (found != NULL) 

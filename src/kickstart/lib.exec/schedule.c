@@ -146,9 +146,9 @@ void lib_Schedule(SysBase *SysBase)
 		{
 			DPrintF("ListEmpty or TDNestCnt\n");
 		}
+#endif
 		Enable(ipl);
 		return;
-#endif
 	}
 
 	Task *this = SysBase->thisTask;

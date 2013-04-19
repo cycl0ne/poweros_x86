@@ -55,7 +55,7 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
 	// For this we initialise a worker Task with Prio 0 
 	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*2, 0); //8kb Stack should be enough
-	DPrintF("Test finished\n");
+//	DPrintF("[INIT] Testinitialisation finished\n");
 	return TestBase;
 }
 
@@ -697,12 +697,31 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 	DPrintF("Decimal Output: %d\n", 0x79);
 
 	DPrintF("---------------------------------------------\n");
-	DPrintF("Largest Chunk Memory Available : %x\n", AvailMem(MEMF_FAST|MEMF_LARGEST));
-	DPrintF("Free Memory Available          : %x\n", AvailMem(MEMF_FAST|MEMF_FREE));
-	DPrintF("Total Memory Available         : %x\n", AvailMem(MEMF_FAST|MEMF_TOTAL));
+	pMemCHead node;	
+    struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
+    
+	ForeachNode(&mh->mh_ListUsed, node)
+	{
+		Task *task = node->mch_Task;
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+	}
+	DPrintF("---------------------------------------------\n");
+
+	ForeachNode(&mh->mh_List, node)
+	{
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+	}
+
+	DPrintF("---------------------------------------------\n");
+	DPrintF("Largest Chunk Memory Available : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_LARGEST), AvailMem(MEMF_FAST|MEMF_LARGEST));
+	DPrintF("Free Memory Available          : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_FREE), AvailMem(MEMF_FAST|MEMF_FREE));
+	DPrintF("Total Memory Available         : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_TOTAL), AvailMem(MEMF_FAST|MEMF_TOTAL));
 
 	DPrintF("SysBase %x\n", SysBase);
 	DPrintF("SysBase->IDNestcnt %x\n", SysBase->IDNestCnt);
+	goto out;
+//for(;;);
+
 //	asm("cli");
 	test_MousePointer(SysBase);
 
@@ -721,6 +740,7 @@ hexdump(SysBase, 0x0, 100);
 	test_InputDev(SysBase);
 	test_Srini(SysBase);
 //test_new_memory();
+out:
 	DPrintF("[TESTTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }
 

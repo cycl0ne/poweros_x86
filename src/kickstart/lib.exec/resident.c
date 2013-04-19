@@ -26,7 +26,7 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	// due to the broken code down there we implemented this hack
 	if (resident->rt_Flags & RTF_TESTCASE) 
 	{
-		DPrintF("Resident TestCase\n");
+		//DPrintF("Resident TestCase\n");
 		library = AllocVec(init->dSize, MEMF_CLEAR);
 		return library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) init->init)(library, segList, SysBase));
 	}
