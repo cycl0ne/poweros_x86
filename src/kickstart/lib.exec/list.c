@@ -1,12 +1,13 @@
 /*
 *	list.c
-*	
-*	All functions for list manipulation. 
+*
+*	All functions for list manipulation.
 *
 */
 
 #include "list.h"
 #include "sysbase.h"
+#include "assert.h"
 
 #include "exec_funcs.h"
 
@@ -26,6 +27,9 @@ struct Node *lib_FindName(SysBase *SysBase, struct List *liste, STRPTR name);
 
 void lib_AddHead(SysBase *SysBase, List *list, Node *node)
 {
+	ASSERT(list);
+	ASSERT(node);
+
    // list o-o newnode o-o node
    node->ln_Succ = list->lh_Head;
    node->ln_Pred = (Node *)&list->lh_Head;
@@ -35,6 +39,9 @@ void lib_AddHead(SysBase *SysBase, List *list, Node *node)
 
 void lib_AddTail(SysBase *SysBase, List *list, Node *node)
 {
+	ASSERT(list);
+	ASSERT(node);
+
    //  list o-o node o-o node o-o node o-o newnode
    node->ln_Succ = (Node *)&list->lh_Tail;
    node->ln_Pred = list->lh_TailPred;
@@ -44,6 +51,9 @@ void lib_AddTail(SysBase *SysBase, List *list, Node *node)
 
 void lib_Enqueue(SysBase *SysBase, List *list, Node *node)
 {
+	ASSERT(list);
+	ASSERT(node);
+
 	Node *next;
 	ForeachNode(list, next)
 	{
@@ -57,16 +67,19 @@ void lib_Enqueue(SysBase *SysBase, List *list, Node *node)
 
 void lib_Insert(SysBase *SysBase, List *list, Node *node, Node *pred)
 {
-	if (!pred) 
+	ASSERT(list);
+	ASSERT(node);
+
+	if (!pred)
 	{
-		//AddHead(list,node); 
+		//AddHead(list,node);
 		node->ln_Succ = list->lh_Head;
 		node->ln_Pred = (struct Node *)&list->lh_Head;
 		list->lh_Head->ln_Pred = node;
 		list->lh_Head = node;
 		return;
 	}
-	if (!pred->ln_Succ) 
+	if (!pred->ln_Succ)
 	{
 		node->ln_Succ = (struct Node *)&list->lh_Tail;
 		node->ln_Pred = list->lh_TailPred;
@@ -83,6 +96,8 @@ void lib_Insert(SysBase *SysBase, List *list, Node *node, Node *pred)
 
 void lib_NewList(SysBase *SysBase, List *list)
 {
+	ASSERT(list);
+
     list->lh_Tail = NULL;
     list->lh_Head = (Node*)&list->lh_Tail;
     list->lh_TailPred = (Node*)&list->lh_Head;
@@ -90,6 +105,8 @@ void lib_NewList(SysBase *SysBase, List *list)
 
 void lib_NewListType(SysBase *SysBase, List *list, UINT8 type)
 {
+	ASSERT(list);
+
     list->lh_Tail = NULL;
     list->lh_Head = (Node*)&list->lh_Tail;
     list->lh_TailPred = (Node*)&list->lh_Head;
@@ -98,12 +115,16 @@ void lib_NewListType(SysBase *SysBase, List *list, UINT8 type)
 
 void lib_Remove(SysBase *SysBase, Node *node)
 {
+	ASSERT(node);
+
    node->ln_Succ->ln_Pred = node->ln_Pred;
    node->ln_Pred->ln_Succ = node->ln_Succ;
 }
 
 Node *lib_RemTail(SysBase *SysBase, List *list)
 {
+	ASSERT(list);
+
 	if (IsListEmpty(list)) return NULL;
 
 	Node *node;
@@ -117,6 +138,8 @@ Node *lib_RemTail(SysBase *SysBase, List *list)
 
 Node *lib_RemHead(SysBase *SysBase, struct List *list)
 {
+	ASSERT(list);
+
 	if (IsListEmpty(list)) return NULL;
 
 	Node *node;
@@ -150,7 +173,7 @@ struct Node *lib_RemHead(SysBase *SysBase, struct List *list)
 		node->ln_Pred = (struct Node *)list;
 		node = list->lh_Head;
 		list->lh_Head = node->ln_Succ;
-	}   
+	}
    return node;
 }
 */
@@ -161,10 +184,12 @@ inline static int strcmp(char *s, char *t)
 	return *s - *t;
 }
 
-struct Node *lib_FindName(SysBase *SysBase, struct List *liste, STRPTR name)
+struct Node *lib_FindName(SysBase *SysBase, struct List *list, STRPTR name)
 {
+	ASSERT(list);
+
    struct Node *tmp=NULL;
-   ForeachNode(liste, tmp)
+   ForeachNode(list, tmp)
    {
       if (!strcmp(tmp->ln_Name, name)) return tmp;
    }

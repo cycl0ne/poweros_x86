@@ -1,5 +1,1 @@
-kernel
-*.o
-harddisk.img
-bin/
-*.vmdk
+

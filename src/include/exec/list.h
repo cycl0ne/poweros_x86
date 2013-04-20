@@ -75,6 +75,16 @@ typedef struct MinList MinList;
 #define IsListEmpty(l)\
         ( (((struct List*)l)->lh_TailPred) == (struct Node *)(l) )
 
+#define SafeIsListEmpty(l)\
+        ((l)&&((((struct List*)(l))->lh_Head) == ((struct Node *)&(((struct List*)(l))->lh_Tail))))
+
+#define SafeGetHead(l)\
+		(l) ? (((((struct List*)(l))->lh_Head) == ((struct Node *)&(((struct List*)(l))->lh_Tail))) ? (NULL) : ((((struct List*)(l))->lh_Head))) : NULL
+
+#define SafeGetTail(l)\
+		(l) ? (((((struct List*)(l))->lh_Head) == ((struct Node *)&(((struct List*)(l))->lh_Tail))) ? (NULL) : ((((struct List*)(l))->lh_TailPred))) : NULL
+
+
 #define ForeachNode(l,n) \
    for (n=(void *)(((struct List *)(l))->lh_Head); \
        ((struct Node *)(n))->ln_Succ; \

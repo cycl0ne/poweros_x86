@@ -10,7 +10,7 @@
 void Alert(UINT32 alertNum, const char *fmt, ...);
 
 #ifdef USEASSERT
-#define allert_assert(fmt, ...) \
+#define alert_assert(fmt, ...) \
 	Alert((1<<31), fmt, ##__VA_ARGS__)
 
 #define ASSERT(expr) \
@@ -33,4 +33,13 @@ void Alert(UINT32 alertNum, const char *fmt, ...);
 #define ASSERT_VERBOSE(expr, msg)
 
 #endif
+
+/*
+#ifdef NDEBUG
+#define ASSERT(a, b) {}
+#else
+#define ASSERT(a, b) {if((a)){b;}}
+#endif
+*/
+
 #endif
