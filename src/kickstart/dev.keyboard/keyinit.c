@@ -43,11 +43,29 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct KbdBase KbdLibData =
+{
+	.Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+	.Device.dd_Library.lib_Node.ln_Pri = 45,
+
+	.Device.dd_Library.lib_OpenCnt = 0,
+	.Device.dd_Library.lib_Flags = 0,
+	.Device.dd_Library.lib_NegSize = 0,
+	.Device.dd_Library.lib_PosSize = 0,
+	.Device.dd_Library.lib_Version = DEVICE_VERSION,
+	.Device.dd_Library.lib_Revision = DEVICE_REVISION,
+	.Device.dd_Library.lib_Sum = 0,
+	.Device.dd_Library.lib_IDString = (APTR)&version[7],
+
+	.Flags = 0
+};
+
 static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct KbdBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&KbdLibData,
 	(APTR)kdev_Init
 };
 
@@ -56,7 +74,7 @@ static volatile const struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART|RTF_AUTOINIT,
+	RTF_AUTOINIT | RTF_COLDSTART,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	45,
@@ -195,16 +213,8 @@ static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase)
 {
-	KbdBase->Device.dd_Library.lib_OpenCnt = 0;
-	KbdBase->Device.dd_Library.lib_Node.ln_Pri = 0;
-	KbdBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
-	KbdBase->Device.dd_Library.lib_Node.ln_Name = (STRPTR)name;
-	KbdBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
-	KbdBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
-	KbdBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
 	
 	KbdBase->SysBase	= SysBase;
-	KbdBase->Flags		= 0;
 	
 	// Initialise Unit Command Queue
 	NewList((struct List *)&KbdBase->Unit.unit_MsgPort.mp_MsgList);

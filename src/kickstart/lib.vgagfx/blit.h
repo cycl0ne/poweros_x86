@@ -150,7 +150,7 @@ typedef struct BlitParameter{
 //	PSD			alphachan;		/* alpha chan for MWROP_BLENDCHANNEL*/
 } CGfxBlitParms, *pCGfxBlitParms;
 
-typedef void (*BLITFUNC)(struct PixMap*, pCGfxBlitParms);		/* proto for blitter functions*/
+//typedef void (*BLITFUNC)(struct PixMap*, pCGfxBlitParms);		/* proto for blitter functions*/
 
 /* extract MWCOLORVAL (0xAABBGGRR) values*/
 #define REDVALUE(rgb)	((rgb) & 0xff)

@@ -172,9 +172,19 @@ reswitch:
 			lib_int_RawDoFmtNumber(ul, 8, PutCh, PutChData, pad0flag, width);
 			break;
 
+		case 'O':
+			ul = va_arg(ap, UINT32);
+			lib_int_RawDoFmtNumber(ul, 8, PutCh, PutChData, pad0flag, width);
+			break;
+
 		case 'b':
 			PutCh('0', PutChData);
 			PutCh('b', PutChData);
+			ul = va_arg(ap, UINT32);
+			lib_int_RawDoFmtNumber(ul, 2, PutCh, PutChData, pad0flag, width);
+			break;
+
+		case 'B':
 			ul = va_arg(ap, UINT32);
 			lib_int_RawDoFmtNumber(ul, 2, PutCh, PutChData, pad0flag, width);
 			break;

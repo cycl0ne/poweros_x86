@@ -16,29 +16,43 @@ APTR lib_Allocate(SysBase *SysBase, pMemHeader mh, UINT32 nbytes);
 SysBase *g_SysBase;
 extern APTR FuncTab[];
 
-static void INTERN_MakeFunctions(APTR target, APTR functionArray)
+void INTERN_InitStruct(APTR libBase, APTR structInit, UINT32 size)
 {
-	INT32 n = 1;
-	APTR vector;
-	
-	void **fp = (void **)functionArray;
-	while(*fp != (void*)-1)
-	{
-		vector = (APTR)((UINT32)target-n*4); // EVIL on 64bit, this should be 8!
-		*(UINT32 *)(((UINT32)vector)) = (UINT32) *fp;
-		fp++;
-		n++;
-	}
+	memcpy(libBase, structInit, size);
 }
 
-static UINT32 INTERN_CountFunc(APTR functionArray)
+void INTERN_MakeFunctions(APTR target, APTR functionArray)
 {
+		INT32 n = 1;
+		APTR vector;
+		//DPrintF("functionArray = %p\n",functionArray);
+		void **fp = (void **)functionArray;
+		//DPrintF("fp = %p\n",fp);
+
+		while(*fp != (void*)-1)
+		{
+			vector = (APTR)((UINT32)target-n*4); // EVIL on 64bit, this should be 8!
+			//DPrintF("vector = %p\n",vector);
+			*((UINT32*)vector) = (UINT32) *fp;
+			//DPrintF("*vector = %p\n",*((UINT32*)vector));
+			fp++;
+			n++;
+		}
+}
+
+UINT32 INTERN_CountFunc(APTR functionArray)
+{
+	//DPrintF("funcTable = %p\n", funcTable);
+
 	UINT32 n=0;
 	void **fp=(void **)functionArray;
+	//DPrintF("fp = %p\n", fp);
 
 	/* -1 terminates the array */
 	while(*fp!=(void *)-1)
 	{
+		  //DPrintF("n= %d, *fp = %p\n", n, *fp);
+
 		fp++;
 		n++;
 	}
@@ -107,7 +121,7 @@ SysBase *INTERN_CreateSysBase(arch_config *config)
 	SysBase->TDNestCnt = 0;
 	SysBase->IDNestCnt = -1;
 	SysBase->thisTask = NULL;
-
+	
 	monitor_write(config->arch_name);
 	monitor_write("______________________________________\n");
 
@@ -115,7 +129,7 @@ SysBase *INTERN_CreateSysBase(arch_config *config)
 
 	// Init Exception Vectors Lists
 	for (int i=0; i<16; i++) NewListType((struct List *)&SysBase->IntVectorList[i], NT_INTERRUPT);
-
+		
 	// Enqueue our exec.library to the library list
 	Enqueue(&SysBase->LibList, &SysBase->LibNode.lib_Node);
 	g_SysBase = SysBase;
