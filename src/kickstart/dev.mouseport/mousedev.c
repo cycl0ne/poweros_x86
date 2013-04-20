@@ -41,11 +41,29 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct MDBase MDLibData =
+{
+	.Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+	.Device.dd_Library.lib_Node.ln_Pri = 60,
+
+	.Device.dd_Library.lib_OpenCnt = 0,
+	.Device.dd_Library.lib_Flags = 0,
+	.Device.dd_Library.lib_NegSize = 0,
+	.Device.dd_Library.lib_PosSize = 0,
+	.Device.dd_Library.lib_Version = DEVICE_VERSION,
+	.Device.dd_Library.lib_Revision = DEVICE_REVISION,
+	.Device.dd_Library.lib_Sum = 0,
+	.Device.dd_Library.lib_IDString = (APTR)&version[7],
+
+	.Flags = 0
+};
+
 static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct MDBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&MDLibData,
 	(APTR)mdev_Init
 };
 
@@ -54,7 +72,7 @@ static volatile const struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART|RTF_AUTOINIT,
+	RTF_AUTOINIT | RTF_COLDSTART,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	60,
@@ -68,16 +86,7 @@ void arch_ps2m_init(void);
 
 static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct SysBase *SysBase)
 {
-	MDBase->Device.dd_Library.lib_OpenCnt = 0;
-	MDBase->Device.dd_Library.lib_Node.ln_Pri = 0;
-	MDBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
-	MDBase->Device.dd_Library.lib_Node.ln_Name = (STRPTR)name;
-	MDBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
-	MDBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
-	MDBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
-	
 	MDBase->SysBase	= SysBase;
-	MDBase->Flags		= 0;
 	
 	// Initialise Unit Command Queue
 	NewList((struct List *)&MDBase->Unit.unit_MsgPort.mp_MsgList);
@@ -89,7 +98,7 @@ static struct MDBase *mdev_Init(struct MDBase *MDBase, UINT32 *segList, struct S
 
 	arch_ps2m_init();
 	
-//	DPrintF("PS/2 mouse driver installed\n");
+	//DPrintF("PS/2 mouse driver installed\n");
 
 	MDBase->IS = CreateIntServer((STRPTR)"IRQ12 mouse.device", IS_PRIORITY, mouse_handler, MDBase);
 	AddIntServer(IRQ_MOUSE, MDBase->IS);

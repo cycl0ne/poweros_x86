@@ -63,7 +63,7 @@ void ExecInit(void)
 	// Create two clean Task, one IDLE Task and one Worker Task with Prio 100
 	CreateInitTask(SysBase, &SysBase->ExecTask, "ExecTask"	, lib_ExecTask	, SysBase, _EXEC_TASK_STACK_, 100);
 	CreateInitTask(SysBase, &SysBase->IdleTask, "idle"		, lib_Idle		, SysBase, _IDLE_TASK_STACK_, -124); 
-
+	
 	arch_irq_init(); 			// Remap IRQ
 	arch_irq_create(SysBase); 	// Create IRQ/Exc Handlers/Servers
 	arch_clk_init(SysBase);		// create Clock

@@ -12,8 +12,7 @@ void lib_AddDevice(SysBase *SysBase, struct Device *device)
 	device->dd_Library.lib_Node.ln_Type=NT_DEVICE;
 	device->dd_Library.lib_Flags|=LIBF_CHANGED;
 
-	// TODO: Pls Fix me !!
-	//SumLibrary(&device->dd_Library);
+	SumLibrary(&device->dd_Library);
 	//ObtainSemaphore(&SysBase->LockDev);
   	Forbid();
   	Enqueue(&SysBase->DevList,&device->dd_Library.lib_Node);
@@ -59,11 +58,11 @@ INT32 lib_OpenDevice(struct SysBase *SysBase, STRPTR devName, UINT32 unitNum, st
 	Forbid();
 	device=(struct Device *)FindName(&SysBase->DevList,devName);
 	Permit();
-	
+
 	if (NULL != device)
 	{
-		//DPrintF("OpenDevice: %x\n",device); 
-		//DPrintF("OpenDevice: %s\n",device->dd_Library.lib_Node.ln_Name); 
+		//DPrintF("OpenDevice: %x\n",device);
+		//DPrintF("OpenDevice: %s\n",device->dd_Library.lib_Node.ln_Name);
 	    /* Init iorequest */
     	iORequest->io_Error  = 0;
     	iORequest->io_Device = device;

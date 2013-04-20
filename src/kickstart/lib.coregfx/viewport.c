@@ -26,6 +26,10 @@ struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 x
 		vp->DyOffset= yOffset;
 		//DPrintF("RP: %x ----\n", vp->RastPort);
 	}
+	else
+	{
+		vp = NULL;
+	}
 	return vp;
 }
 
@@ -40,6 +44,10 @@ struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHe
 		view->bpp	= bpp;
 		view->fbAddr= NULL;
 		view->fbSize= (nWidth * nHeight * (bpp>>3))>>2; // divide 4 for faster memory copy
+	}
+	else
+	{
+		view = NULL;
 	}
 	return view;
 }

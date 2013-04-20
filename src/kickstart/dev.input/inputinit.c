@@ -40,11 +40,40 @@ static APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct IDBase IDLibData =
+{
+	.Device.dd_Library.lib_Node.ln_Name = (APTR)&name[0],
+	.Device.dd_Library.lib_Node.ln_Type = NT_DEVICE,
+	.Device.dd_Library.lib_Node.ln_Pri = 40,
+	.Device.dd_Library.lib_OpenCnt = 0,
+	.Device.dd_Library.lib_Flags = 0,
+	.Device.dd_Library.lib_NegSize = 0,
+	.Device.dd_Library.lib_PosSize = 0,
+	.Device.dd_Library.lib_Version = DEVICE_VERSION,
+	.Device.dd_Library.lib_Revision = DEVICE_REVISION,
+	.Device.dd_Library.lib_Sum = 0,
+	.Device.dd_Library.lib_IDString = (APTR)&version[7],
+
+	.id_Thresh.tv_secs	= 0,
+	.id_Thresh.tv_micro	= 800000,
+
+	.id_Period.tv_secs	= 0,
+	.id_Period.tv_micro	= 100000,
+
+	.id_RepeatCode		= -1,
+
+	.id_MType		= GPCT_MOUSE,
+
+	.id_MTrig.Keys	= GPTF_DOWNKEYS|GPTF_UPKEYS,
+	.id_MTrig.XDelta	= 1,
+	.id_MTrig.YDelta	= 1
+};
+
 static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct IDBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&IDLibData,
 	(APTR)idev_Init
 };
 
@@ -67,31 +96,11 @@ UINT32 idev_InputTask(APTR data, struct SysBase *SysBase);
 
 static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct SysBase *SysBase)
 {
-	IDBase->Device.dd_Library.lib_OpenCnt = 0;
-	IDBase->Device.dd_Library.lib_Node.ln_Pri = 0;
-	IDBase->Device.dd_Library.lib_Node.ln_Type = NT_DEVICE;
-	IDBase->Device.dd_Library.lib_Node.ln_Name = (STRPTR)name;
-	IDBase->Device.dd_Library.lib_Version = DEVICE_VERSION;
-	IDBase->Device.dd_Library.lib_Revision = DEVICE_REVISION;
-	IDBase->Device.dd_Library.lib_IDString = (STRPTR)&version[7];
-	
 	IDBase->SysBase	= SysBase;
 
 	NewList(&IDBase->Unit.unit_MsgPort.mp_MsgList);
-
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
-	
-	IDBase->id_Thresh.tv_secs	= 0;
-	IDBase->id_Thresh.tv_micro	= 800000;
-	IDBase->id_Period.tv_secs	= 0;
-	IDBase->id_Period.tv_micro	= 100000;
-	IDBase->id_RepeatCode		= -1;
-
-	IDBase->id_MType		= GPCT_MOUSE;
-	IDBase->id_MTrig.Keys	= GPTF_DOWNKEYS|GPTF_UPKEYS;
-	IDBase->id_MTrig.XDelta	= 1;
-	IDBase->id_MTrig.YDelta	= 1;
 	
 /*
 ID_QUALMASK	EQU	$00FF

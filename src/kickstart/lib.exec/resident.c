@@ -8,6 +8,11 @@
 
 #include "exec_funcs.h"
 
+
+void INTERN_MakeFunctions(APTR target, APTR functionArray);
+UINT32 INTERN_CountFunc(APTR functionArray);
+void INTERN_InitStruct(APTR libBase, APTR structInit, UINT32 size);
+
 APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 {
 	struct init {
@@ -22,20 +27,10 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	
 	if(resident->rt_MatchWord != RTC_MATCHWORD || resident->rt_MatchTag != resident) return NULL;
 
-	// Our Testcase starts up with it.
-	// due to the broken code down there we implemented this hack
-	if (resident->rt_Flags & RTF_TESTCASE) 
+	// Depending on the autoinit flag...
+	if(resident->rt_Flags & RTF_AUTOINIT)
 	{
-		//DPrintF("Resident TestCase\n");
-		library = AllocVec(init->dSize, MEMF_CLEAR);
-		return library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) init->init)(library, segList, SysBase));
-	}
-
-	/* Depending on the autoinit flag...  BROKEN HERE. We dont check it correctly*/	
-	if(resident->rt_Flags)
-	{
-    	library = MakeLibrary(init->vectors, init->structure, NULL, init->dSize,(UINT32) segList);
-
+    	library = MakeLibrary(init->vectors, init->structure, init->init, init->dSize,(UINT32) segList);
 
 	    if(library != NULL)
 	    {
@@ -45,13 +40,6 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	        library->lib_IDString     = resident->rt_IdString;
 	        library->lib_Flags	      = LIBF_SUMUSED|LIBF_CHANGED;
 
-    	    if(init->init)
-	        {
-				library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) init->init)(library, segList, SysBase));
-			
-    	    }
-    	    if(library != NULL)
-	        {	
 		        switch(resident->rt_Type)
 		        {
     	    	case NT_DEVICE:
@@ -67,10 +55,6 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 	        }
 	    }
 	    return library;
-    } else
-    {
-		return library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) init->init)(library, segList, SysBase));
-    }
 }
 
 BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
@@ -89,7 +73,7 @@ BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
         // Check for a Resident Structure
         if (res->rt_MatchWord == RTC_MATCHWORD && res->rt_MatchTag == res)
         {
-            //DPrintF("RomTagScanner - Found Resident: %s\n",res->rt_Name);
+            DPrintF("RomTagScanner - Found Resident: %s\n",res->rt_Name);
             node = AllocVec(sizeof(struct ResidentNode), MEMF_FAST); //MEMF_CLEAR|MEMF_PUBLIC);
             if (!node) return FALSE;
             node->rn_Resident    = res;
@@ -102,87 +86,52 @@ BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
     return TRUE;
 }
 
-#define LIB_VECTSIZE	4	/* Each library entry takes 4 bytes */
-#define LIB_RESERVED	4	/* Exec reserves the first 4 vectors */
-#define LIB_BASE	(-LIB_VECTSIZE)
-#define LIB_USERDEF	(LIB_BASE-(LIB_RESERVED*LIB_VECTSIZE))
-#define LIB_NONSTD	(LIB_USERDEF)
 
-struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcInit, APTR structInit, UINT32(*libInit)(struct Library*,APTR, struct SysBase*), UINT32 dataSize, UINT32 segList)
+struct Library *lib_MakeLibrary(SysBase *SysBase, APTR funcTable, APTR structInit, UINT32(*libInit)(struct Library*,APTR, struct SysBase*), UINT32 dataSize, UINT32 segList)
 {
   struct Library *library;
-  UINT32 negsize=0;
 
-  /* Calculate the jumptable's size */
-  if(*(INT16 *)funcInit==-1)
-  {
-    /* Count offsets */
-    INT16 *fp=(INT16 *)funcInit+1;
-    while(*fp++!=-1) negsize+=LIB_VECTSIZE;
-  } else {
-    /* Count function pointers */
-    void **fp=(void **)funcInit;
-    while(*fp++!=(void *)-1) negsize+=LIB_VECTSIZE;
-  }
+  UINT32 negativeLibrarySize = INTERN_CountFunc(funcTable);
 
-  library=(struct Library *)AllocVec(dataSize+negsize,MEMF_FAST|MEMF_CLEAR);
-  /* And initilize the library */
+  library=(struct Library *)AllocVec(dataSize+negativeLibrarySize,MEMF_FAST);//MEMF_CLEAR);
 
+  /* Initilize the library */
   if(library!=NULL)
   {
     /* Get real library base */
-    library=(struct Library *)((char *)library+negsize);
+    library=(struct Library *)((char *)library+negativeLibrarySize);
+
     /* Build jumptable */
-    if(*(INT16 *)funcInit==-1)
-    {
-      MakeFunctions(library,(INT16 *)funcInit+1,(UINT32)funcInit); // Offsets
-    } else
-    {
-      MakeFunctions(library,funcInit,(UINT32)NULL); // Function Pointers
-    }
-    library->lib_NegSize=(UINT16)negsize;  // Negsize
+    MakeFunctions(library, funcTable,(UINT32)NULL); // Function Pointers only
+
+    if(structInit!=NULL)
+	{
+		INTERN_InitStruct(library, structInit, dataSize); // Create Structure
+	}
+
+    library->lib_NegSize=(UINT16)negativeLibrarySize;  // Negsize
     library->lib_PosSize=(UINT16)dataSize; // and DataSize the correct Values
-    if(structInit!=NULL) {};//InitStruct(structInit,library,0); // Create Structure
+
+    DPrintF("library negative size = %u\n", negativeLibrarySize);
+    DPrintF("library = %p\n", library);
+    DPrintF("library positive size = %u\n", dataSize);
+
     if(libInit!=NULL)
-    libInit(library,(APTR) segList, SysBase); // Call Libinit Function
+    {
+		library = (((struct Library*(*)(struct Library *,APTR, struct SysBase *)) libInit)(library, (APTR)segList, SysBase));
+	}
+
   }
   return library;
 }
 
 void lib_MakeFunctions(SysBase *SysBase, APTR target, APTR functionArray, UINT32 funcDispBase)
 {
-  INT32 n=1;
-  APTR vecaddr;
+	if(funcDispBase != NULL)
+		return;
 
-  if (funcDispBase!=(UINT32)NULL)
-  {
-    /* If FuncDispBase is non-NULL it's an array of relative offsets */
-    INT16 *fp=(INT16 *)functionArray;
-    /* -1 terminates the array */
-    while(*fp!=-1)
-    {
-      /* Decrement vector pointer by one and install vector */
-      vecaddr = (APTR)((UINT32)target - n*4);
-      *(UINT32 *)(((UINT32)vecaddr)) = (UINT32)funcDispBase+*fp;
-
-      /* Use next array entry */
-      fp++;
-      n++;
-    }
-  } else {
     /* If FuncDispBase is NULL it's an array of function pointers */
-    void **fp=(void **)functionArray;
-    /* -1 terminates the array */
-    while(*fp!=(void *)-1)
-    {
-      vecaddr = (APTR)((UINT32)target - n*4);
-      *(UINT32 *)(((UINT32)vecaddr)) = (UINT32)*fp;
-      /* Use next array entry */
-      fp++;
-      n++;
-    }
-  }
+	INTERN_MakeFunctions(target, functionArray);
 
-  n = (n-1)*4;
 }
 

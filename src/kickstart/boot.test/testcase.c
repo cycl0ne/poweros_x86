@@ -13,38 +13,60 @@
 static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, struct SysBase *SysBase);
 static void test_TestTask(APTR data, struct SysBase *SysBase);
 
-struct TestBase
-{
-	SysBase	*SysBase;
-	Task *WorkerTask;
-};
-
-static volatile const APTR InitTab[4]=
-{
-	(APTR)sizeof(struct TestBase),
-	(APTR)NULL,  // Array of function (Library/Device)
-	(APTR)NULL,
-	(APTR)test_Init
-};
-
-
 static const char name[] = "test";
 static const char version[] = "test 0.1\n";
 static const char EndResident;
 #define DEVICE_VERSION 0
 #define DEVICE_REVISION 1
 
-static volatile const struct Resident ROMTag = 
+struct TestBase
+{
+	struct Library TestLib;
+	SysBase	*SysBase;
+	Task *WorkerTask;
+};
+
+static const struct TestBase TestLibData =
+{
+  .TestLib.lib_Node.ln_Name = (APTR)&name[0],
+  .TestLib.lib_Node.ln_Type = NT_DEVICE,
+  .TestLib.lib_Node.ln_Pri = -100,
+
+  .TestLib.lib_OpenCnt = 0,
+  .TestLib.lib_Flags = 0,
+  .TestLib.lib_NegSize = 0,
+  .TestLib.lib_PosSize = 0,
+  .TestLib.lib_Version = DEVICE_VERSION,
+  .TestLib.lib_Revision = DEVICE_REVISION,
+  .TestLib.lib_Sum = 0,
+  .TestLib.lib_IDString = (APTR)&version[0]
+};
+
+static volatile APTR FuncTab[] =
+{
+	(APTR) ((UINT32)-1)
+};
+
+static volatile const APTR InitTab[4]=
+{
+	(APTR)sizeof(struct TestBase),
+	(APTR)FuncTab,  // Array of function (Library/Device)
+	(APTR)&TestLibData,
+	(APTR)test_Init
+};
+
+
+static volatile const struct Resident ROMTag =
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_COLDSTART|RTF_TESTCASE,
+	RTF_AUTOINIT | RTF_TESTCASE,
 	DEVICE_VERSION,
 	NT_DEVICE,
 	-100,
 	(char *)name,
-	(char*)&version[7],
+	(char*)&version[0],
 	0,
 	&InitTab
 };
@@ -53,7 +75,7 @@ static struct TestBase *test_Init(struct TestBase *TestBase, UINT32 *segList, st
 {
 	TestBase->SysBase = SysBase;
 	// Only initialise here, dont do long stuff, Multitasking is enabled. But we are running here with prio 100
-	// For this we initialise a worker Task with Prio 0 
+	// For this we initialise a worker Task with Prio 0
 	TestBase->WorkerTask = TaskCreate("TestSuite", test_TestTask, SysBase, 4096*2, 0); //8kb Stack should be enough
 //	DPrintF("[INIT] Testinitialisation finished\n");
 	return TestBase;
@@ -132,14 +154,14 @@ static void test_mouse(SysBase *SysBase)
 				break;
 			}
 			ret = OpenDevice("mouseport.device", 0, (struct IORequest *)ts->io[i], 0);
-			if (ret != 0) 
+			if (ret != 0)
 			{
 				DPrintF("OpenDevice mouseport.device failed!\n");
 				break;
 			}
 			ts->io[i]->io_Command = MD_READEVENT; /* add a new request */
 			ts->io[i]->io_Error = 0;
-			ts->io[i]->io_Actual = 0;	
+			ts->io[i]->io_Actual = 0;
 			ts->io[i]->io_Data = &ts->ie[i];
 			ts->io[i]->io_Flags = 0;
 			ts->io[i]->io_Length = sizeof(struct InputEvent);
@@ -148,9 +170,9 @@ static void test_mouse(SysBase *SysBase)
 			//DPrintF("io->flags = %b\n", ts->io[i]->io_Flags);
 			if (ts->io[i]->io_Error > 0) DPrintF("Io Error [%d]\n", i);
 		}
-		
+
 		int x = 0, y = 0;
-		
+
 		for(;;)
 		{
 			Wait(1<<mp->mp_SigBit);
@@ -160,10 +182,10 @@ static void test_mouse(SysBase *SysBase)
 				struct IOStdReq *rcvd_io = (struct IOStdReq *)GetMsg(mp);
 				struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
 				DPrintF("Event Class %x (i= %x)[%d, %d]", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y);
-			
+
 				rcvd_io->io_Command = MD_READEVENT; /* add a new request */
 				rcvd_io->io_Error = 0;
-				rcvd_io->io_Actual = 0;	
+				rcvd_io->io_Actual = 0;
 				//rcvd_io->io_Data = &ts->ie[i];
 				rcvd_io->io_Flags = 0;
 				rcvd_io->io_Length = sizeof(struct InputEvent);
@@ -177,7 +199,7 @@ static void test_mouse(SysBase *SysBase)
 				SendIO((struct IORequest *) rcvd_io );
 			}
 		}
-		
+
 		//DPrintF("EventClass [%x]\n", ts->io[i].ie_Class);
 	}
 }
@@ -201,7 +223,7 @@ static void test_keyboard(SysBase *SysBase)
 				break;
 			}
 			ret = OpenDevice("keyboard.device", 0, (struct IORequest *)ts->io[i], 0);
-			if (ret != 0) 
+			if (ret != 0)
 			{
 				DPrintF("OpenDevice keyboard.device failed!\n");
 				for(;;);
@@ -209,14 +231,14 @@ static void test_keyboard(SysBase *SysBase)
 			}
 			ts->io[i]->io_Command = KBD_READEVENT; /* add a new request */
 			ts->io[i]->io_Error = 0;
-			ts->io[i]->io_Actual = 0;	
+			ts->io[i]->io_Actual = 0;
 			ts->io[i]->io_Data = &ts->ie[i];
 			ts->io[i]->io_Flags = 0;
 			ts->io[i]->io_Length = sizeof(struct InputEvent);
 			ts->io[i]->io_Message.mn_Node.ln_Name = (STRPTR)i;
 			SendIO((struct IORequest *) ts->io[i] );
 			//DPrintF("io->flags = %b\n", ts->io[i]->io_Flags);
-			if (ts->io[i]->io_Error > 0) 
+			if (ts->io[i]->io_Error > 0)
 			{
 				DPrintF("Io Error [%d]\n", i);
 			}
@@ -231,10 +253,10 @@ static void test_keyboard(SysBase *SysBase)
 				struct IOStdReq *rcvd_io = (struct IOStdReq *)GetMsg(mp);
 				struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
 				DPrintF("Event Class %x (i= %x)\n", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name);
-			
+
 				rcvd_io->io_Command = KBD_READEVENT; /* add a new request */
 				rcvd_io->io_Error = 0;
-				rcvd_io->io_Actual = 0;	
+				rcvd_io->io_Actual = 0;
 				//rcvd_io->io_Data = &ts->ie[i];
 				rcvd_io->io_Flags = 0;
 				rcvd_io->io_Length = sizeof(struct InputEvent);
@@ -242,7 +264,7 @@ static void test_keyboard(SysBase *SysBase)
 				SendIO((struct IORequest *) rcvd_io );
 			}
 		}
-		
+
 		//DPrintF("EventClass [%x]\n", ts->io[i].ie_Class);
 	}
 }
@@ -254,7 +276,7 @@ static void test_AlertTest(SysBase *SysBase)
 
 static void test_Srini(SysBase *SysBase)
 {
-// Small Tutorial for Srini on opening a device. 
+// Small Tutorial for Srini on opening a device.
 // Example: timer.device
 // We will create a wait(seconds); Function
 
@@ -263,10 +285,10 @@ static void test_Srini(SysBase *SysBase)
 	struct TimeRequest *io;
 	// Now we need an IO Request Structure
 	io = CreateIORequest(mp, sizeof(struct TimeRequest));
-	if (io == NULL) 
+	if (io == NULL)
 	{
 		DPrintF("Couldnt create IORequest (no Memory?)\n");
-		DeleteMsgPort(mp);		
+		DeleteMsgPort(mp);
 	}
 	//UNIT_VBLANK works at 1/100sec and give him the IO
 	INT32 ret = OpenDevice("timer.device", UNIT_VBLANK, (struct IORequest *)io, 0);
@@ -278,7 +300,7 @@ static void test_Srini(SysBase *SysBase)
 		DeleteMsgPort(mp);
 		return;
 	}
-	
+
 	// Now we have everything setup.. Lets Proceed
 	io->tr_node.io_Command = TR_ADDREQUEST; /* add a new timer request */
 	io->tr_time.tv_micro = 0;
@@ -313,7 +335,7 @@ static void test_RawIO(SysBase *SysBase)
 	RawPutChar('L');
 	RawPutChar('O');
 	RawPutChar('\n');
-	
+
 	// Now test some input ->
 	UINT8 chr = RawMayGetChar();
 	while(chr != 'q') {
@@ -335,9 +357,9 @@ void test_vgagfx(APTR SysBase)
 {
 	VgaGfxBase *VgaGfxBase = OpenLibrary("vgagfx.library", 0);
 	if (!VgaGfxBase) DPrintF("Failed to open library\n");
-	
+
 	SVGA_SetDisplayMode(VgaGfxBase, 640, 480, 32);
-	
+
 //	SVGA_CopyRect(VgaGfxBase, 0, 0, 100, 100, 50, 50);
 //	SVGA_FillRect(VgaGfxBase, 0xff00ff00, 5, 5, 30, 240);
 
@@ -345,12 +367,12 @@ void test_vgagfx(APTR SysBase)
 
 //	SVGA_DrawHorzLine32(VgaGfxBase, 0, 640, 0, 0xffff0000, 0);
 //	SVGA_DrawHorzLine32(VgaGfxBase, 0, 640, 479, 0xffff0000, 0);
-	
-//	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) {	
+
+//	for(int i= 0xFF000000;i<0xFFFFFFFF; i++) {
 //		memset32(VgaGfxBase->fbDma, i, 640*20);
 		//SVGA_FifoUpdateFullscreen(VgaGfxBase);
 //	}
-	
+
 //	SVGA_FillRect(VgaGfxBase, i, 5, 5, 630, 240);
 
 //	SVGA_FillRect(VgaGfxBase, 0xFFFF0000, 0, 0, 640, 10);
@@ -484,11 +506,11 @@ static void test_Ellipse(SysBase *SysBase, CoreGfxBase *CoreGfxBase, CRastPort *
 	y = rand() % 480;
 	rx = (rand() % 100) + 5;
 	ry = (rx * 100) / 100;	/* make it appear circular */
-	
+
 	pixelval = rand();
 
 	SetForegroundColor(rp, RGB(rand(),rand(),rand()));
-	Ellipse(rp, x, y, rx, ry, TRUE);	
+	Ellipse(rp, x, y, rx, ry, TRUE);
 //	for(int i=0; i<1000000;i++);
 }
 #endif
@@ -507,18 +529,18 @@ DPrintF("AllocPixmap.......ok\n");
 	DPrintF("cgfx_AllocPixMap() = %x\n", pix->addr);
 	SetForegroundColor(rp, RGB(150,150,150));
 
-	pMemCHead node;	
+	pMemCHead node;
     struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
-    
+
 	ForeachNode(&mh->mh_ListUsed, node)
 	{
 		Task *task = node->mch_Task;
-		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);
 	}
 
 	ForeachNode(&mh->mh_List, node)
 	{
-		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);
 	}
 
 	FillRect(rp, 0, 0, xres, yres);
@@ -548,7 +570,7 @@ nxDraw3dBox(CoreGfxBase, rp, 50, 50, 200, 200, RGB(162, 141, 104), RGB(234, 230,
 nxDraw3dBox(CoreGfxBase, rp, 51, 51, 198, 198, RGB(  0,   0,   0), RGB(213, 204, 187));
 
 test_Arc(SysBase, CoreGfxBase, rp);
-//for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);	
+//for(int i =0 ; i<1000; i++) test_Ellipse(SysBase, CoreGfxBase, rp);
 
 	DPrintF("coregfx: %x\n", CoreGfxBase);
 	INT32 x=0, y=0;
@@ -564,7 +586,7 @@ test_Arc(SysBase, CoreGfxBase, rp);
 	struct IOStdReq *io	= CreateIORequest(mp, sizeof(struct IOStdReq));;
 
 	ret = OpenDevice("mouseport.device", 0, (struct IORequest *)io, 0);
-	if (ret != 0) 
+	if (ret != 0)
 	{
 		DPrintF("OpenDevice mouseport.device failed!\n");
 		return;
@@ -572,7 +594,7 @@ test_Arc(SysBase, CoreGfxBase, rp);
 
 	io->io_Command = MD_READEVENT; /* add a new request */
 	io->io_Error = 0;
-	io->io_Actual = 0;	
+	io->io_Actual = 0;
 	io->io_Data = &ie;
 	io->io_Flags = 0;
 	io->io_Length = sizeof(struct InputEvent);
@@ -587,15 +609,15 @@ test_Arc(SysBase, CoreGfxBase, rp);
 	{
 		struct IOStdReq *rcvd_io = io;
 //		struct InputEvent *rcvd_ie = (struct InputEvent *)rcvd_io->io_Data;
-//		DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
-		
+		//DPrintF("Event Class %x (i= %x)[%d, %d](%x/%x)  --- ", rcvd_ie->ie_Class, rcvd_io->io_Message.mn_Node.ln_Name, rcvd_ie->ie_X, rcvd_ie->ie_Y, rcvd_ie, &ie);
+
 		rcvd_io->io_Command = MD_READEVENT; /* add a new request */
 		rcvd_io->io_Error = 0;
 		rcvd_io->io_Actual = 0;
 		rcvd_io->io_Data = &ie;
 		rcvd_io->io_Flags = 0;
 		rcvd_io->io_Length = sizeof(struct InputEvent);
-		
+
 		x+=ie.ie_X;
 		y-=ie.ie_Y;
 		if (x>xres) x=xres;
@@ -603,10 +625,10 @@ test_Arc(SysBase, CoreGfxBase, rp);
 		if (y>yres) y=yres;
 		if (y<0) y= 0;
 		MoveCursor(x,y);
-//		DPrintF("x:%d, y:%d \n",x, y);
+		//DPrintF("x:%d, y:%d \n",x, y);
 //for(;;);
 		DoIO((struct IORequest *) io );
-	}	
+	}
 }
 
 struct InputEvent *inputcode(struct InputEvent *ie, struct SysBase *SysBase)
@@ -626,7 +648,7 @@ static void test_InputDev(struct SysBase *SysBase)
 	struct IOStdReq *io	= CreateIORequest(mp, sizeof(struct IOStdReq));;
 
 	ret = OpenDevice("input.device", 0, (struct IORequest *)io, 0);
-	if (ret != 0) 
+	if (ret != 0)
 	{
 		DPrintF("OpenDevice input.device failed!\n");
 		return;
@@ -637,7 +659,7 @@ static void test_InputDev(struct SysBase *SysBase)
 	input.is_Node.ln_Pri = 50;
 	io->io_Command = IND_ADDHANDLER; /* add a new request */
 	io->io_Error = 0;
-	io->io_Actual = 0;	
+	io->io_Actual = 0;
 	io->io_Data = &input;
 	io->io_Flags = 0;
 	io->io_Length = 0;//sizeof(struct InputEvent);
@@ -653,7 +675,7 @@ void d_showtask(struct SysBase *SysBase)
 	DPrintF("Name : %s\n",dev->Node.ln_Name);
 	DPrintF("Prio : %d\n",dev->Node.ln_Pri);
 	DPrintF("Type : %X\n",dev->Node.ln_Type);
-		
+
 	DPrintF("Ready --------------------------\n");
 	ForeachNode(&SysBase->TaskReady,dev)
 	{
@@ -688,28 +710,28 @@ void d_showint(int addr, struct SysBase *SysBase)
 #endif
 void test_new_memory();
 
-static void test_TestTask(APTR data, struct SysBase *SysBase) 
+static void test_TestTask(APTR data, struct SysBase *SysBase)
 {
 	DPrintF("TestTask_________________________________________________\n");
-	
+
 	DPrintF("Binary  Output: %b\n", 0x79);
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);
 
 	DPrintF("---------------------------------------------\n");
-	pMemCHead node;	
+	pMemCHead node;
     struct MemHeader *mh=(struct MemHeader *)SysBase->MemList.lh_Head;
-    
+
 	ForeachNode(&mh->mh_ListUsed, node)
 	{
 		Task *task = node->mch_Task;
-		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);		
+		DPrintF("Used Memory at %x, size %x, task [%s]\n", node, node->mch_Size, task->Node.ln_Name);
 	}
 	DPrintF("---------------------------------------------\n");
 
 	ForeachNode(&mh->mh_List, node)
 	{
-		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);		
+		DPrintF("Free Memory at %x, size %x\n", node, node->mch_Size);
 	}
 
 	DPrintF("---------------------------------------------\n");
@@ -719,11 +741,11 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 
 	DPrintF("SysBase %x\n", SysBase);
 	DPrintF("SysBase->IDNestcnt %x\n", SysBase->IDNestCnt);
-	goto out;
 //for(;;);
 
 //	asm("cli");
 	test_MousePointer(SysBase);
+	goto out;
 
 //	test_cgfx(SysBase);
 

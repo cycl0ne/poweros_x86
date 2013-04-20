@@ -1,5 +1,6 @@
 kernel
 *.o
 harddisk.img
+floppy.img
 bin/
 *.vmdk

@@ -27,11 +27,27 @@ static volatile APTR FuncTab[] =
 	(APTR) ((UINT32)-1)
 };
 
+static const struct VgaGfxBase VgaGfxLibData =
+{
+  .Library.lib_Node.ln_Name = (APTR)&name[0],
+  .Library.lib_Node.ln_Type = NT_LIBRARY,
+  .Library.lib_Node.ln_Pri = 100,
+
+  .Library.lib_OpenCnt = 0,
+  .Library.lib_Flags = 0,
+  .Library.lib_NegSize = 0,
+  .Library.lib_PosSize = 0,
+  .Library.lib_Version = LIBRARY_VERSION,
+  .Library.lib_Revision = LIBRARY_REVISION,
+  .Library.lib_Sum = 0,
+  .Library.lib_IDString = (APTR)&version[7]
+};
+
 static const volatile APTR InitTab[4]=
 {
 	(APTR)sizeof(VgaGfxBase),
 	(APTR)FuncTab,
-	(APTR)NULL,
+	(APTR)&VgaGfxLibData,
 	(APTR)vglib_Init
 };
 
@@ -40,7 +56,7 @@ static const volatile struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK|RTF_AUTOINIT,
+	RTF_SINGLETASK | RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	100,
@@ -54,13 +70,6 @@ APTR g_VgaGfxBase = 0;
 
 static VgaGfxBase *vglib_Init(VgaGfxBase *VgaGfxBase, UINT32 *segList, APTR SysBase)
 {
-	VgaGfxBase->Library.lib_OpenCnt = 0;
-	VgaGfxBase->Library.lib_Node.ln_Pri = -100;
-	VgaGfxBase->Library.lib_Node.ln_Type = NT_LIBRARY;
-	VgaGfxBase->Library.lib_Node.ln_Name = (STRPTR)name;
-	VgaGfxBase->Library.lib_Version = LIBRARY_VERSION;
-	VgaGfxBase->Library.lib_Revision = LIBRARY_REVISION;
-	VgaGfxBase->Library.lib_IDString = (STRPTR)&version[7];	
 	VgaGfxBase->SysBase	= SysBase;
 
 	struct ExpansionBase *ExpansionBase = (struct ExpansionBase *)OpenLibrary("expansion.library", 0);
