@@ -17,6 +17,7 @@ extern arch_config config;
 void lib_ExecTask(struct SysBase *SysBase)
 {
 	InitResidentCode(RTF_COLDSTART);
+	InitResidentCode(RTF_TESTCASE);
 	//for(int i =0; i<0xfffffff; i++);
 	//DPrintF("[EXECTASK] Finished, we are leaving... bye bye... till next reboot\n");
 }
