@@ -21,10 +21,10 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
         APTR structure;
         UINT32 (*init)();
 	};
-
+	
 	struct init *init = (struct init *)resident->rt_Init;
 	struct Library *library = NULL;
-
+	
 	if(resident->rt_MatchWord != RTC_MATCHWORD || resident->rt_MatchTag != resident) return NULL;
 
 	// Depending on the autoinit flag...
@@ -34,27 +34,27 @@ APTR lib_InitResident(SysBase *SysBase, struct Resident *resident, APTR segList)
 
 	    if(library != NULL)
 	    {
-			library->lib_Node.ln_Type = resident->rt_Type;
+    	    library->lib_Node.ln_Type = resident->rt_Type;
 	        library->lib_Node.ln_Name = resident->rt_Name;
 	        library->lib_Version      = resident->rt_Version;
 	        library->lib_IDString     = resident->rt_IdString;
-	        library->lib_Flags	      = LIBF_SUMUSED | LIBF_CHANGED;
+	        library->lib_Flags	      = LIBF_SUMUSED|LIBF_CHANGED;
 
-			switch(resident->rt_Type)
-			{
-			case NT_DEVICE:
-				AddDevice((struct Device *)library);
-				break;
-			case NT_LIBRARY:
-				AddLibrary(library);
-				break;
-			case NT_RESOURCE:
-				//AddResource(library);
-				break;
-			}
+		        switch(resident->rt_Type)
+		        {
+    	    	case NT_DEVICE:
+	    	    	AddDevice((struct Device *)library);
+			        break;
+		        case NT_LIBRARY:
+			        AddLibrary(library);
+			        break;
+		        case NT_RESOURCE:
+//        			AddResource(library);
+	        		break;
+		        }
+	        }
 	    }
-    }
-    return library;
+	    return library;
 }
 
 BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
@@ -63,13 +63,13 @@ BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
     struct Resident     *res = NULL;
     struct ResidentNode *node = NULL;
     UINT8 *ptr = (UINT8 *)start;
-
+    
     //DPrintF("RomTagScanner - Start: %x End: %x\n", start, end);
-
+    
     while( ptr <= (UINT8 *)end)
     {
         res = (struct Resident *)ptr;
-
+        
         // Check for a Resident Structure
         if (res->rt_MatchWord == RTC_MATCHWORD && res->rt_MatchTag == res)
         {
@@ -80,7 +80,7 @@ BOOL lib_RomTagScanner(SysBase *SysBase, UINT32 *start, UINT32 *end)
             node->rn_Node.ln_Pri = res->rt_Pri;
             // Enqueue found Resident
             Enqueue(mods, &node->rn_Node);
-        }
+        }   
         ptr++;
     }
     return TRUE;

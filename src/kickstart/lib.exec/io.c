@@ -52,9 +52,10 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 
 	//DPrintF("DoIO: %x\n",iORequest->io_Device[-5]); //->dd_Library.lib_Node.ln_Name
 	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
-	//DPrintF("WaitIO: %s\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
+
+//	DPrintF("WaitIO: %s\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
 	 if(!(iORequest->io_Flags & IOF_QUICK)) WaitIO(iORequest);
-	//DPrintF("WaitIO: %s return\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
+//	DPrintF("WaitIO: %s return\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
 	return (INT32)iORequest->io_Error;
 }
 

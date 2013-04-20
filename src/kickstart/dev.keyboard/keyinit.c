@@ -61,7 +61,7 @@ static const struct KbdBase KbdLibData =
 	.Flags = 0
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct KbdBase),
 	(APTR)FuncTab,
@@ -69,7 +69,7 @@ static const APTR InitTab[4]=
 	(APTR)kdev_Init
 };
 
-static const struct Resident ROMTag = 
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -213,7 +213,6 @@ static UINT32 keyboard_handler(unsigned int exc_no, APTR Data, SysBase *SysBase)
 
 static struct KbdBase *kdev_Init(struct KbdBase *KbdBase, UINT32 *segList, struct SysBase *SysBase)
 {
-	DPrintF("Keyboard Init...\n");
 	
 	KbdBase->SysBase	= SysBase;
 	

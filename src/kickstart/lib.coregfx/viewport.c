@@ -76,7 +76,7 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 
 			// We have the Screen open, so copy FB to the Old ViewPort
 			// TODO: check for other ViewPorts connected to this VIEW.
-
+			
 			// Restore old Bitmap
 			apix->addr = avp->oldPMAddr;
 			// Copy FB content to Bitmap
@@ -88,7 +88,7 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 		// Activate new View
 		view->fbAddr = SVGA_SetDisplayMode(CoreGfxBase->VgaGfxBase, view->width, view->height, view->bpp);
 		DPrintF("SVGA_SetDisplayMode(%d, %d, %d) %x\n", view->width, view->height, view->bpp, view->fbAddr);
-
+		
 //		memset32(view->fbAddr, 0xffffffff, view->width * view->height);
 		// Copy new View to FB
 		memcpy32(view->fbAddr, view->vp->PixMap->addr, view->fbSize);
@@ -107,7 +107,7 @@ void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view)
 
 		// We have the Screen open, so copy FB to the Old ViewPort
 		// TODO: check for other ViewPorts connected to this VIEW.
-
+		
 		// Restore old Bitmap
 		apix->addr = avp->oldPMAddr;
 		// Copy FB content to Bitmap
@@ -142,7 +142,7 @@ void __TestView(CoreGfxBase *CoreGfxBase)
 	cgfx_LoadView(CoreGfxBase, view);
 
 //	for (int i=0; i<0x10000000; i++);
-
+	
 //	struct PixMap *pix2	= cgfx_AllocPixMap(CoreGfxBase, 640, 480, 32, FPM_Displayable, NULL,0);
 //	DPrintF("cgfx_AllocPixMap() = %x\n", pix2->addr);
 //	if (pix2) memset32(pix2->addr, 0xFFFF0000, pix->size/4);
@@ -161,27 +161,27 @@ void __TestView(CoreGfxBase *CoreGfxBase)
 //	for (int i=0; i<0x10000000; i++);
 //	cgfx_LoadView(CoreGfxBase, view);
 //	for (int i=0; i<0x10000000; i++);
-//	cgfx_LoadView(CoreGfxBase, view2);
+//	cgfx_LoadView(CoreGfxBase, view2);	
 //	for (int i=0; i<0x10000000; i++);
-//	cgfx_LoadView(CoreGfxBase, NULL);
-//void cgfx_Line(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2, BOOL bDrawLastPoint)
+//	cgfx_LoadView(CoreGfxBase, NULL);	
+//void cgfx_Line(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32 y2, BOOL bDrawLastPoint) 
 	SetForegroundColor(rp, RGB(255, 0, 0));
 //	Point(rp, 100, 100);
 //DPrintF("Line %x\n", rp->crp_Foreground);
 //for(;;);
 	Line(rp, 10, 10, 200, 200, TRUE);
 //DPrintF("Endline\n");
-	for (int i = 10; i< 640; i+=10)
+	for (int i = 10; i< 640; i+=10) 
 	{
 		Line(rp, i, 10, 200, 200, TRUE);
 	}
 
 	SetForegroundColor(rp, RGB(0, 255, 0));
-	for (int i = 10; i< 480; i+=5)
+	for (int i = 10; i< 480; i+=5) 
 		Line(rp, 10, i, 200, 200, TRUE);
 
 	SetForegroundColor(rp, RGB(0, 0, 255));
-	for (int i = 10; i< 640; i+=10)
+	for (int i = 10; i< 640; i+=10) 
 		Line(rp, 10, 480, i, 200, TRUE);
 
 	SetForegroundColor(rp, RGB(255, 255, 255));
@@ -203,7 +203,7 @@ BOOL old = SetUseBackground(rp, FALSE);
 	Text(rp, font, 50, 200, "Hello World", -1, TF_BASELINE);
 	Text(rp, font, 50, 300, "Hello World", -1, TF_TOP);
 	Text(rp, font, 50, 400, "Hello World", -1, TF_BOTTOM);
-
+SetUseBackground(rp, old);
 //DPrintF("Textend\n");
 
 //	MoveCursor(0,0);
@@ -220,7 +220,7 @@ Original:
 
 Heute:
 * PixMap allokiert, in CreateVPort gehängt, MakeVPort aufgerufen, LoadView ->hier muessen wir bei einem fb tricksen
-*
-
+* 
+ 
  */
 

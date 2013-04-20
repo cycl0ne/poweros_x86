@@ -49,7 +49,6 @@ static inline void outb(INT16 _port, INT8 _data)
 
 static INT8 mouse_byte[3];
 static INT8	mouse_cycle = 0;
-static UINT32 test_over = 0;
 
 __attribute__((no_instrument_function)) BOOL mouse_handler(UINT32 number, MDBase *MDBase, APTR SysBase)
 {
@@ -99,13 +98,13 @@ __attribute__((no_instrument_function)) BOOL mouse_handler(UINT32 number, MDBase
 		}
 		mouse_cycle = 0;
 		if (MDBase->Flags & DUB_IS_SERVICE) {
-			DPrintF("[S!]");
-			while(1);
+			DPrintF("[Service!]");
+			//while(1);
 			return 1; // we are in Service
 		}
 		MDBase->Flags |= DUB_IS_SERVICE;
 
-		if (MDBase->Unit.unit_Flags & DUB_STOPPED) return 0;
+		if (MDBase->Unit.unit_Flags & DUB_STOPPED) {DPrintF("mouseport.dev stopped\n");MDBase->Flags &= ~DUB_IS_SERVICE;return 0;}
 		if (!IsMsgPortEmpty(&MDBase->Unit.unit_MsgPort)) {
 			struct IOStdReq *new = (struct IOStdReq *)GetHead(&MDBase->Unit.unit_MsgPort.mp_MsgList);
 			mouseCmdVector[MD_READEVENT](new, MDBase);

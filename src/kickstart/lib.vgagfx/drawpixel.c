@@ -189,6 +189,9 @@ void SVGA_DrawFillRect(struct CRastPort *rp, INT32 x1, INT32 y1, INT32 x2, INT32
 //			DPrintF("y1:%d ", y1);
 			rp->crp_PixMap->_DrawHorzLine(rp, x1, x2, y1++, c);
 		}
+	if (rp->crp_PixMap->_Update) {
+		rp->crp_PixMap->_Update(rp->crp_PixMap, X1, Y1, x2-X1+1, y2-Y1+1);
+	}
 }
 
 void SVGA_Update(struct PixMap *pix, INT32 x, INT32 y, INT32 width, INT32 height)
@@ -288,5 +291,6 @@ BOOL SVGA_SelectSubdriver(PixMap *psd)
 			break;
 		}
 	}
+	return TRUE;
 }
 

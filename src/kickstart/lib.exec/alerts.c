@@ -19,10 +19,11 @@ static void printit(INT32 chr, APTR ptr)
 
 void lib_Alert(SysBase *SysBase, UINT32 alertNum, const char *fmt, ...)
 {
-	struct Task *task;
+	struct Task *task = FindTask(NULL);
 	Disable();
 	DPrintF("\n%s Guru Meditation (#%x) ", BANNER_LEFT, alertNum);
-	if (task = FindTask(NULL))
+
+	if (task)
 		DPrintF("on Task [%s] ", task->Node.ln_Name);
 	DPrintF("due to ");
 

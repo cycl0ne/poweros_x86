@@ -39,7 +39,7 @@ struct Node
 {
    struct Node  *ln_Succ,
                 *ln_Pred;
-   UINT8        *ln_Name;
+   STRPTR        ln_Name;
    UINT8         ln_Type;
    INT8          ln_Pri;
    INT16         ln_Pad;

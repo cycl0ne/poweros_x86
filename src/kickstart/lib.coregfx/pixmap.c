@@ -186,7 +186,7 @@ memset(void *dest, UINT8 value, UINT32 size)
 PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize)
 {
 	PixMap *pmd;
-	int 	bpp, planes=1, data_format, pixtype;
+	int 	bpp = 32, planes=1, data_format=format, pixtype = PF_TRUECOLORABGR;
 	unsigned int size, pitch;
    
 	if (width <= 0 || height <= 0) return NULL;
@@ -261,8 +261,6 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 		DPrintF("AllocPixmap: unsupported format %08x\n", format);
 		return NULL;	/* fail*/
 	}
-
-	PixMap	*mempsd;
 
 	pmd = AllocVec(sizeof(PixMap), MEMF_FAST|MEMF_CLEAR);
 	if (!pmd)

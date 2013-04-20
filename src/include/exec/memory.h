@@ -34,11 +34,12 @@ typedef struct MemHeader
 
 typedef struct MemChunkHead
 {
-	struct MinNode	mch_Node;
-	UINT32			mch_Magic;	// MagicNumber to find MemHead in Memory
-	Task			*mch_Task;	// Task that allocated me
-	UINT32			mch_Flags;	// All kind of Flags, see MCHF_xxx
-	UINT32			mch_Size;		// Size of Memory incl. MemFoot
+	struct MinNode	mch_Node;	// 12 Bytes (3x4)
+	UINT32			mch_Magic;	// 4 Bytes// MagicNumber to find MemHead in Memory
+	Task			*mch_Task;	// 4 Bytes Task that allocated me
+	UINT32			mch_Flags;	// 4 Bytes All kind of Flags, see MCHF_xxx
+	UINT32			mch_Size;	// 4 Bytes	// Size of Memory incl. MemFoot
+//	UINT32			mch_Pad;	//4 Bytes = 32 Bytes
 } MemCHead, *pMemCHead;
 
 typedef struct MemChunkFoot

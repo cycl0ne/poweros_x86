@@ -28,7 +28,7 @@ void idev_AbortIO(IDBase *IDBase, struct IORequest *ioreq);
 static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct SysBase *SysBase);
 
 
-static APTR FuncTab[] =
+static APTR FuncTab[] = 
 {
 	(void(*)) idev_OpenDev,
 	(void(*)) idev_CloseDev,
@@ -69,7 +69,7 @@ static const struct IDBase IDLibData =
 	.id_MTrig.YDelta	= 1
 };
 
-static const APTR InitTab[4]=
+static volatile const APTR InitTab[4]=
 {
 	(APTR)sizeof(struct IDBase),
 	(APTR)FuncTab,
@@ -77,7 +77,7 @@ static const APTR InitTab[4]=
 	(APTR)idev_Init
 };
 
-static const struct Resident ROMTag =
+static volatile const struct Resident ROMTag = 
 {
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
@@ -101,7 +101,7 @@ static struct IDBase *idev_Init(struct IDBase *IDBase, UINT32 *segList, struct S
 	NewList(&IDBase->Unit.unit_MsgPort.mp_MsgList);
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Type = NT_MSGPORT;
 	IDBase->Unit.unit_MsgPort.mp_Node.ln_Name = (STRPTR)name;
-
+	
 /*
 ID_QUALMASK	EQU	$00FF
 ID_KEYMASK	EQU	$07FF
@@ -137,7 +137,7 @@ void idev_BeginIO(IDBase *IDBase, struct IORequest *io)
 	UINT8 cmd = io->io_Command;
 	io->io_Flags &= (~(IOF_QUEUED|IOF_CURRENT|IOF_SERVICING|IOF_DONE))&0x0ff;
 	io->io_Error = 0;
-
+	
 	if (cmd > MD_SETTRIGGER) cmd = 0; // Invalidate the command.
 
 	if (inputCmdQuick[cmd] >= 0)
@@ -153,7 +153,7 @@ void idev_BeginIO(IDBase *IDBase, struct IORequest *io)
 		if (TEST_BITS(IDBase->Unit.unit_Flags, DUB_STOPPED))
 		{
 			CLEAR_BITS(io->io_Flags, IOF_QUICK);
-			return;
+			return;	
 		}
 		// we are first in Queue, now we are Quick, otherwise we come from the IS Routine
 	}

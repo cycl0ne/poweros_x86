@@ -44,11 +44,15 @@ static void TaskRun(void)
 	if (itsme->Flags & TF_CREATETASKALLOC)
 	{
 		// Task was created with CreateTask so Dealloc Memory
-		FreeVec(itsme->Stack);
+		//DPrintF("FreeVec CREATETASKALLOC Space StacK\n");
+		FreeVec((APTR)itsme->tc_SPLower);
+		//DPrintF("FreeVec CREATETASKALLOC Space Task: %x\n", itsme);
 		FreeVec(itsme);
+		//DPrintF("End\n");
 	}
 	//DPrintF("Left Main\n");
-	itsme->State = REMOVED;
+	//itsme->State = REMOVED; // Really BAD IDEA, we delete the Taskstructure and then access it?
+	SysBase->thisTask = NULL;
 	Schedule();
 	for(;;); //Not reached
 }
@@ -56,7 +60,9 @@ static void TaskRun(void)
 Task *lib_TaskCreate(SysBase *SysBase, char *name, APTR codeStart, APTR data, UINT32 stackSize, INT8 pri)
 {
 	Task *newTask = AllocVec(sizeof(Task), MEMF_FAST|MEMF_CLEAR);
+	//DPrintF("newTask [%s] %x\n", name, newTask);
 	if (newTask==NULL) return NULL;
+	newTask->Flags = TF_CREATETASKALLOC;
 
 	newTask->Stack = AllocVec(stackSize, MEMF_FAST|MEMF_CLEAR);
 	if (newTask->Stack == NULL) 
@@ -64,12 +70,15 @@ Task *lib_TaskCreate(SysBase *SysBase, char *name, APTR codeStart, APTR data, UI
 		FreeVec(newTask);
 		return NULL;
 	}
-	newTask->StackSize = stackSize;
+	newTask->Node.ln_Pri= pri;
+	newTask->Switch		= NULL;
+	newTask->Launch		= NULL;
+	newTask->StackSize 	= stackSize;
 	newTask->tc_SPLower = (UINT32) newTask->Stack;
 	newTask->tc_SPUpper = (UINT32) newTask->Stack + stackSize;
+
 	if (name == NULL) 	newTask->Node.ln_Name = "UnknownTask";
 	else newTask->Node.ln_Name = name;
-	newTask->Node.ln_Pri = pri;
 	return AddTask(newTask, codeStart, NULL, data);
 }
 
@@ -152,7 +161,7 @@ INT8 lib_SetTaskPri(SysBase *SysBase, struct Task *task, INT16 pri)
 
 	INT8 old;
 //	DPrintF("[Change Pri] FindTask");
-	if (task = NULL) task = FindTask(NULL);
+	if (task == NULL) task = FindTask(NULL);
 //	DPrintF("[Change Pri] Forbid()");
 	Forbid();
 	old = task->Node.ln_Pri;

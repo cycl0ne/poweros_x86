@@ -20,7 +20,7 @@ PLATFORM = x86
 #ASFLAGS = -g
 
 #test version
-CFLAGS =  -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Werror -DUSEASSERT
+CFLAGS =  -O0 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Werror -Wall
 ASFLAGS =
 
 
@@ -83,7 +83,7 @@ clean:
 
 buildrepo:
 	$(call make-repo)
-
+	
 vmware:
 	qemu-img convert -f raw harddisk.img -O vmdk kernel.vmdk
 	cp kernel.vmdk ~/vmware/Other/Other.vmdk

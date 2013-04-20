@@ -12,7 +12,7 @@ __attribute__((no_instrument_function))  void arch_irq_server(unsigned int exc_n
 *  corresponds to each and every exception. We get the correct
 *  message by accessing like:
 *  exception_message[interrupt_number] */
-unsigned char *exception_messages[] =
+char *exception_messages[] =
 {
     "Division By Zero",
     "Debug",
@@ -80,7 +80,7 @@ void arch_irq_mask(UINT16 irqmask);
 void arch_irq_create(SysBase *SysBase)
 {
 	struct Interrupt *irq = AllocVec(sizeof(struct Interrupt) * 64, MEMF_FAST|MEMF_CLEAR);
-	DPrintF("irq: %x\n", irq);
+//	DPrintF("irq_create: %x\n", irq);
 	for (int i = 0; i< 32; i++)
 	{
 		//irq = CreateIntServer("System Exception Handler", -10, fault_handler, SysBase);
@@ -94,7 +94,7 @@ void arch_irq_create(SysBase *SysBase)
 //		monitor_put('\n');
 //		monitor_write_hex((UINT32)&SysBase->ExcVector[i]);
 //		monitor_put('\n');
-//		SysBase->ExcVector[i] = &irq[i];
+		SysBase->ExcVector[i] = &irq[i];
 	}
 
 	for (int i = 32; i< 48; i++)
@@ -105,7 +105,7 @@ void arch_irq_create(SysBase *SysBase)
 		irq[i].is_Code			= (APTR)arch_irq_server;
 		irq[i].is_Data			= SysBase;
 //		irq = CreateIntServer("System IRQ Server", -10, arch_irq_server, SysBase);
-//		SysBase->ExcVector[i] = &irq[i];
+		SysBase->ExcVector[i] = &irq[i];
 		arch_irq_mask(1<< (i-32));
 	}
 
@@ -117,7 +117,7 @@ void arch_irq_create(SysBase *SysBase)
 		irq[i].is_Code			= (APTR)null_handler;
 		irq[i].is_Data			= SysBase;
 //		irq = CreateIntServer("System Exception Handler", -10, null_handler, SysBase);
-//		SysBase->ExcVector[i] = &irq[i];		
+		SysBase->ExcVector[i] = &irq[i];		
 	}
 	arch_irq_mask(0xffff);
 	arch_irq_unmask(1<<IRQ_PIC1);

@@ -38,7 +38,7 @@ typedef volatile unsigned long long int	VUINT64;
 typedef UINT32				UINTPTR;
 
 typedef unsigned int		IPTR;
-typedef unsigned char*		STRPTR;
+typedef char*				STRPTR;
 typedef unsigned int		BOOL;
 
 #define NULL				0

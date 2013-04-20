@@ -159,8 +159,8 @@ static const volatile struct Resident ROMTag =
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	65,
-	(char *)name,
-	(char*)&version[7],
+	(STRPTR)name,
+	(STRPTR)&version[7],
 	0,
 	&InitTab
 };

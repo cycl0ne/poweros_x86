@@ -115,7 +115,7 @@ static void IDStopCmd(struct IOStdReq *io, IDBase *IDBase)
 
 static void IDStart(struct IOStdReq *io, IDBase *IDBase)
 {
-	if (io->io_Unit->unit_Flags & DUB_STOPPED == 0)
+	if ((io->io_Unit->unit_Flags & DUB_STOPPED) == 0)
 	{
 		io->io_Unit->unit_Flags &= ~DUB_STOPPED;
 		Signal(IDBase->id_Task, (1<<io->io_Unit->unit_MsgPort.mp_SigBit));

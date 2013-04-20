@@ -26,6 +26,8 @@ static void MakeTaskReady(SysBase *SysBase, Task *Task)
 	}
 }
 
+#if 0
+Not used anymore!
 static void MakeTaskWait(SysBase *SysBase, Task *Task)
 {
 	if (Task) {
@@ -36,6 +38,7 @@ static void MakeTaskWait(SysBase *SysBase, Task *Task)
 		Enqueue(&SysBase->TaskWait, &Task->Node);
 	}
 }
+#endif
 
 static void MakeTaskRun(SysBase *SysBase, Task *Task)
 {
@@ -143,9 +146,9 @@ void lib_Schedule(SysBase *SysBase)
 		{
 			DPrintF("ListEmpty or TDNestCnt\n");
 		}
+#endif
 		Enable(ipl);
 		return;
-#endif
 	}
 
 	Task *this = SysBase->thisTask;

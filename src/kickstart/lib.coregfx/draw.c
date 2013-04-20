@@ -270,7 +270,7 @@ void cgfx_Rect(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x, INT32 y, INT32 
 void cgfx_FillRect(CoreGfxBase *CoreGfxBase, CRastPort *rp, INT32 x1, INT32 y1, INT32 width, INT32 height)
 {
 	UINT32	dm = 0;
-	INT32	dc = 0;
+	UINT32	dc = 0;
 
 	INT32 x2 = x1 + width - 1;
 	INT32 y2 = y1 + height - 1;

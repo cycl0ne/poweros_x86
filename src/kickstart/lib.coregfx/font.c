@@ -18,7 +18,7 @@ static inline int toupper(int c) {	if (islower(c)) return 'A' - 'a' + c; return 
 static inline int tolower(int c) { if (isupper(c)) return 'a' - 'A' + c; return c; }
 static inline int strlen(const char *str) { const char *s; for (s = str; *s; ++s); return(s - str); }
 
-static inline char *strncpy(char *dst, const char *src, int n)
+static inline char *strncpy(STRPTR dst, const STRPTR src, int n)
 {
 	if (n != 0) {
 		char *d = dst;
@@ -56,7 +56,7 @@ CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *n
 	CGfxScreenInfo	scrinfo;
 	const char *	fontname;
 	char 			fontmapper_fontname[LF_FACESIZE + 1];
-	PixMap			*psd = rp->crp_PixMap;
+	//PixMap			*psd = rp->crp_PixMap;
 	GetScreenInfo(rp, &scrinfo);
 
 	/* if plogfont not specified, use passed name, height and any class*/

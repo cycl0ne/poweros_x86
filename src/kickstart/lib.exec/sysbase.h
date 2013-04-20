@@ -13,14 +13,14 @@ typedef void(*IRQHandler)(APTR, UINT32);
 typedef struct SysBase {
 	Library	LibNode;
 	Task		*thisTask;
-	UINT32	IdleCnt;
-	UINT32	DispCnt;
-	UINT32	Quantum;
-	UINT32	QUsed;
-	UINT32	SysFlags;
+	UINT32		IdleCnt;
+	UINT32		DispCnt;
+	UINT32		Quantum;
+	UINT32		QUsed;
+	UINT32		SysFlags;
 	INT8		TDNestCnt;
 	INT8		IDNestCnt;
-	INT16	Padding;
+	INT16		Padding;
 	List		TaskReady;
 	List		TaskWait;
 	List		PortList;
@@ -31,9 +31,11 @@ typedef struct SysBase {
 	List		ResourceList;
 	List		ResidentList;
 	struct Interrupt	*ExcVector[64];
-	List		IntVectorList[16];
-	UINT8		CPU_Stack[2048];
-	context_t	CPU_Context;
+	List				IntVectorList[16];
+	Task				ExecTask;
+	Task				IdleTask;
+	UINT8				CPU_Stack[2048];
+	context_t			CPU_Context;
 } SysBase;
 
 #define _CPUSTACK_ 0x1000
