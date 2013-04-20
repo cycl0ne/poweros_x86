@@ -134,7 +134,7 @@ INT32 cgfx_ShowCursor(CoreGfxBase *CoreGfxBase)
 		}
 	}
 	SetMode(rp, oldmode);
-	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
+//	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 	return prevcursor;
 }
 
@@ -167,7 +167,7 @@ INT32 cgfx_HideCursor(CoreGfxBase *CoreGfxBase)
 		}
 	}
  	SetMode(rp, oldmode);
-	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
+//	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 	return prevcursor;
 }
 
@@ -204,7 +204,7 @@ void cgfx_FixCursor(CoreGfxBase *CoreGfxBase, PixMap *psd)
 	{
 		ShowCursor();
 		cur->curneedsrestore = FALSE;
-		SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
+		//SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 	}
 }
 

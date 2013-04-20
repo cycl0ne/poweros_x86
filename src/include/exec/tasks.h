@@ -39,6 +39,7 @@ typedef struct {
 #define TF_EXCEPT	(1L<<5)
 #define TF_SWITCH	(1L<<6)
 #define TF_LAUNCH	(1L<<7)
+#define TF_CREATETASKSTACK (1 << 14)
 #define TF_CREATETASKALLOC (1 << 15)
 
 // Special Signals SYSTEMUSE

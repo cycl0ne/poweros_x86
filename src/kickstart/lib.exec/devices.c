@@ -46,7 +46,7 @@ void lib_CloseDevice(SysBase *SysBase, struct IORequest *iORequest)
 		// Call CloseDeviceFunction on Device
 		(((void(*)(struct Device *, struct IORequest *))_GETVECADDR(iORequest->io_Device,2))(iORequest->io_Device, iORequest));
 		// Trash Device in iORequest Structure
-		iORequest->io_Device=(struct Device *)-1;
+		iORequest->io_Device = NULL;
 		Permit();
 	}
 }

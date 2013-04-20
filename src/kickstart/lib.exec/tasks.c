@@ -41,18 +41,7 @@ static void TaskRun(void)
 	void (*f)(void *, void *) = itsme->TaskFunc;
 	arch_Int_Enable();
 	f(arg, SysBase);
-	if (itsme->Flags & TF_CREATETASKALLOC)
-	{
-		// Task was created with CreateTask so Dealloc Memory
-		//DPrintF("FreeVec CREATETASKALLOC Space StacK\n");
-		FreeVec((APTR)itsme->tc_SPLower);
-		//DPrintF("FreeVec CREATETASKALLOC Space Task: %x\n", itsme);
-		FreeVec(itsme);
-		//DPrintF("End\n");
-	}
-	//DPrintF("Left Main\n");
-	//itsme->State = REMOVED; // Really BAD IDEA, we delete the Taskstructure and then access it?
-	SysBase->thisTask = NULL;
+	itsme->State = REMOVED; // We let the Scheduler do the Dirty Work, since we are running on the Stack of the Task we want to delete.
 	Schedule();
 	for(;;); //Not reached
 }
@@ -62,7 +51,6 @@ Task *lib_TaskCreate(SysBase *SysBase, char *name, APTR codeStart, APTR data, UI
 	Task *newTask = AllocVec(sizeof(Task), MEMF_FAST|MEMF_CLEAR);
 	//DPrintF("newTask [%s] %x\n", name, newTask);
 	if (newTask==NULL) return NULL;
-	newTask->Flags = TF_CREATETASKALLOC;
 
 	newTask->Stack = AllocVec(stackSize, MEMF_FAST|MEMF_CLEAR);
 	if (newTask->Stack == NULL) 
@@ -70,6 +58,7 @@ Task *lib_TaskCreate(SysBase *SysBase, char *name, APTR codeStart, APTR data, UI
 		FreeVec(newTask);
 		return NULL;
 	}
+	newTask->Flags 		= TF_CREATETASKALLOC|TF_CREATETASKSTACK;
 	newTask->Node.ln_Pri= pri;
 	newTask->Switch		= NULL;
 	newTask->Launch		= NULL;

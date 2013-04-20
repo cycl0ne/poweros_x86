@@ -34,6 +34,7 @@ static APTR CreateInitTask(SysBase *SysBase, Task *newTask, char *name, APTR cod
 	newTask->Stack = AllocVec(stackSize, MEMF_FAST|MEMF_CLEAR);
 	if (newTask->Stack == NULL)  return NULL;
 
+	newTask->Flags 		= TF_CREATETASKSTACK;
 	newTask->Node.ln_Pri= pri;
 	newTask->Switch		= NULL;
 	newTask->Launch		= NULL;

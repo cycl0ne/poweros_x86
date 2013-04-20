@@ -60,8 +60,17 @@ static void MakeTaskDestroy(SysBase *SysBase, Task *Task)
 {
 	// Here do some Garbage Collection
 	// Task schould be in no list, so just delete all infos of him
-	FreeVec(Task->Stack); // was allocated through us
-	FreeVec(Task); // this too
+	if (Task->Flags & TF_CREATETASKSTACK)
+	{
+		//DPrintF("FreeVec CREATETASKALLOC Space StacK\n");
+		FreeVec(Task->Stack); // was allocated through us		
+	}
+	if (Task->Flags & TF_CREATETASKALLOC)
+	{
+		//DPrintF("FreeVec CREATETASKALLOC Space Task: %x [%s]\n", Task, Task->Node.ln_Name);
+		FreeVec(Task); // this too
+		//DPrintF("End\n");
+	}
 	// Finshed
 }
 
@@ -73,10 +82,8 @@ static void BeforeTaskRuns(SysBase *SysBase, Task *Task)
 {
 	arch_Before_Task_Runs(SysBase, Task);
 /*
-	//-RASPi Code
-	
+	//-RASPi Code - We need to access Supervisor Stack
 	UINT8 *stck;
-	
 	stck = (UINT8 *)&Task->Stack[Task->StackSize - SP_DELTA];
 	supervisor_sp = (APTR) stck;
 */
