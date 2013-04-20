@@ -30,10 +30,9 @@ UINT32 lib_RemDevice(SysBase *SysBase, struct Device *device)
 	//ObtainSemaphore(&SysBase->LockDev);
 
 	Forbid();
-  	Remove(&device->dd_Library.lib_Node);
 	// Call the Expunge Function of the Device
 	ret = (((UINT32(*)(struct Device *)) _GETVECADDR(device,3))(device));
-
+	if (ret == 0) Remove(&device->dd_Library.lib_Node);
 	//ReleaseSemaphore(&SysBase->LockDev);
 	Permit();
 	return ret;
