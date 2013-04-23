@@ -97,7 +97,13 @@ void initIntuition(pIntuitionBase IBase)
 	DPrintF("GfxBase: %x\n", IBase->ib_GfxBase);
 	DPrintF("UtilBase: %x\n", IBase->ib_UtilBase);
 #endif
+
+	IBase->ib_SystemFont[0] = CreateFont(FONT_SYSTEM_VAR, 0, 0, NULL);
+	IBase->ib_SystemFont[1] = CreateFont(FONT_SYSTEM_FIXED, 0, 0, NULL);
+
+#if 0
 	UINT32 xres = 640, yres = 480;
+	
 
 	IBase->ib_PixMap 	= cgfx_AllocPixMap(IBase->ib_GfxBase, xres, yres, IF_BGRA8888, FPM_Displayable, NULL,0 );
 	IBase->ib_RP 		= cgfx_InitRastPort(IBase->ib_GfxBase, IBase->ib_PixMap);
@@ -108,13 +114,11 @@ void initIntuition(pIntuitionBase IBase)
 	IBase->ib_ViewPort	= cgfx_CreateVPort(IBase->ib_GfxBase, IBase->ib_PixMap, 0, 0);
 	cgfx_MakeVPort(IBase->ib_GfxBase, IBase->ib_ViewMaster, IBase->ib_ViewPort);
 	cgfx_LoadView(IBase->ib_GfxBase, IBase->ib_ViewMaster);
-	IBase->ib_SystemFont[0] = CreateFont(IBase->ib_RP , FONT_SYSTEM_VAR, 0, 0, NULL);
-	IBase->ib_SystemFont[1] = CreateFont(IBase->ib_RP , FONT_SYSTEM_FIXED, 0, 0, NULL);
 
 	DrawScreenBar(IBase, xres-1, 0, "PowerOS Screen");
-	
+#endif	
 	initStateMachine(IBase);
 	initIEvents(IBase);
-	
+	IBase->ib_ActiveScreen = NULL;
 }
 

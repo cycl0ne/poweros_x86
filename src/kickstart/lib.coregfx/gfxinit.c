@@ -139,7 +139,8 @@ static const struct CoreGfxBase CoreGfxLibData =
   .Library.lib_Version = LIBRARY_VERSION,
   .Library.lib_Revision = LIBRARY_REVISION,
   .Library.lib_Sum = 0,
-  .Library.lib_IDString = (APTR)&version[7]
+  .Library.lib_IDString = (APTR)&version[7],
+  .builtin_fonts_cnt = 4
 };
 
 static const volatile APTR InitTab[4]=
@@ -155,7 +156,7 @@ static const volatile struct Resident ROMTag =
 	RTC_MATCHWORD,
 	(struct Resident *)&ROMTag,
 	(APTR)&EndResident,
-	RTF_SINGLETASK | RTF_AUTOINIT,
+	RTF_COLDSTART | RTF_AUTOINIT,
 	LIBRARY_VERSION,
 	NT_LIBRARY,
 	65,

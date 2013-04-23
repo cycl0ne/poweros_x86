@@ -710,6 +710,42 @@ void d_showint(int addr, struct SysBase *SysBase)
 #endif
 void test_new_memory();
 
+#include "windows.h"
+#include "screens.h"
+#include "tagitem.h"
+
+pScreen intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList);
+struct Window *intu_OpenWindow(IntuitionBase *IBase, struct Screen *screen, INT32 x, INT32 y, INT32 width, INT32 height);
+void intu_IRectFill(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, INT32 width, INT32 height);
+void intu_IText(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, STRPTR str, INT32 count, UINT32 flags);
+
+static void test_Intuition(SysBase *SysBase)
+{
+	IntuitionBase *IBase = OpenLibrary("intuition.library",0);
+	if (IBase == NULL) 
+	{
+		DPrintF("Couldnt open intuition.library\n");
+		return;
+	}
+	APTR CoreGfxBase = IBase->ib_GfxBase;
+
+	DPrintF("Opening Screen\n");
+	struct Screen *screen = intu_OpenScreenTag(IBase, NULL);
+	DPrintF("Open window\n");
+	struct Window *win = intu_OpenWindow(IBase, screen, 10, 10, 100, 100);
+	struct Window *win2 = intu_OpenWindow(IBase, screen, 60, 60, 100, 100);
+
+	DPrintF("Draw window1\n");
+	struct CRastPort *rp = win->rp;
+	SetForegroundColor(rp, RGB(255,255,255));
+//	intu_IRectFill(IBase, win, 0, 0, 200, 200);
+	intu_IText(IBase, win, 10, 10, "hallo\n", 6, 0);
+	rp = win2->rp;
+	SetForegroundColor(rp, RGB(255,255,255));
+	intu_IRectFill(IBase, win2, 0, 0, 200, 200);
+	DPrintF("Done %x\n", win, win2);
+}
+
 static void test_TestTask(APTR data, struct SysBase *SysBase)
 {
 	DPrintF("TestTask_________________________________________________\n");
@@ -744,8 +780,10 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //for(;;);
 
 //	asm("cli");
-	test_MousePointer(SysBase);
+	test_Intuition(SysBase);
 	goto out;
+
+	test_MousePointer(SysBase);
 
 //	test_cgfx(SysBase);
 

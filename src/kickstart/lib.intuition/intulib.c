@@ -4,7 +4,7 @@
 
 #define SysBase IBase->ib_SysBase
 
-struct InputEvent *IntuitionInput(struct InputEvent *ie);
+struct InputEvent *IntuitionInput(struct InputEvent *ie, APTR IBase);
 
 static char IDName[] = "input.device";
 

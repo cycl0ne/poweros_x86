@@ -39,6 +39,7 @@ typedef UINT32				UINTPTR;
 
 typedef unsigned int		IPTR;
 typedef char*				STRPTR;
+typedef const char*			CSTRPTR;
 typedef unsigned int		BOOL;
 
 #define NULL				0

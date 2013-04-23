@@ -77,6 +77,7 @@ typedef struct CoreGfxBase {
 	CGfxCursor	Cursor;
 	struct View *ActiveView;
 	struct CGfxCoreFont *builtin_fonts;
+	UINT32				builtin_fonts_cnt;
 	struct CGfxCoreFont *user_builtin_fonts;
 } CoreGfxBase, *pCoreGfxBase;
 

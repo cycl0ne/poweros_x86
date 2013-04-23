@@ -1,3 +1,6 @@
+#ifndef SCREENS_H
+#define SCREENS_H
+
 #include "intuitionbase.h"
 #include "pixmap.h"
 #include "view.h"
@@ -5,10 +8,13 @@
 #include "regions.h"
 #include "coregfx.h"
 #include "tagitem.h"
+#include "windows.h"
 
 typedef struct Screen {
 	struct Screen	*NextScreen;
 	struct Window	*FirstWindow;
+	struct Window	RootWindow;
+	
 	INT32			LeftEdge, TopEdge;
 	INT32			Width, Height;
 	INT32			MouseX, MouseY;
@@ -21,7 +27,8 @@ typedef struct Screen {
 	CGfxFont		*Font;
     struct ViewPort *ViewPort;
     CRastPort 		*RastPort;
-
+	PixMap			*PixMap;
+	
     SignalSemaphore	LockScreen;
 	ClipRegion		*CRegion;
 } Screen_t, *pScreen;
@@ -68,3 +75,5 @@ typedef struct Screen {
 #define SA_BackChild	(SA_Dummy + 0x0026)
 #define SA_LikeWorkbench	(SA_Dummy + 0x0027)
 #define SA_MinimizeISG		(SA_Dummy + 0x0029)
+
+#endif

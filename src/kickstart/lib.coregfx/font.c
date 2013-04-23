@@ -42,7 +42,7 @@ static inline int strcasecmp(const char *s1, const char *s2)
 	return (tolower(*us1) - tolower(*--us2));
 }
 
-CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *name, UINT16 height, UINT16 width, const pCGfxLogFont plogfont)
+CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, const char *name, UINT16 height, UINT16 width, const pCGfxLogFont plogfont)
 {
 	int 		i;
 	int		fontht;
@@ -51,13 +51,14 @@ CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *n
 	int		fontattr = 0;
 	pCGfxFont		pfont;
 	pCGfxCoreFont	pf = CoreGfxBase->builtin_fonts;
+	int				intFontCnt = CoreGfxBase->builtin_fonts_cnt;
 	pCGfxCoreFont	upf;
 	CGfxFontInfo	fontinfo;
-	CGfxScreenInfo	scrinfo;
+	//CGfxScreenInfo	scrinfo;
 	const char *	fontname;
 	char 			fontmapper_fontname[LF_FACESIZE + 1];
 	//PixMap			*psd = rp->crp_PixMap;
-	GetScreenInfo(rp, &scrinfo);
+	//GetScreenInfo(rp, &scrinfo);
 
 	/* if plogfont not specified, use passed name, height and any class*/
 	if (!plogfont) 
@@ -86,7 +87,7 @@ CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *n
 
 	/* check builtin fonts first for speed*/
  	if (!height && (fontclass == LF_CLASS_ANY || fontclass == LF_CLASS_BUILTIN)) {
-  		for(i = 0; i < scrinfo.fonts; ++i) {
+  		for(i = 0; i < intFontCnt; ++i) {
 			//DPrintF("[%s] looking..\n", pf[i].name);
  			if(!strcasecmp(pf[i].name, fontname)) {
   				pf[i].fontsize = pf[i].cfont->height;
@@ -138,7 +139,7 @@ CGfxFont *cgfx_CreateFont(CoreGfxBase *CoreGfxBase, CRastPort *rp, const char *n
 		fontno = 0;
 		height = ABS(height);
 		fontht = MAX_COORD;
-		for(i = 0; i < scrinfo.fonts; ++i) {
+		for(i = 0; i < intFontCnt; ++i) {
 			pfont = (pCGfxFont)&pf[i];
 			GetFontInfo(pfont, &fontinfo);
 			if(fontht > ABS(height-fontinfo.height)) { 

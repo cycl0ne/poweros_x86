@@ -1,3 +1,4 @@
+#include "windows.h"
 #include "screens.h"
 #include "tagitem.h"
 #include "utility_funcs.h"
@@ -14,6 +15,13 @@
 
 #define BACKGROUND		RGB(170,170,170)
 #define WHITE			RGB(255,255,255)
+
+struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 xOffset, INT32 yOffset);
+struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 bpp);
+BOOL cgfx_MakeVPort(CoreGfxBase *CoreGfxBase, struct View *view, struct ViewPort *vp);
+void cgfx_LoadView(CoreGfxBase *CoreGfxBase, struct View *view);
+PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, UINT32 format, UINT32 flags, APTR pixels, int palsize);
+struct CRastPort *cgfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
 
 #if 0
 typedef struct Screen {
@@ -55,7 +63,45 @@ pScreen intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList)
 		ret->Bordercolor= BLACK;
 		ret->Background	= BACKGROUND;
 		InitSemaphore(&ret->LockScreen);
-		ret->CRegion	= AllocRectRegion(ret->LeftEdge, ret->TopEdge, ret->Width, ret->Height);
+		// New Idea !
+		ret->PixMap		= cgfx_AllocPixMap(IBase->ib_GfxBase, ret->Width, ret->Height, IF_BGRA8888, FPM_Displayable, NULL,0 );
+		ret->RastPort	= cgfx_InitRastPort(IBase->ib_GfxBase, ret->PixMap);
+		ret->ViewPort	= cgfx_CreateVPort(IBase->ib_GfxBase, ret->PixMap, 0, 0);
+
+		ret->RootWindow.rp = ret->RastPort;
+		ret->RootWindow.id = 0; //RWINDOW_ID;
+		ret->RootWindow.parent	= NULL;
+		ret->RootWindow.owner	= NULL;
+		ret->RootWindow.children= NULL;
+		ret->RootWindow.siblings= NULL;
+		ret->RootWindow.screen	= ret;
+		ret->RootWindow.next	= NULL;
+		ret->RootWindow.x		= 0;
+		ret->RootWindow.y		= 0;
+		ret->RootWindow.width	= ret->Width;
+		ret->RootWindow.height	= ret->Height;
+		ret->RootWindow.bordersize	= 0;
+		ret->RootWindow.background	= BACKGROUND; //BLACK;
+		ret->RootWindow.bordercolor	= BLACK;
+		ret->RootWindow.clipregion	= NULL;
+		ret->RootWindow.realized	= TRUE;
+		ret->RootWindow.title		= NULL;
+		ret->RootWindow.screenTitle	= NULL;
+
+		// Our First Screen, so open it.
+		if (IBase->ib_ActiveScreen == NULL)
+		{
+			DPrintF("ActiveScreen\n");
+			IBase->ib_ViewMaster= cgfx_CreateView(IBase->ib_GfxBase, ret->Width, ret->Height, 32);
+			cgfx_MakeVPort(IBase->ib_GfxBase, IBase->ib_ViewMaster, ret->ViewPort);
+			cgfx_LoadView(IBase->ib_GfxBase, IBase->ib_ViewMaster);
+			IBase->ib_ActiveScreen = ret;
+		}
+		DPrintF("RedrawScreen\n");
+		_RedrawScreen(IBase, ret);
+	} else
+	{
+		DPrintF("AllocVec on Screen failed\n");
 	}
 	return ret;
 }

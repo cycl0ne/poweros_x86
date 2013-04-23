@@ -197,7 +197,7 @@ void __TestView(CoreGfxBase *CoreGfxBase)
 //	DPrintF("Blit\n");
 	//void cgfx_Text(CoreGfxBase *CoreGfxBase, struct CRastPort *rp, pCGfxFont pfont, INT32 x, INT32 y, const void *str, int cc,UINT32 flags);
 
-CGfxFont *font = CreateFont(rp, FONT_SYSTEM_VAR, 0, 0, NULL);
+CGfxFont *font = CreateFont(FONT_SYSTEM_VAR, 0, 0, NULL);
 //DPrintF("Font %x\n", font);
 BOOL old = SetUseBackground(rp, FALSE);
 	Text(rp, font, 50, 200, "Hello World", -1, TF_BASELINE);

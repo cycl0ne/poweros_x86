@@ -3,9 +3,14 @@
  * a) input.device giving us: Keyboard, 100hz Timer, Mouse
  * b) intuition.library giving us Statechanges and Workload
  */
+#include "intuitionbase.h"
+#include "input.h"
+#include "exec_funcs.h"
 
-struct InputEvent *IntuitionInput(struct InputEvent *ie)
+#define SysBase IBase->ib_SysBase
+
+struct InputEvent *IntuitionInput(struct InputEvent *ie, IntuitionBase *IBase)
 {
-	
+//	DPrintF("ie");
 	return ie;
 }

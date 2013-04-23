@@ -10,10 +10,10 @@ static const char name[] = "utility.library";
 static const char version[] = LIBRARY_VERSION_STRING
 static const char EndResident;
 
-APTR util_OpenLib(pUtility *UtilBase);
-APTR util_CloseLib(pUtility *UtilBase);
-APTR util_ExpungeLib(pUtility *UtilBase);
-APTR util_ExtFuncLib(pUtility *UtilBase);
+APTR util_OpenLib(pUtility UtilBase);
+APTR util_CloseLib(pUtility UtilBase);
+APTR util_ExpungeLib(pUtility UtilBase);
+APTR util_ExtFuncLib(pUtility UtilBase);
 static pUtility util_Init(pUtility UtilBase, UINT32 *segList, APTR SysBase);
 
 struct TagItem *util_NextTagItem(pUtility UtilBase, const struct TagItem **tagListPtr);
@@ -57,6 +57,8 @@ int util_Rand(pUtility UtilBase);
 INT32 util_Random(pUtility UtilBase);
 void util_SRandom(pUtility UtilBase,UINT32 seed);
 void util_SRand(pUtility UtilBase, UINT32 seed);
+UINT32 util_PackStructureTags(pUtility UtilBase, APTR pack, UINT32 *packTable, struct TagItem *tagList);
+UINT32 util_UnpackStructureTags(pUtility UtilBase, APTR pack, UINT32 *packTable, struct TagItem *tagList);
 
 static volatile APTR FuncTab[] = 
 {
@@ -101,6 +103,8 @@ static volatile APTR FuncTab[] =
 	(void(*)) util_Random,
 	(void(*)) util_SRand,
 	(void(*)) util_SRandom,
+	(void(*)) util_PackStructureTags,
+	(void(*)) util_UnpackStructureTags,
 	(APTR) ((UINT32)-1)
 };
 

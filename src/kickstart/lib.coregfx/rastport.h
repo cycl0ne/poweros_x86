@@ -32,26 +32,26 @@ typedef struct CGfxTile {
 
 typedef struct CRastPort {
 	struct PixMap	*crp_PixMap;
-	UINT32	crp_Mode;
-	UINT32	crp_DashMask;
-	UINT32	crp_DashCount;
-	UINT32	crp_FillMode;
-	BOOL	crp_useBg;
-	UINT32	crp_Foreground;
-	UINT32	crp_ForegroundRGB;
-	UINT32	crp_Background;
-	UINT32	crp_BackgroundRGB;
+	UINT32		crp_Mode;
+	UINT32		crp_DashMask;
+	UINT32		crp_DashCount;
+	UINT32		crp_FillMode;
+	BOOL		crp_useBg;
+	UINT32		crp_Foreground;
+	UINT32		crp_ForegroundRGB;
+	UINT32		crp_Background;
+	UINT32		crp_BackgroundRGB;
 
 	CGfxStipple	crp_Stipple;
 	CGfxTile    crp_Tile;
 	CGfxPoint	crp_ts_Offset;
 	INT32		ts_origin_x;
 	INT32 		ts_origin_y;
-	INT32	crp_ClipMinX;
-	INT32	crp_ClipMinY;
-	INT32	crp_ClipMaxX;
-	INT32	crp_ClipMaxY;
-	BOOL	crp_ClipResult;
+	INT32		crp_ClipMinX;
+	INT32		crp_ClipMinY;
+	INT32		crp_ClipMaxX;
+	INT32		crp_ClipMaxY;
+	BOOL		crp_ClipResult;
 	struct ClipRegion	*crp_ClipRegion;
 } CRastPort;
 

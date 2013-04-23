@@ -4,10 +4,9 @@
 #include "types.h"
 #include "ports.h"
 #include "tasks.h"
-#include "region.h"
+#include "regions.h"
 #include "rastport.h"
 #include "pixmap.h"
-#include "screen.h"
 
 typedef struct IDCMPMessage
 {
@@ -28,20 +27,26 @@ typedef struct Window
 	struct Task			*owner;
 	struct Window		*parent;
 	struct Window		*children;
+	struct Window		*siblings;
 	struct Screen		*screen;
 	INT32				bordersize;
 	UINT32				bordercolor;
 	UINT32				background;
 	
 	INT32				x, y, width, height;	// Windows coordinates in Screen
-	CRastPort			rp;						// Windows Rastport for Drawing/Clipping
+	CRastPort			*rp;						// Windows Rastport for Drawing/Clipping
 	UINT32				id;						// Window ID
 	STRPTR				title;
 	STRPTR				screenTitle;
 
 	ClipRegion			*clipregion;
+	INT32				xoff, yoff;
+	ClipRegion			*userclipregion;
+	
 	PixMap				*buffer;
 	
+	BOOL				realized;
+	BOOL				mapped;
 	// IDCMP 
     UINT32				IDCMPFlags;
     struct MsgPort 		*UserPort, *WindowPort;

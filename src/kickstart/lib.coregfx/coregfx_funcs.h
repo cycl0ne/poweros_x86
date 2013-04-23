@@ -109,7 +109,7 @@ void cgfx_Ellipse(CoreGfxBase *CoreGfxBase, CRastPort *psd, INT32 x, INT32 y, IN
 #define SetFontAttr(a,b,c) 				(((int (*)(pCoreGfxBase, pCGfxFont pfont, int setflags, int clrflags))														_GETVECADDR(CoreGfxBase,40))(CoreGfxBase,a,b,c))
 #define SetFontRotation(a,b)			(((int (*)(pCoreGfxBase, pCGfxFont pfont, int tenthdegrees))																_GETVECADDR(CoreGfxBase,41))(CoreGfxBase,a,b))
 #define SetFontSize(a,b,c)				(((int (*)(pCoreGfxBase, pCGfxFont pfont, INT32 height, INT32 width))														_GETVECADDR(CoreGfxBase,42))(CoreGfxBase,a,b,c))
-#define CreateFont(a,b,c,d,e)			(((CGfxFont *(*)(pCoreGfxBase, CRastPort *rp, const char *name, INT32 height, INT32 width, const pCGfxLogFont plogfont))	_GETVECADDR(CoreGfxBase,43))(CoreGfxBase,a,b,c,d,e))
+#define CreateFont(a,b,c,d)				(((CGfxFont *(*)(pCoreGfxBase, const char *name, INT32 height, INT32 width, const pCGfxLogFont plogfont))	_GETVECADDR(CoreGfxBase,43))(CoreGfxBase,a,b,c,d))
 
 #define GetScreenInfo(a,b)				(((void(*)(pCoreGfxBase, CRastPort *rp, pCGfxScreenInfo psi)) _GETVECADDR(CoreGfxBase,44))(CoreGfxBase,a,b))
 
