@@ -115,6 +115,10 @@ static pBOOPSI boopsi_Init(pBOOPSI BOOPSIBase, UINT32 *segList, APTR SysBase)
 	BOOPSIBase->Library.lib_IDString = (STRPTR)&version[7];	
 	BOOPSIBase->SysBase	= SysBase;
 	NewList(&BOOPSIBase->pubClassList);
+
+	BOOPSIBase->UtilBase = OpenLibrary("utility.library", 0);
+	BOOPSIBase->CoreGfxBase = OpenLibrary("coregfx.library", 0);
+	if (BOOPSIBase->UtilBase == NULL || BOOPSIBase->CoreGfxBase == NULL) DPrintF("Couldnt load Util and/or coregfx.lib\n");
 	return BOOPSIBase;
 }
 

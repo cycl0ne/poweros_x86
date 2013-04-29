@@ -1,6 +1,9 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
+#define	MAX_CURSOR_SIZE				32		/* maximum cursor x and y size*/
+#define	MAX_CURSOR_BUFLEN			IMAGE_SIZE(MAX_CURSOR_SIZE, MAX_CURSOR_SIZE)
+
 typedef struct Cursor {
 	INT32		width;			/* cursor width in pixels*/
 	INT32		height;			/* cursor height in pixels*/

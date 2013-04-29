@@ -122,7 +122,12 @@ void SVGA_DrawPixel32(struct CRastPort *rp, INT32 x,INT32 y,UINT32 c)
 		UINT32 gr_background = rp->crp_Background;
 		APPLYOP(rp->crp_Mode, 1, (UINT32), c, *(UINT32*), addr, 0, 0);
 	}
-	if (psd->_Update) psd->_Update(psd, x, y, 1, 1);
+	if (psd->_Update) 
+	{
+		//APTR SysBase = g_SysBase;
+		//DPrintF("DP32: Update\n");
+		psd->_Update(psd, x, y, 1, 1);
+	}
 }
 
 UINT32 SVGA_ReadPixel32(struct CRastPort *rp, INT32 x,INT32 y)

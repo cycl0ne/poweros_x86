@@ -5,9 +5,11 @@
 #include "font.h"
 #include "exec_funcs.h"
 #include "coregfx_funcs.h"
+
+#define SysBase IBase->ib_SysBase
 #define CoreGfxBase IBase->ib_GfxBase
 
-void _ClearWindow(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, INT32 width, INT32 height, INT32 exposeflag)
+void _ClearWindow(IntuitionBase *IBase, struct nWindow *wp, INT32 x, INT32 y, INT32 width, INT32 height, INT32 exposeflag)
 {
 	if (!wp->realized) return;
 
@@ -91,8 +93,10 @@ usleep(500000);
 #endif
 	_SetClipWindow(IBase, wp, NULL, 0);
 	IBase->clipwp = NULL;
-	SetFillMode(wp->rp, FILL_SOLID);
-	SetMode(wp->rp, ROP_COPY);
-	SetForegroundColor(wp->rp, wp->background);
-	FillRect(wp->rp, wp->x + x, wp->y + y, width, height);
+	SetFillMode(wp->frp, FILL_SOLID);
+	SetMode(wp->frp, ROP_COPY);
+	
+//	DPrintF("Foregroundcolor: %x\n", wp->background );
+	SetForegroundColor(wp->frp, wp->background);
+	FillRect(wp->frp, wp->x + x, wp->y + y, width, height);
 }

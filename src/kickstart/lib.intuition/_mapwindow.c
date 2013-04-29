@@ -1,7 +1,7 @@
 #include "windows.h"
 #include "screens.h"
 
-void _MapWindow(IntuitionBase *IBase, struct Window *wp)
+void _MapWindow(IntuitionBase *IBase, struct nWindow *wp)
 {
 //	SERVER_LOCK();
 

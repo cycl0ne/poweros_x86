@@ -100,11 +100,36 @@ void initIntuition(pIntuitionBase IBase)
 
 	IBase->ib_SystemFont[0] = CreateFont(FONT_SYSTEM_VAR, 0, 0, NULL);
 	IBase->ib_SystemFont[1] = CreateFont(FONT_SYSTEM_FIXED, 0, 0, NULL);
+#if 0
+	static const UINT16 cursorbits[16] = {
+	      0xe000, 0x9800, 0x8600, 0x4180,
+	      0x4060, 0x2018, 0x2004, 0x107c,
+	      0x1020, 0x0910, 0x0988, 0x0544,
+	      0x0522, 0x0211, 0x000a, 0x0004
+	};
+
+	static const UINT16 cursormask[16] = {
+	      0xe000, 0xf800, 0xfe00, 0x7f80,
+	      0x7fe0, 0x3ff8, 0x3ffc, 0x1ffc,
+	      0x1fe0, 0x0ff0, 0x0ff8, 0x077c,
+	      0x073e, 0x021f, 0x000e, 0x0004
+	};
+#endif
+	IBase->curcursor = NULL;
+	IBase->cursorx = -1;
+	IBase->cursory = -1;
+
+#if 000000
+	ShowCursor(psd);
+	GrMoveCursor(psd->xvirtres / 2, psd->yvirtres / 2);
+	cid = GrNewCursor(16, 16, 0, 0, WHITE, BLACK, (MWIMAGEBITS *)cursorbits, (MWIMAGEBITS *)cursormask);
+	GrSetWindowCursor(GR_ROOT_WINDOW_ID, cid);
+	stdcursor = GsFindCursor(cid);
+#endif
 
 #if 0
 	UINT32 xres = 640, yres = 480;
 	
-
 	IBase->ib_PixMap 	= cgfx_AllocPixMap(IBase->ib_GfxBase, xres, yres, IF_BGRA8888, FPM_Displayable, NULL,0 );
 	IBase->ib_RP 		= cgfx_InitRastPort(IBase->ib_GfxBase, IBase->ib_PixMap);
 	SetForegroundColor(IBase->ib_RP, BACKGROUND);

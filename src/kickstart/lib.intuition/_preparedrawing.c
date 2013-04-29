@@ -6,7 +6,7 @@
 #define RegionBase 	IBase->ib_RgnBase
 #define SysBase 	IBase->ib_SysBase
 
-UINT32 _PrepareDrawing(IntuitionBase *IBase, struct Window *wp) //, struct IntuDrawable **retdp)
+UINT32 _PrepareDrawing(IntuitionBase *IBase, struct nWindow *wp) //, struct IntuDrawable **retdp)
 {
 //	CRastPort 	*rp = wp->rp;
 	ClipRegion	*regionp = wp->userclipregion;

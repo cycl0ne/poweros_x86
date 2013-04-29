@@ -8,14 +8,6 @@
 //#define UtilBase IBase->ib_UtilBase
 #define RegionBase IBase->ib_RgnBase
 
-#define BARFILL			RGB(225,225,225)
-#define BARLINEDARK		RGB( 96, 96, 96)
-#define BARLINELIGHT	RGB(155,155,155)
-#define BLACK			RGB(  0,  0,  0)
-
-#define BACKGROUND		RGB(170,170,170)
-#define WHITE			RGB(255,255,255)
-
 struct ViewPort *cgfx_CreateVPort(CoreGfxBase *CoreGfxBase, PixMap *pix, INT32 xOffset, INT32 yOffset);
 struct View *cgfx_CreateView(CoreGfxBase *CoreGfxBase, UINT32 nWidth, UINT32 nHeight, UINT32 bpp);
 BOOL cgfx_MakeVPort(CoreGfxBase *CoreGfxBase, struct View *view, struct ViewPort *vp);
@@ -24,75 +16,55 @@ PixMap *cgfx_AllocPixMap(CoreGfxBase *CoreGfxBase, UINT32 width, UINT32 height, 
 struct CRastPort *cgfx_InitRastPort(CoreGfxBase *CoreGfxBase, struct PixMap *bm);
 
 #if 0
-typedef struct Screen {
-	struct Screen	*NextScreen;
-	struct Window	*FirstWindow;
-	INT32			LeftEdge, TopEdge;
-	INT32			Width, Height;
-	INT32			MouseX, MouseY;
-	UINT32			Flags;
-	STRPTR			Title;
-	STRPTR			DefaultTitle;
-    INT8			BarHeight, BarVBorder, BarHBorder, MenuVBorder, MenuHBorder;
-    INT8			WBorTop, WBorLeft, WBorRight, WBorBottom;
-	UINT32			Bordercolor, Background;
-	CGfxFont		*Font;
-    struct ViewPort *ViewPort;
-    CRastPort 		*RastPort;
-
-    SignalSemaphore	LockScreen;
-	ClipRegion		*CRegion;
-} Screen_t, *pScreen;
+	struct nWindow		root;
+	struct nWindow		*list;
+	CGfxFont			*Font;
+    struct ViewPort 	*ViewPort;
+	INT32				MouseX, MouseY;
+	UINT32				Flags;
+	CSTRPTR				DefaultTitle;
+    SignalSemaphore		LockScreen;
 #endif
 
-pScreen intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList)
+struct nScreen *intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList)
 {
 	APTR UtilBase = IBase->ib_UtilBase;
-	pScreen ret = AllocVec(sizeof(Screen_t), MEMF_CLEAR|MEMF_FAST);
+	struct nScreen *ret = AllocVec(sizeof(struct nScreen), MEMF_CLEAR|MEMF_FAST);
 	if (ret)
 	{
-		ret->NextScreen	= NULL;
-		ret->FirstWindow= NULL;
-		ret->LeftEdge	= (INT32)  GetTagData(SA_Left	,   0, tagList);
-		ret->TopEdge	= (INT32)  GetTagData(SA_Top	,   0, tagList);
-		ret->Width		= (INT32)  GetTagData(SA_Width	, 640, tagList);
-		ret->Height		= (INT32)  GetTagData(SA_Height	, 480, tagList);
-		ret->Title		= (STRPTR) GetTagData(SA_Title	, (UINT32)"Unknown Screen", tagList);
-//		ret->DefaultTitle= (STRPTR) GetTagData(SA_DTitle, (UINT32)"Unknown", tagList);
+		ret->root.x		= (INT32)  GetTagData(SA_Left	,   0, tagList);
+		ret->root.y		= (INT32)  GetTagData(SA_Left	,   0, tagList);
+		ret->root.width	= (INT32)  GetTagData(SA_Width	, 640, tagList);
+		ret->root.height= (INT32)  GetTagData(SA_Height	, 480, tagList);
+
+		ret->root.parent		= NULL;
+		ret->root.siblings		= NULL;
+		ret->root.children		= NULL;
+		ret->root.realized		= TRUE;
+		ret->root.mapped		= TRUE;
+		ret->root.clipregion	= NULL;
+		ret->root.buffer		= NULL;
+
+		ret->root.screen		= ret;
+		ret->root.bordercolor	= BLACK;
+		ret->root.bordersize	= 0;
+		ret->root.background	= BACKGROUND;
+		ret->root.title			= (STRPTR) GetTagData(SA_Title	, (UINT32)"Workbench Screen", tagList);
+		ret->root.owner			= FindTask(NULL);
+
+		ret->root.buffer		= cgfx_AllocPixMap(IBase->ib_GfxBase, ret->root.width, ret->root.height, IF_BGRA8888, FPM_Displayable, NULL,0 );
+		ret->root.frp			= cgfx_InitRastPort(IBase->ib_GfxBase, ret->root.buffer);
+		ret->ViewPort			= cgfx_CreateVPort(IBase->ib_GfxBase, ret->root.buffer, 0, 0);
+		
+		ret->list = NULL;
 		ret->Font		= (CGfxFont*) GetTagData(SA_Font, (UINT32)IBase->ib_SystemFont[0], tagList);
-		ret->Bordercolor= BLACK;
-		ret->Background	= BACKGROUND;
+
 		InitSemaphore(&ret->LockScreen);
-		// New Idea !
-		ret->PixMap		= cgfx_AllocPixMap(IBase->ib_GfxBase, ret->Width, ret->Height, IF_BGRA8888, FPM_Displayable, NULL,0 );
-		ret->RastPort	= cgfx_InitRastPort(IBase->ib_GfxBase, ret->PixMap);
-		ret->ViewPort	= cgfx_CreateVPort(IBase->ib_GfxBase, ret->PixMap, 0, 0);
-
-		ret->RootWindow.rp = ret->RastPort;
-		ret->RootWindow.id = 0; //RWINDOW_ID;
-		ret->RootWindow.parent	= NULL;
-		ret->RootWindow.owner	= NULL;
-		ret->RootWindow.children= NULL;
-		ret->RootWindow.siblings= NULL;
-		ret->RootWindow.screen	= ret;
-		ret->RootWindow.next	= NULL;
-		ret->RootWindow.x		= 0;
-		ret->RootWindow.y		= 0;
-		ret->RootWindow.width	= ret->Width;
-		ret->RootWindow.height	= ret->Height;
-		ret->RootWindow.bordersize	= 0;
-		ret->RootWindow.background	= BACKGROUND; //BLACK;
-		ret->RootWindow.bordercolor	= BLACK;
-		ret->RootWindow.clipregion	= NULL;
-		ret->RootWindow.realized	= TRUE;
-		ret->RootWindow.title		= NULL;
-		ret->RootWindow.screenTitle	= NULL;
-
-		// Our First Screen, so open it.
+		
 		if (IBase->ib_ActiveScreen == NULL)
 		{
 			DPrintF("ActiveScreen\n");
-			IBase->ib_ViewMaster= cgfx_CreateView(IBase->ib_GfxBase, ret->Width, ret->Height, 32);
+			IBase->ib_ViewMaster= cgfx_CreateView(IBase->ib_GfxBase, ret->root.width, ret->root.height, 32);
 			cgfx_MakeVPort(IBase->ib_GfxBase, IBase->ib_ViewMaster, ret->ViewPort);
 			cgfx_LoadView(IBase->ib_GfxBase, IBase->ib_ViewMaster);
 			IBase->ib_ActiveScreen = ret;

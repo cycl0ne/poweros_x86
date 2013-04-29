@@ -714,10 +714,30 @@ void test_new_memory();
 #include "screens.h"
 #include "tagitem.h"
 
-pScreen intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList);
-struct Window *intu_OpenWindow(IntuitionBase *IBase, struct Screen *screen, INT32 x, INT32 y, INT32 width, INT32 height);
-void intu_IRectFill(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, INT32 width, INT32 height);
-void intu_IText(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, STRPTR str, INT32 count, UINT32 flags);
+struct nScreen *intu_OpenScreenTag(IntuitionBase *IBase,  struct TagItem *tagList);
+struct nWindow *intu_OpenWindowTags(IntuitionBase *IBase, struct nScreen *screen, struct TagItem *tagList);
+
+void intu_IRectFill(IntuitionBase *IBase, struct nWindow *wp, INT32 x, INT32 y, INT32 width, INT32 height);
+void intu_IText(IntuitionBase *IBase, struct nWindow *wp, INT32 x, INT32 y, STRPTR str, INT32 count, UINT32 flags);
+void intu_MoveWindow(IntuitionBase *IBase, struct nWindow *wp, INT32 x, INT32 y);
+
+static struct TagItem win1Tags[] = 
+{
+	{WA_Left, 	0},
+	{WA_Top,	0},
+	{WA_Width,	100},
+	{WA_Height,	100},
+	{TAG_DONE, 0}
+};
+
+static struct TagItem win2Tags[] = 
+{
+	{WA_Left, 	50},
+	{WA_Top,	50},
+	{WA_Width,	300},
+	{WA_Height,	300},
+	{TAG_DONE, 0}
+};
 
 static void test_Intuition(SysBase *SysBase)
 {
@@ -730,19 +750,27 @@ static void test_Intuition(SysBase *SysBase)
 	APTR CoreGfxBase = IBase->ib_GfxBase;
 
 	DPrintF("Opening Screen\n");
-	struct Screen *screen = intu_OpenScreenTag(IBase, NULL);
+	struct nScreen *screen = intu_OpenScreenTag(IBase, NULL);
 	DPrintF("Open window\n");
-	struct Window *win = intu_OpenWindow(IBase, screen, 10, 10, 100, 100);
-	struct Window *win2 = intu_OpenWindow(IBase, screen, 60, 60, 100, 100);
+	struct nWindow *win = intu_OpenWindowTags(IBase, screen, win1Tags);
+	struct nWindow *win2 = intu_OpenWindowTags(IBase, screen, win2Tags);
 
 	DPrintF("Draw window1\n");
-	struct CRastPort *rp = win->rp;
-	SetForegroundColor(rp, RGB(255,255,255));
+	struct CRastPort *rp = win->frp;
+	SetForegroundColor(rp, RGB(0,0,0));
+	SetUseBackground(rp, FALSE);
 //	intu_IRectFill(IBase, win, 0, 0, 200, 200);
 	intu_IText(IBase, win, 10, 10, "hallo\n", 6, 0);
-	rp = win2->rp;
-	SetForegroundColor(rp, RGB(255,255,255));
-	intu_IRectFill(IBase, win2, 0, 0, 200, 200);
+	rp = win2->frp;
+	SetForegroundColor(rp, RGB(255,0,0));
+	intu_IRectFill(IBase, win2, 0, 0, 300, 300);
+	
+	for(int i = 0; i<0x10000000; i++);
+	intu_MoveWindow(IBase, win, 350, 350);
+//	SetForegroundColor(rp, RGB(255,255,0));
+//	intu_IRectFill(IBase, win2, 0, 0, 300, 300);
+
+	
 	DPrintF("Done %x\n", win, win2);
 }
 
@@ -782,8 +810,8 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 //	asm("cli");
 	test_Intuition(SysBase);
 	goto out;
-
 	test_MousePointer(SysBase);
+
 
 //	test_cgfx(SysBase);
 

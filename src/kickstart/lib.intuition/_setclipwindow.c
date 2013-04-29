@@ -8,12 +8,12 @@
 
 #define GR_MODE_EXCLUDECHILDREN	0x0100		/* exclude children on clip*/
 
-void _SetClipWindow(pIntuitionBase IBase, Window *wp, ClipRegion *userregion, INT32 flags)
+void _SetClipWindow(pIntuitionBase IBase, struct nWindow *wp, ClipRegion *userregion, INT32 flags)
 {
-	Window	*rootwp = &wp->screen->RootWindow;
-	Window	*orgwp;		/* original window pointer */
-	Window	*pwp;		/* parent window */
-	Window	*sibwp;		/* sibling windows */
+	struct nWindow	*rootwp = &wp->screen->root;
+	struct nWindow	*orgwp;		/* original window pointer */
+	struct nWindow	*pwp;		/* parent window */
+	struct nWindow	*sibwp;		/* sibling windows */
 	INT32	minx;		/* minimum clip x coordinate */
 	INT32	miny;		/* minimum clip y coordinate */
 	INT32	maxx;		/* maximum clip x coordinate */
@@ -72,7 +72,7 @@ void _SetClipWindow(pIntuitionBase IBase, Window *wp, ClipRegion *userregion, IN
 	 */
 	if (width <= 0 || height <= 0) 
 	{
-		SetClipRegion(IBase->clipwp->rp, NULL);
+		SetClipRegion(IBase->clipwp->frp, NULL);
 		return;
 	}
 
@@ -194,7 +194,7 @@ void _SetClipWindow(pIntuitionBase IBase, Window *wp, ClipRegion *userregion, IN
 	/*
 	 * Set the clip region (later destroy handled by GdSetClipRegion)
 	 */
-	SetClipRegion(IBase->clipwp->rp, vis);
+	SetClipRegion(IBase->clipwp->frp, vis);
 
 	/*
 	 * Destroy temp region

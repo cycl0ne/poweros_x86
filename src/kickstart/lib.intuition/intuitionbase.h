@@ -12,6 +12,7 @@
 #include "pixmap.h"
 #include "font.h"
 #include "coregfx.h"
+#include "cursor.h"
 #include "windows.h"
 #include "screens.h"
 
@@ -23,6 +24,12 @@
 #define IRPLOCK		3
 #define NUMLOCKS	4
 
+typedef struct IMousePointer
+{
+	struct MinNode	imp_Node;
+	struct Cursor	imp_Cursor;
+} IMPointer, *pIMPointer;
+
 typedef struct IntuitionBase 
 {
 	struct Library		ib_Library;
@@ -30,6 +37,7 @@ typedef struct IntuitionBase
 	APTR				ib_UtilBase;
 	APTR				ib_RgnBase;
 	APTR				ib_GfxBase;
+	
 	struct PoolList		ib_IEFreeList;
 	struct List			ib_IEFoodList;
 	struct List			ib_IEQueue;
@@ -51,10 +59,18 @@ typedef struct IntuitionBase
 
 	CGfxFont			*ib_SystemFont[2];
 
-	struct Window		*ib_ActiveWindow;
-	struct Screen		*ib_ActiveScreen;
-	struct Window 		*clipwp;
-	UINT32				nextid;
+	struct nWindow		*ib_ActiveWindow;	// Active Window, who gets all Input
+	struct nScreen		*ib_ActiveScreen;	// Active Screen
+	struct nWindow 		*clipwp;			// Cache last Window clipped
+	UINT32				nextid;				// Just  a Counter
+	
+	struct List			listcursorp;	/* list of all cursors */
+	pIMPointer			stdcursor;		/* root window cursor */
+	pIMPointer			curcursor;		/* currently enabled cursor */
+	INT32				cursorx;		/* current x position of cursor */
+	INT32				cursory;		/* current y position of cursor */
+	UINT32				curbuttons;		/* current state of buttons */
+
 }IntuitionBase, *pIntuitionBase;
 
 #define	GR_DRAW_TYPE_NONE	0	/* none or error */
@@ -65,13 +81,17 @@ void InitPool(IntuitionBase *IBase, struct PoolList *pl, INT32 size, UINT32 init
 struct PoolNode *GetPool(IntuitionBase *IBase, struct PoolList *pl);
 void ReturnPool(IntuitionBase *IBase, struct PoolNode *pn);
 
-void _ExposeArea(IntuitionBase *IBase, struct Window *wp, INT32 rootx, INT32 rooty, INT32 width, INT32 height, struct Window *stopwp);
-void _RedrawScreen(IntuitionBase *IBase, struct Screen *screen);
-void _ClearWindow(IntuitionBase *IBase, struct Window *wp, INT32 x, INT32 y, INT32 width, INT32 height, INT32 exposeflag);
-void _DrawBorder(IntuitionBase *IBase, Window *wp);
-void _SetClipWindow(pIntuitionBase IBase, Window *wp, ClipRegion *userregion, INT32 flags);
-void _RealizeWindow(IntuitionBase *IBase, Window  *wp, BOOL temp);
-void _MapWindow(IntuitionBase *IBase, struct Window *wp);
-UINT32 _PrepareDrawing(IntuitionBase *IBase, struct Window *wp);
+void _ExposeArea(IntuitionBase *IBase, struct nWindow *wp, INT32 rootx, INT32 rooty, INT32 width, INT32 height, struct nWindow *stopwp);
+void _RedrawScreen(IntuitionBase *IBase, struct nScreen *screen);
+void _ClearWindow(IntuitionBase *IBase, struct nWindow *wp, INT32 x, INT32 y, INT32 width, INT32 height, INT32 exposeflag);
+void _DrawBorder(IntuitionBase *IBase, struct nWindow *wp);
+void _SetClipWindow(pIntuitionBase IBase, struct nWindow *wp, ClipRegion *userregion, INT32 flags);
+void _RealizeWindow(IntuitionBase *IBase, struct nWindow  *wp, BOOL temp);
+void _UnrealizeWindow(IntuitionBase *IBase, struct nWindow *wp, BOOL temp);
+void _MapWindow(IntuitionBase *IBase, struct nWindow *wp);
+UINT32 _PrepareDrawing(IntuitionBase *IBase, struct nWindow *wp);
+
+BOOL _CheckOverlap(struct nWindow *topwp, struct nWindow *botwp);
+
 
 #endif

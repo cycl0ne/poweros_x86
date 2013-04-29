@@ -9,7 +9,7 @@ static UINT32 rootDispatch(pBOOPSI BOOPSIBase, Class * cl, Object * o, Msg msg);
 
 Class *initRootClass(pBOOPSI BOOPSIBase)
 {
-    extern CSTRPTR	*RootClassName;
+    extern CSTRPTR RootClassName;
     return ( makePublicClass( BOOPSIBase, (ClassID)RootClassName, NULL, 0, (HOOKFUNC)rootDispatch) );
 }
 

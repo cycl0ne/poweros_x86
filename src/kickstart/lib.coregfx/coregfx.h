@@ -11,9 +11,6 @@
 #include "coregfx_funcs.h"
 //void SVGA_DrawPixel32(VgaGfxBase *VgaGfxBase, UINT32 x, UINT32 y, UINT32 c, UINT32 rop)
 
-#define	MAX_CURSOR_SIZE				32		/* maximum cursor x and y size*/
-#define	MAX_CURSOR_BUFLEN			IMAGE_SIZE(MAX_CURSOR_SIZE, MAX_CURSOR_SIZE)
-
 #define IMAGE_WORDS(x)					(((x)+15)/16)
 #define IMAGE_BYTES(x)					(IMAGE_WORDS(x)*sizeof(UINT16))
 #define	IMAGE_SIZE(width, height) 	((height) * (((width) + IMAGE_BITSPERIMAGE - 1) / IMAGE_BITSPERIMAGE))

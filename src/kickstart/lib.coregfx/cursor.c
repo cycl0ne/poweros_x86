@@ -57,6 +57,7 @@ void cgfx_SetCursor(CoreGfxBase *CoreGfxBase, struct Cursor *pcursor)
 	memcpy(cur->cursormask, pcursor->mask, bytes);
 	ShowCursor();
 }
+void SVGA_Update(struct PixMap *pix, INT32 x, INT32 y, INT32 width, INT32 height);
 
 INT32 cgfx_ShowCursor(CoreGfxBase *CoreGfxBase)
 {
@@ -133,8 +134,10 @@ INT32 cgfx_ShowCursor(CoreGfxBase *CoreGfxBase)
 			}
 		}
 	}
+
+
 	SetMode(rp, oldmode);
-//	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
+	SVGA_FifoUpdateFullscreen(CoreGfxBase->VgaGfxBase);
 	return prevcursor;
 }
 

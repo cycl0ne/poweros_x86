@@ -4,10 +4,11 @@
 
 #define SysBase IBase->ib_SysBase
 
-void _RealizeWindow(IntuitionBase *IBase, Window  *wp, BOOL temp)
+void _RealizeWindow(IntuitionBase *IBase, struct nWindow *wp, BOOL temp)
 {
-	Window *rootwp = &wp->screen->RootWindow;
-	DPrintF("wp %x, root: %x\n", wp, rootwp);
+	struct nWindow *rootwp= &wp->screen->root;
+//	DPrintF("wp %x, root: %x\n", wp, rootwp);
+
 	if (wp == rootwp) 
 	{
 		DPrintF("GR_ERROR_ILLEGAL_ON_ROOT_WINDOW\n");
@@ -39,9 +40,9 @@ void _RealizeWindow(IntuitionBase *IBase, Window  *wp, BOOL temp)
 //		GsCheckFocusWindow();
 //		GsCheckCursor();
 	}
-DPrintF("realize ->Drawborder\n");
+//DPrintF("realize ->Drawborder\n");
 	_DrawBorder(IBase, wp);
-DPrintF("realize ->ClearWindow\n");
+//DPrintF("realize ->ClearWindow\n");
 	_ClearWindow(IBase, wp, 0, 0, wp->width, wp->height, 1);
 
 	for (wp = wp->children; wp; wp = wp->siblings) _RealizeWindow(IBase, wp, temp);

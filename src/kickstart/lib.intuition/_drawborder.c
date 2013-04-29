@@ -1,6 +1,7 @@
 #include "intuitionbase.h"
 #include "pixmap.h"
 #include "coregfx.h"
+#include "rastport.h"
 
 #include "font.h"
 #include "exec_funcs.h"
@@ -8,7 +9,7 @@
 #define SysBase		IBase->ib_SysBase
 #define CoreGfxBase IBase->ib_GfxBase
 
-void _DrawBorder(IntuitionBase *IBase, Window *wp)
+void _DrawBorder(IntuitionBase *IBase, struct nWindow *wp)
 {
 	INT32	lminx;		/* left edge minimum x */
 	INT32	rminx;		/* right edge minimum x */
@@ -19,9 +20,12 @@ void _DrawBorder(IntuitionBase *IBase, Window *wp)
 	INT32	width;		/* original width of window */
 	INT32	height;		/* original height of window */
 	INT32	bs;			/* border size */
-	CRastPort	*rp = wp->rp;
+	struct CRastPort	*rp;
+
+	rp = wp->frp;
 	
 	bs = wp->bordersize;
+//	DPrintF("Bordersize = %d\n", bs);
 	if (bs <= 0) return;
 
 	width = wp->width;
@@ -40,14 +44,14 @@ void _DrawBorder(IntuitionBase *IBase, Window *wp)
 	wp->bordersize = 0;
 
 	IBase->clipwp = NULL;
-	DPrintF("DrawBorder->SetClipWindow\n");
+//	DPrintF("DrawBorder->SetClipWindow\n");
 	_SetClipWindow(IBase, wp, NULL, 0);
 
 	SetMode(rp, ROP_COPY);
 	SetForegroundColor(rp, wp->bordercolor);
 	SetDash(rp, 0, 0);
 	SetFillMode(rp, FILL_SOLID);
-	DPrintF("DrawBorder->Line\n");
+//	DPrintF("DrawBorder->Line\n");
 
 	if (bs == 1) {
 		Line(rp, lminx, tminy, rminx, tminy, TRUE);
