@@ -201,4 +201,69 @@ void intu_WindowToBack(IntuitionBase *IBase, struct nWindow *wp)
 	//SERVER_UNLOCK();
 }
 
+void intu_SizeWindow(IntuitionBase *IBase, struct nWindow *wp, INT32 width, INT32 height)
+{
+	INT32	oldw, oldh;
+	//SERVER_LOCK();
+
+	if (wp == NULL) 
+	{
+		//SERVER_UNLOCK();
+		return;
+	}
+	if (wp == &wp->screen->root) 
+	{
+		//GsError(GR_ERROR_ILLEGAL_ON_ROOT_WINDOW, wid);
+		//SERVER_UNLOCK();
+		return;
+	}
+	if (width <= 0 || height <= 0) 
+	{
+		//GsError(GR_ERROR_BAD_WINDOW_SIZE, wid);
+		//SERVER_UNLOCK();
+		return;
+	}
+
+	if (wp->width == width && wp->height == height) 
+	{
+		//SERVER_UNLOCK();
+		return;
+	}
+
+	/* possibly reallocate buffered window's pixmap to new size*/
+//	if (wp->props & GR_WM_PROPS_BUFFERED) GsInitWindowBuffer(wp, width, height); /* allocate buffer and fill background*/
+
+	if (!wp->realized) 
+	{
+		wp->width = width;
+		wp->height = height;
+		//SERVER_UNLOCK();
+		return;
+	}
+
+    oldw = wp->width;
+	oldh = wp->height;
+	wp->width = width;
+	wp->height = height;
+
+	_DrawBorder(IBase, wp);
+	_ClearWindow(IBase, wp, 0, 0, wp->width, wp->height, 1);
+
+//	GsDeliverUpdateEvent(wp, GR_UPDATE_SIZE, wp->x, wp->y, width, height);
+
+	if (width < oldw || height < oldh) 
+	{
+		int bs = wp->bordersize;
+		int x = wp->x - bs;
+		int y = wp->y - bs;
+		int w, h;
+		if (oldw < width) oldw = width;
+		if (oldh < height) oldh = height;
+		w = oldw + bs*2;
+		h = oldh + bs*2;
+		_ExposeArea(IBase, wp->parent, x + wp->width, y, w - wp->width, h, NULL);
+		_ExposeArea(IBase, wp->parent, x, y + wp->height, w - (oldw - wp->width), h - wp->height, NULL);
+	}
+	//SERVER_UNLOCK();
+}
 

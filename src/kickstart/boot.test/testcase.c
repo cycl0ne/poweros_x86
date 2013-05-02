@@ -739,6 +739,8 @@ static struct TagItem win2Tags[] =
 	{TAG_DONE, 0}
 };
 
+void intu_WindowToFront(IntuitionBase *IBase, struct nWindow *wp);
+
 static void test_Intuition(SysBase *SysBase)
 {
 	IntuitionBase *IBase = OpenLibrary("intuition.library",0);
@@ -765,8 +767,13 @@ static void test_Intuition(SysBase *SysBase)
 	SetForegroundColor(rp, RGB(255,0,0));
 	intu_IRectFill(IBase, win2, 0, 0, 300, 300);
 	
-	for(int i = 0; i<0x10000000; i++);
-	intu_MoveWindow(IBase, win, 350, 350);
+//	intu_WindowToFront(IBase, win);
+	
+	for (int j= 0; j<350; j+=10)
+	{
+		for(int i = 0; i<0x1000000; i++);
+		intu_MoveWindow(IBase, win, j, j);
+	}
 //	SetForegroundColor(rp, RGB(255,255,0));
 //	intu_IRectFill(IBase, win2, 0, 0, 300, 300);
 

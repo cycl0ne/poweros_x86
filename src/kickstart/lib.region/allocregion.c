@@ -41,8 +41,8 @@ extern APTR g_SysBase; // Lousy HACK !!!
 APTR Realloc(APTR oldAddr, UINT32 oldSize, UINT32 newSize)
 {
 	APTR SysBase = g_SysBase;
-	DPrintF("Realloc Called %x, %x, %x\n", oldAddr, oldSize, newSize);
-	APTR ret = AllocVec(newSize, MEMF_FAST);
+	//DPrintF("Realloc Called %x, %x, %x\n", oldAddr, oldSize, newSize);
+	APTR ret = AllocVec(newSize, MEMF_FAST|MEMF_CLEAR);
 	if (ret)
 	{
 		memcpy(ret, oldAddr, oldSize);
