@@ -151,33 +151,6 @@ Node *lib_RemHead(SysBase *SysBase, struct List *list)
     return node;
 }
 
-/*
-Node *lib_RemTail(SysBase *SysBase, List *list)
-{
-	Node *node = list->lh_TailPred->ln_Pred;
-	if (!node) return NULL;
-
-	node = list->lh_TailPred;
-	list->lh_TailPred = node->ln_Pred;
-	list->lh_TailPred->ln_Succ = node->ln_Succ;
-	return node;
-}
-
-struct Node *lib_RemHead(SysBase *SysBase, struct List *list)
-{
-	//if(IsListEmpty(list)) return NULL;
-	struct Node *node;
-	node = list->lh_Head->ln_Succ;
-	if (node)
-	{
-		node->ln_Pred = (struct Node *)list;
-		node = list->lh_Head;
-		list->lh_Head = node->ln_Succ;
-	}
-   return node;
-}
-*/
-
 inline static int strcmp(char *s, char *t)
 {
 	for (; *s == *t;t++,s++) if (*s == '\0') return 0;

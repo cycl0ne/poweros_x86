@@ -17,23 +17,63 @@
 #define BACKGROUND		RGB(170,170,170)
 #define WHITE			RGB(255,255,255)
 
-typedef struct IDCMPMessage
-{
-	struct Message	ExecMessage;
-	struct nWindow	*IDCMPWindow;
-	UINT32			Class;
-	UINT16			Code;
-	UINT16			Qualifier;
-	INT16			MouseX;
-	INT16			MouseY;
-	UINT32			Seconds;
-	UINT32			Micros;
-} IntuiMessage, *pIDCMPMessage;
+/* --- Flags requested at OpenWindow() time by the application --------- */
+#define WFLG_SIZEGADGET	    0x00000001L	/* include sizing system-gadget? */
+#define WFLG_DRAGBAR	    0x00000002L	/* include dragging system-gadget? */
+#define WFLG_DEPTHGADGET    0x00000004L	/* include depth arrangement gadget? */
+#define WFLG_CLOSEGADGET    0x00000008L	/* include close-box system-gadget? */
+
+#define WFLG_SIZEBRIGHT	    0x00000010L	/* size gadget uses right border */
+#define WFLG_SIZEBBOTTOM    0x00000020L	/* size gadget uses bottom border */
+
+/* --- refresh modes ------------------------------------------------------ */
+/* combinations of the WFLG_REFRESHBITS select the refresh type */
+#define WFLG_REFRESHBITS    0x000000C0L
+#define WFLG_SMART_REFRESH  0x00000000L
+#define WFLG_SIMPLE_REFRESH 0x00000040L
+#define WFLG_SUPER_BITMAP   0x00000080L
+#define WFLG_OTHER_REFRESH  0x000000C0L
+
+#define WFLG_BACKDROP	    0x00000100L	/* this is a backdrop window */
+
+#define WFLG_REPORTMOUSE    0x00000200L	/* to hear about every mouse move */
+
+#define WFLG_GIMMEZEROZERO  0x00000400L	/* a GimmeZeroZero window	*/
+
+#define WFLG_BORDERLESS	    0x00000800L	/* to get a Window sans border */
+
+#define WFLG_ACTIVATE	    0x00001000L	/* when Window opens, it's Active */
+
+/* --- Other User Flags --------------------------------------------------- */
+#define WFLG_RMBTRAP	    0x00010000L	/* Catch RMB events for your own */
+#define WFLG_NOCAREREFRESH  0x00020000L	/* not to be bothered with REFRESH */
+
+/* - V36 new Flags which the programmer may specify in NewWindow.Flags	*/
+#define WFLG_NW_EXTENDED    0x00040000L	/* extension data provided	*/
+					/* see struct ExtNewWindow	*/
+
+/* - V39 new Flags which the programmer may specify in NewWindow.Flags	*/
+#define WFLG_NEWLOOKMENUS   0x00200000L	/* window has NewLook menus	*/
+
+
+/* These flags are set only by Intuition.  YOU MAY NOT SET THEM YOURSELF! */
+#define WFLG_WINDOWACTIVE   0x00002000L	/* this window is the active one */
+#define WFLG_INREQUEST	    0x00004000L	/* this window is in request mode */
+#define WFLG_MENUSTATE	    0x00008000L	/* Window is active with Menus on */
+#define WFLG_WINDOWREFRESH  0x01000000L	/* Window is currently refreshing */
+#define WFLG_WBENCHWINDOW   0x02000000L	/* WorkBench tool ONLY Window */
+#define WFLG_WINDOWTICKED   0x04000000L	/* only one timer tick at a time */
+
+/* V36 and higher flags to be set only by Intuition: */
+#define WFLG_VISITOR	    0x08000000L	/* visitor window		*/
+#define WFLG_ZOOMED	    0x10000000L	/* identifies "zoom state"	*/
+#define WFLG_HASZOOM	    0x20000000L	/* window has a zoom gadget	*/
 
 struct nWindow {
 	struct nScreen		*screen;
 
 	INT32				x, y, width, height;
+	UINT32				Flags;
 	struct CRastPort	*frp;
 	struct Task			*owner;
 
@@ -57,7 +97,12 @@ struct nWindow {
 
 	CSTRPTR				title;
     UINT32				IDCMPFlags;
-    struct MsgPort 		*UserPort, *WindowPort;
+
+	UINT32				MousePending;
+	UINT32				RptPending;
+	
+	struct MsgPort		WindowPort;
+    struct MsgPort 		*UserPort, *WPort;
     struct IntuiMessage *MessageKey;
 };
 
@@ -107,7 +152,8 @@ typedef struct Window
 	BOOL				mapped;
 	// IDCMP 
     UINT32				IDCMPFlags;
-    struct MsgPort 		*UserPort, *WindowPort;
+    struct MsgPort 		*UserPort;
+    struct MsgPort		WindowPort; // Embedded MsgPort for this Window!
     struct IntuiMessage *MessageKey;	
 
 #if 0

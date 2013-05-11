@@ -13,6 +13,7 @@ void lib_Enable(struct SysBase *SysBase, UINT32 ipl)
 	SysBase->IDNestCnt--;
 	if (SysBase->IDNestCnt < 0) {
 		arch_Int_Restore(ipl);
+//		if (SysBase->TDNestCnt < 0) Schedule();
 	 }
 }
 
@@ -31,17 +32,12 @@ UINT32 lib_Disable(struct SysBase *SysBase)
 
 void lib_Permit(struct SysBase *SysBase)
 {
-//	lib_Print_uart0("Permit\n");
   	SysBase->TDNestCnt--;
-//	lib_Print_uart0("Permit\n");
-  	//if (SysBase->IDNestCnt < 0) arch_Enable();
+//  	if ((SysBase->TDNestCnt < 0) && (SysBase->IDNestCnt < 0) ) Schedule();
 }
 
 void lib_Forbid(struct SysBase *SysBase)
 {
-//	lib_Print_uart0("Forbid\n");
   	SysBase->TDNestCnt++;
-//	lib_Print_uart0("Forbid\n");
-  	//if (SysBase->IDNestCnt < 0) arch_Enable();
 }
 

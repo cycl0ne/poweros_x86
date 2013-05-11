@@ -5,13 +5,6 @@
 #include "exec_funcs.h"
 
 extern SysBase *g_SysBase;
-
-//UINT32 interrupts_disable(void);
-//UINT32 interrupts_enable(void);
-//void interrupts_restore(UINT32 ipl);
-//UINT32 interrupts_read(void);
-//BOOL interrupts_disabled(void);
-//void lib_Print_uart0(const char *s);
 void	arch_Before_Task_Runs(SysBase *SysBase, Task *Task);
 
 static void MakeTaskReady(SysBase *SysBase, Task *Task)
@@ -25,20 +18,6 @@ static void MakeTaskReady(SysBase *SysBase, Task *Task)
 		Enqueue(&SysBase->TaskReady, &Task->Node);
 	}
 }
-
-#if 0
-Not used anymore!
-static void MakeTaskWait(SysBase *SysBase, Task *Task)
-{
-	if (Task) {
-		Task->CPU_Usage++;
-		Task->TDNestCnt = SysBase->TDNestCnt;
-		Task->IDNestCnt = SysBase->IDNestCnt;
-		if (Task->Switch) Task->Switch(SysBase);
-		Enqueue(&SysBase->TaskWait, &Task->Node);
-	}
-}
-#endif
 
 static void MakeTaskRun(SysBase *SysBase, Task *Task)
 {

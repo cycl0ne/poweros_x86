@@ -42,8 +42,8 @@ static struct PoolNode *CreatePNode(IntuitionBase *IBase, struct PoolList *pl)
 
 struct PoolNode *GetPool(IntuitionBase *IBase, struct PoolList *pl)
 {
-	struct PoolNode *pn;
-	if (! (pn=(struct PoolNode *)RemHead((struct List *)pl)) )
+	struct PoolNode *pn =(struct PoolNode *)RemHead((struct List *)pl);
+	if (!pn)
 	{
 		pn = CreatePNode(IBase, pl);
 	}

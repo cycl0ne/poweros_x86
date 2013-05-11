@@ -248,7 +248,7 @@ static void CheckPort(UINT32 signalStart, UINT32 signalIE, IDBase *IDBase)
 		if (CheckForMsg(IDBase->Unit.unit_MsgPort))
 		{
 			struct IOStdReq *tmp = (struct IOStdReq *)GetHead(&IDBase->Unit.unit_MsgPort.mp_MsgList);
-			tmp->io_Flags &= ~IOB_QUICK;
+			tmp->io_Flags &= ~IOF_QUICK;
 			switch(tmp->io_Command)
 			{
 				case IND_ADDHANDLER:

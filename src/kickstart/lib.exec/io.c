@@ -31,16 +31,19 @@ void lib_DeleteIORequest(SysBase *SysBase, struct IORequest *iorequest)
 {
   if(iorequest!=NULL)
   {
-    iorequest->io_Message.mn_Node.ln_Succ = (struct Node *)-1;
-    iorequest->io_Device                  = (struct Device *)-1;
+    iorequest->io_Message.mn_Node.ln_Succ = (struct Node *)0;
+    iorequest->io_Device                  = (struct Device *)0;
     FreeVec(iorequest);
   }
 }
 
-struct IORequest *lib_CheckIO(SysBase *SysBase,struct IORequest *iORequest)
+struct IORequest *lib_CheckIO(SysBase *SysBase,struct IORequest *io)
 {
-	if(iORequest->io_Message.mn_Node.ln_Type != NT_MESSAGE) return NULL;
-	else return iORequest;
+	if ( !(io->io_Flags & IOF_QUICK) ) 
+	{
+		if (io->io_Message.mn_Node.ln_Type != NT_REPLYMSG) return NULL;
+	}
+	return io;
 }
 
 INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
@@ -48,39 +51,28 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 	if (iORequest == NULL) return -1;
 	if (iORequest->io_Device == NULL) return -1;
 	iORequest->io_Flags = IOF_QUICK;
-	iORequest->io_Message.mn_Node.ln_Type = NT_MESSAGE;
-
-	//DPrintF("DoIO: %x\n",iORequest->io_Device[-5]); //->dd_Library.lib_Node.ln_Name
 	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
-
-//	DPrintF("WaitIO: %s\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
-	 if(!(iORequest->io_Flags & IOF_QUICK)) WaitIO(iORequest);
-//	DPrintF("WaitIO: %s return\n",iORequest->io_Device->dd_Library.lib_Node.ln_Name); 
+	WaitIO(iORequest);
 	return (INT32)iORequest->io_Error;
 }
 
 void lib_SendIO(SysBase *SysBase, struct IORequest *iORequest)
 {
-  //iORequest->io_Flags=0;
-  iORequest->io_Message.mn_Node.ln_Type=NT_MESSAGE;
-  (((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
+	iORequest->io_Flags=0;
+	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
 }
 
-INT32 lib_WaitIO(SysBase *SysBase, struct IORequest *iORequest)
+INT32 lib_WaitIO(SysBase *SysBase, struct IORequest *io)
 {
-    while(!(iORequest->io_Flags&IOF_QUICK) && iORequest->io_Message.mn_Node.ln_Type == NT_MESSAGE)
-	{
-		//DPrintF("W");
-		Wait(1<<iORequest->io_Message.mn_ReplyPort->mp_SigBit);
-		//DPrintF("w");
-	}
-
-	if(iORequest->io_Message.mn_Node.ln_Type == NT_REPLYMSG)
+	if (!(io->io_Flags&IOF_QUICK))
 	{
 		UINT32 ipl = Disable();
-		Remove(&iORequest->io_Message.mn_Node);
+		while(io->io_Message.mn_Node.ln_Type != NT_REPLYMSG)
+		{
+			Wait(1<<io->io_Message.mn_ReplyPort->mp_SigBit);
+		}
+		Remove(&io->io_Message.mn_Node);
 		Enable(ipl);
 	}
-	return (INT32)iORequest->io_Error;
+	return (INT32)io->io_Error;
 }
-

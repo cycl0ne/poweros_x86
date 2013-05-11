@@ -43,6 +43,7 @@ struct InputEvent
 
     struct TimeVal      ie_TimeStamp;
 };
+
 #define ie_X             ie_position.ie_xy.ie_x
 #define ie_Y             ie_position.ie_xy.ie_y
 #define ie_EventAddress  ie_position.ie_addr
