@@ -251,4 +251,6 @@ void *CopyMemQuick(const APTR src, APTR dest, int n);
 #define CopyMemQuick(x, y, z)	(((APTR(*)(APTR, APTR, APTR, INT32))				_GETVECADDR(SysBase, 91))(SysBase,x, y, z))
 
 #define AvailMem(x)				(((UINT32(*)(APTR, UINT32))				_GETVECADDR(SysBase, 92))(SysBase,x))
+#define SendQuickIO(x)			(((void(*)(APTR, struct IORequest*))	_GETVECADDR(SysBase, 93))(SysBase,x))
+
 #endif

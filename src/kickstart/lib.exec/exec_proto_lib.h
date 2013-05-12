@@ -140,3 +140,4 @@ void lib_RawIOInit(struct SysBase *SysBase);
 void *lib_CopyMemQuick(SysBase *SysBase, const APTR src, APTR dest, int n);
 
 UINT32 lib_AvailMem(SysBase *SysBase, UINT32 attributes);
+void lib_SendQuickIO(SysBase *SysBase, struct IORequest *iORequest);

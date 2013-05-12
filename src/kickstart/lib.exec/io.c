@@ -21,8 +21,8 @@ struct IORequest *lib_CreateIORequest(SysBase *SysBase, struct MsgPort *ioReplyP
   	if (NULL != ret)
 	{
     	ret->io_Message.mn_Node.ln_Type = NT_MESSAGE;
-    	ret->io_Message.mn_ReplyPort=ioReplyPort;
-    	ret->io_Message.mn_Length=size;
+    	ret->io_Message.mn_ReplyPort	= ioReplyPort;
+    	ret->io_Message.mn_Length		= size;
 	}
 	return ret;
 }
@@ -59,6 +59,12 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 void lib_SendIO(SysBase *SysBase, struct IORequest *iORequest)
 {
 	iORequest->io_Flags=0;
+	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
+}
+
+void lib_SendQuickIO(SysBase *SysBase, struct IORequest *iORequest)
+{
+	iORequest->io_Flags=IOF_QUICK;
 	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
 }
 
