@@ -2,6 +2,7 @@
 #define expansion_funcs_h
 
 #include "expansion.h"
+#include "expansionbase.h"
 
 BOOL AddDosNode(INT32 bootPri, UINT32 flags, struct DeviceNode *deviceNode);
 struct DeviceNode *MakeDosNode(struct ExpDosNode *parameter);
