@@ -3,8 +3,8 @@
 #include "resident.h"
 #include "exec_funcs.h"
 
-char LibVirtioLibName[] = "lib_virtio.library";
-char LibVirtioLibVer[] = "\0$VER: lib_virtio.library 0.1 ("__DATE__")\r\n";
+char LibVirtioLibName[] = "virtio.library";
+char LibVirtioLibVer[] = "\0$VER: virtio.library 0.1 ("__DATE__")\r\n";
 
 APTR lib_virtio_FuncTab[] =
 {

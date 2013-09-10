@@ -57,6 +57,6 @@ DEFAULT mboot.c32 kernel.bin '$kernel_args'
 ## if you have any other files/directories to add, add them here
  
 # run QEMU
-$qemu_cmdline -hda "$harddisk_image"
+$qemu_cmdline -hda "$harddisk_image" -drive file=harddisk2.img,if=virtio -drive file=harddisk3.img,if=virtio -drive file=harddisk4.img,if=virtio -drive file=harddisk5.img,if=virtio -drive file=harddisk6.img,if=virtio
  
 echo

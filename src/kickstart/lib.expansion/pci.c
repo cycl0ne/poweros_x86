@@ -221,3 +221,46 @@ void PCI_SetMemEnable(ExpansionBase *ExpBase, const PCIAddress *addr, BOOL enabl
 
    PCI_ConfigWrite16(ExpBase, addr, offsetof(PCIConfigSpace, command), command);
 }
+
+
+UINT8 PCI_GetIntrLine(ExpansionBase *ExpBase, const PCIAddress *addr)
+{
+	UINT8 line = PCI_ConfigRead8(ExpBase, addr, offsetof(PCIConfigSpace, intrLine));
+	return line;
+}
+
+UINT8 PCI_GetIntrPin(ExpansionBase *ExpBase, const PCIAddress *addr)
+{
+	UINT8 pin = PCI_ConfigRead8(ExpBase, addr, offsetof(PCIConfigSpace, intrPin));
+	return pin;
+}
+
+/*
+ * PCI_FindDeviceByUnit --
+ *
+ *    Scan the PCI bus for a device with a specific vendor and device ID and unit.
+ *
+ *    On success, returns TRUE and puts the device address into 'addrOut'.
+ *    If the device was not found, returns FALSE.
+ */
+
+BOOL PCI_FindDeviceByUnit(ExpansionBase *ExpBase, UINT16 vendorId, UINT16 deviceId, PCIAddress *addrOut, INT32 unit)
+{
+	PCIScanState busScan = {};
+
+	while (PCI_ScanBus(ExpBase, &busScan))
+	{
+		if (busScan.vendorId == vendorId && busScan.deviceId == deviceId)
+		{
+			unit--;
+			if(unit != -1)
+			{
+				continue;
+			}
+			*addrOut = busScan.addr;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}

@@ -5,6 +5,8 @@
 #include "device.h"
 #include "io.h"
 #include "exec_funcs.h"
+#include "lib_virtio.h"
+#include "virtioblk.h"
 
 #define MAX_VBLK	5
 
@@ -36,9 +38,10 @@
 
 typedef struct VirtioBlkUnit {
     struct  MsgPort *vbu_MsgPort;	/* queue for unprocessed messages */
-    UINT16  		vbu_OpenCnt;		/* number of active opens */
-    UINT8			vbu_Flags;
-    UINT8   		vbu_ChangeState;
+    UINT16  		 vbu_OpenCnt;		/* number of active opens */
+    UINT8			 vbu_Flags;
+    UINT8   		 vbu_ChangeState;
+	struct VirtioBlk vbu_vb;
 }VirtioBlkUnit;
 
 typedef struct VDBase {
@@ -56,5 +59,8 @@ typedef struct VDBase {
 
 extern void (*virtioBlkCmdVector[])(struct IOStdReq *);
 void vd_EndCommand(struct IOStdReq *io, UINT32 error);
+BOOL vd_VirtioBlk_setup(struct VDBase *VDBase, VirtioBlk *vb, INT32 unit_num);
+BOOL vd_VirtioBlk_alloc_phys_requests(VDBase *VDBase, VirtioBlk *vb);
+BOOL vd_VirtioBlk_configuration(VDBase *VDBase, VirtioBlk *vb);
 
 #endif

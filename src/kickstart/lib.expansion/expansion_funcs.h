@@ -35,4 +35,8 @@ void PCISetMemEnable(const PCIAddress *addr, BOOL enable);
 #define PCIGetBARAddr(a,b)		(((UINT32(*)(APTR, const PCIAddress *addr, INT32 index))					_GETVECADDR(ExpansionBase,16))(ExpansionBase,a,b))
 #define PCISetMemEnable(a,b)	(((void(*)(APTR, const PCIAddress *addr, BOOL enable))						_GETVECADDR(ExpansionBase,17))(ExpansionBase,a,b))
 
+#define PCIGetIntrLine(a)	(((UINT8(*)(APTR, const PCIAddress *addr))						_GETVECADDR(ExpansionBase,18))(ExpansionBase,a))
+#define PCIGetIntrPin(a)	(((UINT8(*)(APTR, const PCIAddress *addr))						_GETVECADDR(ExpansionBase,19))(ExpansionBase,a))
+#define PCIFindDeviceByUnit(a,b,c,d)	(((BOOL(*)(APTR, UINT16 vendorId, UINT16 deviceId, PCIAddress *addrOut, INT32 unit))	_GETVECADDR(ExpansionBase,20))(ExpansionBase,a,b,c,d))
+
 #endif

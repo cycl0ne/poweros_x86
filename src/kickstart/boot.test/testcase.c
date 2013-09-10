@@ -714,6 +714,17 @@ static void test_TestTask(APTR data, struct SysBase *SysBase)
 {
 	DPrintF("TestTask_________________________________________________\n");
 
+	DPrintF("---------------------------------------------\n");
+	DPrintF("Largest Chunk Memory Available : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_LARGEST), AvailMem(MEMF_FAST|MEMF_LARGEST));
+	DPrintF("Free Memory Available          : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_FREE), AvailMem(MEMF_FAST|MEMF_FREE));
+	DPrintF("Total Memory Available         : %x (%d)\n", AvailMem(MEMF_FAST|MEMF_TOTAL), AvailMem(MEMF_FAST|MEMF_TOTAL));
+
+	DPrintF("SysBase %x\n", SysBase);
+	DPrintF("SysBase->IDNestcnt %x\n", SysBase->IDNestCnt);
+
+	goto out;
+
+
 	DPrintF("Binary  Output: %b\n", 0x79);
 	DPrintF("Hex     Output: %x\n", 0x79);
 	DPrintF("Decimal Output: %d\n", 0x79);

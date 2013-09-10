@@ -76,11 +76,11 @@ void lib_virtio_ExchangeFeatures(LibVirtioBase *LibVirtioBase, VirtioDevice *vd)
 
 		// prepare the features the guest/driver supports
 		guest_features |= (f->guest_support << f->bit);
-		DPrintF("guest feature %d\n", (f->guest_support << f->bit));
+//		DPrintF("guest feature %d\n", (f->guest_support << f->bit));
 
 		// just load the host/device feature int the struct
 		f->host_support |=  ((host_features >> f->bit) & 1);
-		DPrintF("host feature %d\n\n", ((host_features >> f->bit) & 1));
+//		DPrintF("host feature %d\n\n", ((host_features >> f->bit) & 1));
 	}
 
 	// let the device know about our features
