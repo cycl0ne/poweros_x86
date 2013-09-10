@@ -48,8 +48,8 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 	if (iORequest == NULL) return -1;
 	if (iORequest->io_Device == NULL) 
 	{
-		io->io_Error = IOERR_OPENFAIL;
-		return io->io_Error;
+		iORequest->io_Error = IOERR_OPENFAIL;
+		return iORequest->io_Error;
 	}
 	iORequest->io_Flags = IOF_QUICK;
 	iORequest->io_Message.mn_Node.ln_Type = NT_MESSAGE;
