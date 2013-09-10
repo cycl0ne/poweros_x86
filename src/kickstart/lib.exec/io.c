@@ -46,7 +46,11 @@ struct IORequest *lib_CheckIO(SysBase *SysBase,struct IORequest *iORequest)
 INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 {
 	if (iORequest == NULL) return -1;
-	if (iORequest->io_Device == NULL) return -1;
+	if (iORequest->io_Device == NULL) 
+	{
+		io->io_Error = IOERR_OPENFAIL;
+		return io->io_Error;
+	}
 	iORequest->io_Flags = IOF_QUICK;
 	iORequest->io_Message.mn_Node.ln_Type = NT_MESSAGE;
 
@@ -59,11 +63,16 @@ INT32 lib_DoIO(SysBase *SysBase, struct IORequest *iORequest)
 	return (INT32)iORequest->io_Error;
 }
 
-void lib_SendIO(SysBase *SysBase, struct IORequest *iORequest)
+void lib_SendIO(SysBase *SysBase, struct IORequest *io)
 {
-  //iORequest->io_Flags=0;
-  iORequest->io_Message.mn_Node.ln_Type=NT_MESSAGE;
-  (((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(iORequest->io_Device,5))(iORequest->io_Device, iORequest));
+	if (io == NULL) return;
+	if (io->io_Device == NULL) 
+	{
+		io->io_Error = IOERR_OPENFAIL;
+		return;
+	}
+	io->io_Message.mn_Node.ln_Type=NT_MESSAGE;	
+	(((void(*)(struct Device *, struct IORequest *)) _GETVECADDR(io->io_Device,5))(io->io_Device, io));
 }
 
 INT32 lib_WaitIO(SysBase *SysBase, struct IORequest *iORequest)
