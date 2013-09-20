@@ -55,6 +55,7 @@ typedef struct VDBase {
 	struct VirtioBlkUnit vd_Unit[MAX_VBLK];
 	UINT32				 vd_MaxUnit;
 	UINT32				 vd_Flags;
+	UINT32				 vd_SigTask;
 }VDBase;
 
 extern void (*virtioBlkCmdVector[])(struct IOStdReq *);

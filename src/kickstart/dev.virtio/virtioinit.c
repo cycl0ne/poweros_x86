@@ -90,7 +90,7 @@ static volatile const struct Resident ROMTag =
 	&InitTab
 };
 
-UINT32 vdev_InputTask(APTR data, struct SysBase *SysBase);
+UINT32 vd_WorkerTask(VDBase *VDBase, APTR SysBase);
 #define LibVirtioBase VDBase->vd_VirtIOBase
 
 static struct VDBase *vdev_Init(struct VDBase *VDBase, UINT32 *segList, struct SysBase *SysBase)
@@ -149,6 +149,10 @@ static struct VDBase *vdev_Init(struct VDBase *VDBase, UINT32 *segList, struct S
 		VDBase->vd_MaxUnit++;
 	}
 
+	DPrintF("Creating Worker Task\n");
+	VDBase->vd_Task = TaskCreate("Virtio_BLK WorkerTask", vd_WorkerTask, VDBase, 4096, 10);
+	Wait(SIGF_SINGLE);
+	
 	DPrintF("VirtioBlk: MaxUnits: %d\n", VDBase->vd_MaxUnit);
 	return VDBase;
 }
