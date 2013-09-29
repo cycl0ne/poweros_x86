@@ -117,8 +117,12 @@ static void WaitTask(SysBase *SysBase, struct Task *Task)
 		return;
 	}
 //	Task->CPU_Usage++;
-	Task->TDNestCnt = SysBase->TDNestCnt;
-	Task->IDNestCnt = SysBase->IDNestCnt;
+	// First Save our TD/ID State
+	Task->TDNestCnt		= SysBase->TDNestCnt;
+	Task->IDNestCnt		= SysBase->IDNestCnt;
+
+	// Enable Taskswitch Temporarily (if the user called us in a forbid). It will be redone by the Schedule() when coming back
+	SysBase->TDNestCnt	= -1;
 //	if (Task->Switch) Task->Switch(SysBase);
 	AddHead(&SysBase->TaskWait, &Task->Node);
 	Task->State = WAIT;
