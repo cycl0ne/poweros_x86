@@ -56,5 +56,5 @@ void vdev_BeginIO(VDBase *VDBase, struct IORequest *io)
 
 void vdev_AbortIO(VDBase *VDBase, struct IORequest *ioreq)
 {
-	vd_EndCommand((struct IOStdReq*)ioreq, IOERR_ABORTED);
+	//vd_EndCommand((struct IOStdReq*)ioreq, IOERR_ABORTED);
 }
