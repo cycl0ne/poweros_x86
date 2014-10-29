@@ -5,7 +5,11 @@ An experimental OS called PowerOS for the x86 platform
 
 Screenshots:
 AUX Handler - Shell
+
+![Screenshot of the Shell with the new EXT2 Handler](http://i.imgur.com/hqnGBuo.png)
+
 ![Screenshot of new vga mode console driver+test](http://i.imgur.com/9cJsqa3.jpg)
+
 New console.device in action with nyancat animation to check ANSI Code Handling.
 ![Screenshot of AUX device/handler](http://i.imgur.com/vZJoz7A.jpg)
 
