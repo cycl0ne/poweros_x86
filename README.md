@@ -7,17 +7,17 @@ Wiki (https://github.com/cycl0ne/poweros_x86/wiki)
 Screenshots (https://github.com/cycl0ne/poweros_x86/wiki/Demopage-Screenshots)
 
 At the moment im changing a lot in the source tree, this is, why there has been no update yet. Im running stable at the moment in a branch:
-pata.device -> to access a harddisk
-serial.device -> to access the serial port (more a hack but works)
-consolex86.device -> for printing on the normal PC screen
-dos.library -> IOs + Stuff with full buffered IO + reading/running prgs from HDD
-exec.library -> Multitasking (only singlecore, but has everything in it for multicpu/core)
-aux.handler -> mini handler to have Serial Shell output
-ext2.handler -> the ext2 Filesystem access (only read at the moment)
-ram.handler -> FULL working RAM: Filesystem. Use your Ram like a disk, the sky (no the memory) is the limit!
-shell -> shell :)
-lots of shell/c: commands
-
+pata.device -> to access a harddisk  
+serial.device -> to access the serial port (more a hack but works)  
+consolex86.device -> for printing on the normal PC screen  
+dos.library -> IOs + Stuff with full buffered IO + reading/running prgs from HDD  
+exec.library -> Multitasking (only singlecore, but has everything in it for multicpu/core)  
+aux.handler -> mini handler to have Serial Shell output  
+ext2.handler -> the ext2 Filesystem access (only read at the moment)  
+ram.handler -> FULL working RAM: Filesystem. Use your Ram like a disk, the sky (no the memory) is the limit!  
+shell -> shell :)  
+lots of shell/c: commands  
+  
 See the upcoming HowTo Page (https://github.com/cycl0ne/poweros_x86/wiki/HowTo) for further details on coding for PowerOS Shell, the so called commandlets.
   
 Summary:
