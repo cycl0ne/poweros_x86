@@ -1,6 +1,8 @@
 PowerOS
 =======
 
+See (https://github.com/cycl0ne/poweros_x86/wiki/HowTo) to get this version running.
+
 History:
 
 18.06.2015: **Update new V0.2 from our working branch**
