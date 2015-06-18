@@ -47,12 +47,6 @@ struct Global {
 
 int KillList(struct Global *, char *, pFileLock, STRPTR);
 
-//int cmd_delete(void)
-
-  /*-------------------------------------------------------------------------*/
-  /* First, clear the global structure so we don't have any garbage floating.*/
-  /*-------------------------------------------------------------------------*/
-
 DOSCALL main(APTR SysBase)
 {
 	struct Global global;
@@ -62,7 +56,6 @@ DOSCALL main(APTR SysBase)
 	pHandlerProc dproc;
 	char *curarg, **argptr;
 	
-	/* variables added to deal with absolute drive name problems */
 	APTR *prelocks = NULL;
 	STRPTR *names = NULL;
 	APTR *arglock;
@@ -98,14 +91,12 @@ DOSCALL main(APTR SysBase)
 		        numsources = 0;
 		        while (*argptr++) numsources++;
 	
-		        /* allocate an array to hold locks on the things to delete */
 		        if (!(prelocks = AllocVec((uint32_t)numsources*4,MEMF_CLEAR|MEMF_PUBLIC)))
 		        {
 		            PrintFault(ERROR_NO_FREE_STORE,NULL);
 		            goto Done;
 		        }
 	
-				/* allocate an array to hold the device names of the things to delete */
 				if (!(names = AllocVec((uint32_t)numsources*4,MEMF_CLEAR|MEMF_PUBLIC)))
 				{
 				    PrintFault(ERROR_NO_FREE_STORE,NULL);
@@ -116,18 +107,15 @@ DOSCALL main(APTR SysBase)
 				argcnt = 0;
 				while (argptr[argcnt])
 				{
-					/* scan for device name */
 					argname = argptr[argcnt];
 					i = 0;
 					while ((argname[i] != ':') && (argname[i])) i++;
 	
-					/* got a colon, so its a device name */
 					if (argname[i] == ':')
 					{
 		                i++;
 		                oldCh = argname[i];
 		                argname[i] = 0;
-						/* see if this device name has already been used */
 						argmatched = FALSE;
 						j = 0;
 						while (j <= argcnt)
@@ -229,15 +217,11 @@ DOSCALL main(APTR SysBase)
 		}
 		CloseLibrary(DOSBase);
 	} else {
-	//OPENFAIL;
 	}
 	return global.rc;
 }
 #define ENVMAX 256
-/*---------------------------------------------------------------------------*/
-/* This routine is used to kill all the files which match a specific pattern */
-/* whether the pattern includes wildcards or not.			     */
-/*---------------------------------------------------------------------------*/
+
 int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 {
 	struct AnchorPath *ua;
@@ -253,9 +237,6 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 	pUtilBase UtilBase = global->UtilBase;
 	global->rc = RETURN_OK;
 
-  /*-------------------------------------------------------------------------*/
-  /* Try to allocate a chunk of memory to use with the pattern match stuff.  */
-  /*-------------------------------------------------------------------------*/
 	if ((ua = AllocVec(sizeof(struct AnchorPath)+ENVMAX,
 	MEMF_CLEAR|MEMF_PUBLIC)) == NULL) 
 	{
@@ -263,50 +244,23 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 		global->rc = RETURN_FAIL;
 	} else 
 	{
-		/*-----------------------------------------------------------------------*/
-		/* Now we have to set up the pattern match structure.		     */
-		/*-----------------------------------------------------------------------*/
-		/* Set the flag which tells the pattern matcher to decode wild cards.    */
-		/*-----------------------------------------------------------------------*/
 		ua->ap_Flags = APF_DOWILD;
 		ua->ap_Strlen = ENVMAX; //ENVMAX;
 		
-		/*-----------------------------------------------------------------------*/
-		/* Tell the matcher to stop if the user presses Ctrl-C.		     */
-		/*-----------------------------------------------------------------------*/
 		ua->ap_BreakBits = SIGBREAKF_CTRL_C;
 		
-		/*-----------------------------------------------------------------------*/
-		/* Finally, call the matcher.					     */
-		/*-----------------------------------------------------------------------*/
 		if (lock) oldCD = CurrentDir(lock);
 		loopc = MatchFirst(name,ua);
 
-		/*-----------------------------------------------------------------------*/
-		/* Process all matches returned.					     */
-		/*-----------------------------------------------------------------------*/
 		while ((loopc == 0) && ((temprc == 0) ||
 	    	(temprc == ERROR_OBJECT_IN_USE) ||
 	    	(temprc == ERROR_DIRECTORY_NOT_EMPTY) ||
 	    	(temprc == ERROR_DELETE_PROTECTED))) 
 	    {
-			/*---------------------------------------------------------------------*/
-			/* 'skip1' is a flag which tells us whether or not to try deleting a   */
-			/* subdirectory.	Basically, skip it if we have not deleted all the    */
-			/* files under it, delete it if we have cleaned it out.  This only has */
-			/* validity if the user used the 'ALL' keyword on the command line.    */
-			/*---------------------------------------------------------------------*/
 			skip1 = FALSE;
 
-			/*---------------------------------------------------------------------*/
-			/* Make a copy of this file's name with full path.                     */
-			/*---------------------------------------------------------------------*/
 			if ((curlock = DupLock(ua->ap_Current->an_Lock)) == NULL) 
 			{
-				/*-------------------------------------------------------------------*/
-				/* If we can't duplicate the lock, something is *seriously* wrong!   */
-				/* Let's set some error codes and BAIL OUT!                          */
-				/*-------------------------------------------------------------------*/
 				temprc = 1L;
 				break;
 			} else 
@@ -319,20 +273,8 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 	     (ua->ap_Info.fib_DirEntryType < 3)) &&
 	    global->opts[OPT_ALL]) {
 
-	  /*-----------------------------------------------------------------*/
-	  /* The flag APF_DIDDIR tells us that we are 'backing out' of a     */
-	  /* subdirectory... in other words, we have deleted all sub files   */
-	  /* of that directory and we are moving back to its parent.  If     */
-	  /* this flag is set, we need to clear it, and leave skip1 alone so */
-	  /* this subdir gets deleted as the user specified.		     */
-	  /*-----------------------------------------------------------------*/
 	  if (!(ua->ap_Flags & APF_DIDDIR)) {
 
-	    /*---------------------------------------------------------------*/
-	    /* If we are deleting ALL files, tell the matcher to enter this  */
-	    /* directory; we also need to skip trying to delete this file    */
-	    /* until we exit it, as explained above.			     */
-	    /*---------------------------------------------------------------*/
 	    ua->ap_Flags |= APF_DODIR;
 	    skip1 = TRUE;
 	    UnLock(curlock);
@@ -341,25 +283,14 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 	}
       }
 
-      /*---------------------------------------------------------------------*/
-      /* Now get the next file which matches the given pattern. 	     */
-      /*---------------------------------------------------------------------*/
       loopc = MatchNext(ua);
 
-      /*---------------------------------------------------------------------*/
-      /* Now, unless we are skipping the current file, we need to try to     */
-      /* delete it.							     */
-      /*---------------------------------------------------------------------*/
       if (!skip1) {
 
-	/*-------------------------------------------------------------------*/
-	/* Gather info and set current directory of file we wish to delete.  */
-	/*-------------------------------------------------------------------*/
 	oldlock = CurrentDir(curlock);
 //	Printf("locking cachename: %s\n", cachename);
 	flock = Lock(cachename,ACCESS_READ);
 	if (flock == NULL) {
-	  /* There was an error on the current file.. */
 	  temprc = IoErr();
 	  trc = 0L;
 	  if (global->opts[OPT_QUIET] == NULL) {
@@ -371,69 +302,43 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 	} else {
 	  UnLock(flock);
 
-	  /*-----------------------------------------------------------------*/
-	  /* Unless we are being vewy qwiet, print the name of the file we   */
-	  /* are about to try to delete.				     */
-	  /*-----------------------------------------------------------------*/
 	  if (global->opts[OPT_QUIET] == NULL) {
 	    if (devname)
 	        PutStr(devname);
 	    PutStr(cachefull);
 	  }
 
-	  /*-----------------------------------------------------------------*/
-	  /* If we got this far, we can assume we are going to exit with a   */
-	  /* return code, whether we actually delete the file or not.	     */
-	  /*-----------------------------------------------------------------*/
 	  global->rc = RETURN_OK;
 
-	  /*-----------------------------------------------------------------*/
-	  /* KILL IT!							     */
-	  /*-----------------------------------------------------------------*/
 	  global->dcount++;
 
 //Printf("Trying to delete [%s]\n", cachename);
 //makedir test2 test2/test3 test2/test3/test4
 	  trc=DeleteFile(cachename);
 	  if(trc == NULL) 
-	  { /* failed for some reason */
+	  {
 	    global->result2 =IoErr();
 	    if((global->result2 == ERROR_DELETE_PROTECTED)&& global->opts[OPT_FORCE]) 
 	    {
 
-	      global->result2=0; /* ready for second try */
-	      SetProtection(cachename,0x0); /* try again */
+	      global->result2=0;
+	      SetProtection(cachename,0x0);
 	      trc=DeleteFile(cachename);
 	    }
 	  }
-	} /* Match to flock == NULL else clause above */
+	}
 	CurrentDir(oldlock);
 	UnLock(curlock);
 
 	if(trc != NULL) {
-	  /*-----------------------------------------------------------------*/
-	  /* If it worked, tell everybody!  Unless we are in QUIET mode, of  */
-	  /* course!							     */
-	  /*-----------------------------------------------------------------*/
 	  if (global->opts[OPT_QUIET] == NULL) PutStr(MSG_DELETED);
 	  global->rc=RETURN_OK;
 	  global->result2=0;
 	}
 	else {
-	  /*-----------------------------------------------------------------*/
-	  /* If we aren't able to kill the file, we need to tell 'em about   */
-	  /* it and go on.						     */
-	  /*-----------------------------------------------------------------*/
 	  temprc = IoErr();
 	  global->result2 = temprc;
 
-	  /*-----------------------------------------------------------------*/
-	  /* If we have been quiet up to now, we need to go ahead and print  */
-	  /* the name out.  This was a rather annoying ommision of the BCPL  */
-	  /* version, in that if you told it to be quiet, it would... except */
-	  /* when it printed an error message, you never knew WHERE the      */
-	  /* error had occured. 					     */
-	  /*-----------------------------------------------------------------*/
 	  if (global->opts[OPT_QUIET] != NULL) 
 	  {
 	    if (devname) PutStr(devname);
@@ -441,24 +346,16 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
 	  }
 //	  Printf("Here i am, rock me like a hurricane (%s, %s)\n", devname, cachefull);
 	  PrintFault(temprc, MSG_NOT_DELETED);
-	  printflag=FALSE; /* don't print the message again */
+	  printflag=FALSE;
 	}
       }
     }
 
-    /*-----------------------------------------------------------------------*/
-    /* If the only error we had was that we ran out of files to delete, we   */
-    /* are doing fine!	Set the return code so the user knows everything     */
-    /* went well.							     */
-    /*-----------------------------------------------------------------------*/
     if (temprc == ERROR_NO_MORE_ENTRIES) {
       temprc = NULL;
       global->rc = RETURN_OK;
     }
 
-    /*-----------------------------------------------------------------------*/
-    /* If the user hit Ctrl-C, we have to warn him that he is being rude!    */
-    /*-----------------------------------------------------------------------*/
     if (temprc == ERROR_BREAK) {
       temprc = NULL;
       PrintFault(IoErr(),NULL);
@@ -466,23 +363,14 @@ int KillList(struct Global *global, char *name, pFileLock lock, STRPTR devname)
       global->dcount++;
     }
 
-    /*-----------------------------------------------------------------------*/
-    /* If there was any other error, tell the user about it and leave!	     */
-    /*-----------------------------------------------------------------------*/
     if (temprc) {
       if(printflag)PrintFault(IoErr(),NULL);
       global->rc = RETURN_FAIL;
       global->dcount++;
     }
 
-    /*-----------------------------------------------------------------------*/
-    /* We have to clean up after ourselves.				     */
-    /*-----------------------------------------------------------------------*/
     MatchEnd(ua);
-
-    if (lock)
-        CurrentDir(oldCD);
-
+    if (lock) CurrentDir(oldCD);
     FreeVec(ua);
   }
   return(global->rc);
