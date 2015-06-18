@@ -19,10 +19,10 @@ LIBCOMPS := lib/utility lib/dos lib/bcache lib/clib lib/expansion lib/framebuffe
 			lib/virtio
 
 HANDLERCOMPS := handler/serial_handler handler/ram_handler handler/aux_handler handler/ext2_handler
-APPCOMPS := apps/shell apps/test apps/helloworld apps/nyancat apps/addbuffers apps/sanitycheck \
+APPCOMPS := apps/shell apps/helloworld apps/nyancat apps/addbuffers apps/sanitycheck \
 			apps/showinfo apps/stack apps/prompt apps/ask apps/path apps/get apps/getenv apps/unset apps/type \
 			apps/gfxtest apps/list apps/touch apps/setfilesize apps/simon apps/copylite apps/delete \
-			apps/rename apps/fstest apps/sort apps/copy
+			apps/rename apps/fstest apps/sort
 
 
 # include arch specific Makefile rules if any
