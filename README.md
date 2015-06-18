@@ -1,7 +1,7 @@
 PowerOS
 =======
 
-See (https://github.com/cycl0ne/poweros_x86/wiki/HowTo) to get this version running.
+See (https://github.com/cycl0ne/poweros_x86/wiki/HowTo-Install-Compile-Run) to get this version running.
 
 History:
 
