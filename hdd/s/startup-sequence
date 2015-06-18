@@ -1,0 +1,11 @@
+; Sample startup sequence to test a bit
+echo "Booting the system up"
+echo "with a startup sequence!"
+
+Makedir RAM:T RAM:Clipboards RAM:ENV RAM:ENV/Sys
+
+prompt
+
+Assign ENV: RAM:ENV
+Assign T:   RAM:T
+Assign Clips: RAM:Clipboards

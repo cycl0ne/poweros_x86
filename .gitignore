@@ -30,10 +30,7 @@ compile/bin/
 compile/_binary
 *_retired*
 *_RETIRED*
-.dummy.txt
 startup.sh
 .codio
 .c9
-startup.sh
 .settings
-/hdd/
