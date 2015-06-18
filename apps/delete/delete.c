@@ -3,7 +3,6 @@
 * User: cycl0ne
 * Date: 2014-10-31
 * Time: 06:29 PM
-* PowerOS, Copyright (C) 2014.  All rights reserved.
 **/
 
 #include "types.h"

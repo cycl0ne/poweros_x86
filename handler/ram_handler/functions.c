@@ -3,7 +3,6 @@
  *
  * This file describes a standard DOS handler for use with the ram (Filesystemtype).
  */
-/* PowerOS, Copyright (C) 2014.  All rights reserved. */
 
 #include "ram_handler.h"
 
@@ -19,7 +18,6 @@ INT32 rh_DoMatch(pGlobalData gd, struct ExAllControl *ec, INT32 data, struct ExA
 //FIX!
 	return 1;
 }
-
 
 void rh_CopyDate(pDateStamp sdate,pDateStamp ddate)
 {
