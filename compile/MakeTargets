@@ -1,0 +1,27 @@
+# lets clean, if any default target guessed by make
+.DEFAULT_GOAL :=
+
+ifeq ($(VERBOSE),1)
+$(info .DEFAULT_GOAL := $(.DEFAULT_GOAL))
+endif
+
+# Target
+kernel: $(EMBEDDED_MODULES)
+#MUST use -r to make poweros kernel.bin a relocatable one so that virtio can link with this to generate final kernel.bin.
+#DONT use -r when poweros kernel.bin needs to boot without virtio, then it need not be relocatable.
+	${LD} ${LDFLAGS} $(EMBEDDED_MODULES) -Map bin/kernel.map -o $(OBJDIR)/kernel.bin -T ${KERNEL_LINKER_SCRIPT}
+	@if [ $$? -eq 0 ] ; then echo; echo "$$(tput setaf 2)Kernel $(OBJDIR)/kernel.bin: Compilation Successfull!$$(tput sgr0)"; echo; fi
+
+apps: $(STANDALONE_MODULES)
+
+clean:
+	@rm -rf $(OBJDIR) $(COMPS:%=$(TOPDIR)/%/$(OBJDIR))
+	@if [ $$? -eq 0 ] ; then echo; echo "$$(tput setaf 2)All Clean!$$(tput sgr0)"; echo; fi
+
+install:
+	cp $(OBJDIR)/kernel.bin $(DSTDIR)/
+	$(install_template)
+
+	@echo "$$(tput setaf 2)Creating ext2 Harddisk img file!$$(tput sgr0)"
+	./create_ext2.sh
+	cp harddisk2.img harddisk3.img

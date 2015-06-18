@@ -1,0 +1,116 @@
+#include "execbase_private.h"
+#include "exec_interface.h"
+
+volatile APTR FuncTab[] =
+{
+	(void(*)) lib_OpenLib,
+	(void(*)) lib_CloseLib,
+	(void(*)) lib_ExpungeLib,
+	(void(*)) lib_ExtFuncLib,
+
+	(void(*)) lib_AddTask,
+	(void(*)) lib_FindTask,
+	(void(*)) lib_CreateTask,
+	(void(*)) lib_SetTaskPri,
+	(void(*)) lib_ReadyTask,
+	(void(*)) lib_Permit,
+	(void(*)) lib_Forbid,
+
+	(void(*)) lib_AllocSignal,
+	(void(*)) lib_FreeSignal,
+	(void(*)) lib_WaitSignal,
+	(void(*)) lib_SetSignal,
+	(void(*)) lib_SignalTask,
+
+	(void(*)) lib_AddPort,
+	(void(*)) lib_FindPort,
+	(void(*)) lib_RemPort,
+	(void(*)) lib_WaitPort,
+	(void(*)) lib_CreateMsgPort,
+	(void(*)) lib_DeleteMsgPort,
+	(void(*)) lib_GetMsg,
+	(void(*)) lib_PutMsg,
+	(void(*)) lib_ReplyMsg,
+	
+	(void(*)) lib_AddHead,
+	(void(*)) lib_AddTail,
+	(void(*)) lib_Enqueue,
+	(void(*)) lib_Insert,
+	(void(*)) lib_NewList,
+	(void(*)) lib_NewListType,
+	(void(*)) lib_Remove,
+	(void(*)) lib_RemTail,
+	(void(*)) lib_RemHead,
+	(void(*)) lib_FindName,
+
+	(void(*)) lib_Allocate,
+	(void(*)) lib_Deallocate,
+	(void(*)) lib_AddMemList,
+	(void(*)) lib_AllocVec,
+	(void(*)) lib_FreeVec,
+	(void(*)) lib_AvailMem,
+	(void(*)) lib_CopyMemQuick,
+	(void(*)) lib_CopyMem,
+	(void(*)) lib_MemSet,
+
+	(void(*)) lib_OpenLibrary,
+	(void(*)) lib_CloseLibrary,
+	(void(*)) lib_AddLibrary,
+	(void(*)) lib_RemLibrary,
+	(void(*)) lib_SumLibrary,
+	(void(*)) lib_DisposeLibrary,
+	(void(*)) lib_SetFunction,
+	(void(*)) lib_MakeLibrary,
+	(void(*)) lib_MakeFunctions,
+
+	(void(*)) lib_OpenDevice,
+	(void(*)) lib_CloseDevice,
+	(void(*)) lib_AddDevice,
+	(void(*)) lib_RemDevice,
+	(void(*)) lib_CreateIORequest,
+	(void(*)) lib_DeleteIORequest,
+	(void(*)) lib_DoIO,
+	(void(*)) lib_SendIO,
+	(void(*)) lib_WaitIO,
+	(void(*)) lib_CheckIO,
+	(void(*)) lib_AbortIO,
+
+	(void(*)) lib_Enable,
+	(void(*)) lib_Disable,
+	(void(*)) lib_Restore,
+	(void(*)) lib_AddIntServer,
+	(void(*)) lib_RemIntServer,
+	(void(*)) lib_SetExcVector,
+	(void(*)) lib_CreateIntServer,
+
+	(void(*)) lib_InitResident,
+	(void(*)) lib_InitResidentCode,
+
+	(void(*)) lib_RawIOInit,
+	(void(*)) lib_RawPutChar,
+	(void(*)) lib_RawMayGetChar,
+	(void(*)) lib_RawDoFmt,
+
+	(void(*)) lib_InitSemaphore,
+	(void(*)) lib_AddSemaphore,
+	(void(*)) lib_RemSemaphore,
+	(void(*)) lib_FindSemaphore,
+	(void(*)) lib_ObtainSemaphore,
+	(void(*)) lib_AttemptSemaphore,
+	(void(*)) lib_ReleaseSemaphore,
+	(void(*)) lib_ObtainSemaphoreShared,
+	(void(*)) lib_AttemptSemaphoreShared,
+	
+	(void(*)) lib_Reschedule,
+	(void(*)) lib_YieldCPU,
+	(void(*)) lib_KPrintF,
+	(void(*)) lib_FindResident,
+	(void(*)) lib_CreatePool,
+	(void(*)) lib_DeletePool,
+	(void(*)) lib_AllocPooled,
+	(void(*)) lib_FreePooled,
+	
+	(APTR) ((INT32)-1)
+};
+
+

@@ -1,6 +1,39 @@
-kernel
+# Object files
 *.o
+*.ko
+*.obj
+*.elf
 *.img
 *.bin
-bin/
-*.vmdk
+*.bak
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Directories
+compile/bin/
+compile/_binary
+*_retired*
+*_RETIRED*
+.dummy.txt
+startup.sh
+.codio
+.c9
+startup.sh
+.settings
+/hdd/

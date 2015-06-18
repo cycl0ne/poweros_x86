@@ -1,0 +1,56 @@
+ifeq ($(VERBOSE),1)
+$(info "================region makevars start====================")
+endif
+
+MODULE_NAME := region
+# module linkage type: embedded or standalone
+MODULE_LINKAGE_TYPE := embedded
+MODULEDIR := lib/region
+MODULE_DSTDIR := $(DSTDIR)/libs
+
+C_FILES := allocregion.c \
+copyregion.c\
+destroyregion.c\
+emptyregion.c\
+equalregion.c\
+getregionbox.c\
+offsetregion.c\
+ptinregion.c\
+rectinregion.c\
+region.c\
+regioninit.c\
+regionlib.c\
+setregion.c\
+subtractrectfromregion.c\
+unionrectwithregion.c\
+xorregion.c
+
+S_FILES :=
+ASM_FILES :=
+
+C_SRCS := ${C_FILES:%=${MODULEDIR}/%}
+AS_SRCS := ${S_FILES:%=${MODULEDIR}/%}
+NASM_SRCS := ${ASM_FILES:%=${MODULEDIR}/%}
+
+SRCDIRS := ${MODULEDIR}
+OBJSUBDIRS := ${OBJDIR}/${MODULEDIR}
+
+# include arch specific Makefile rules if any
+FILE_NAME := $(wildcard ${TOPDIR}/${MODULEDIR}/arch_$(ARCH)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+
+# include common Makefile rules
+include $(COMPILE_DIR)/MakeRules
+
+ifeq ($(VERBOSE),1)
+$(info "================region makevars end====================")
+endif

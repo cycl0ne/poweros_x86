@@ -1,0 +1,118 @@
+#rules for this module
+
+ifeq ($(VERBOSE),1)
+$(info "================common makerules start====================")
+$(info MODULE_NAME := $(MODULE_NAME))
+$(info MODULE_LINKAGE_TYPE := $(MODULE_LINKAGE_TYPE))
+$(info MODULEDIR := $(MODULEDIR))
+$(info MODULE_DSTDIR := $(MODULE_DSTDIR))
+$(info C_SRCS := $(C_SRCS))
+$(info AS_SRCS := $(AS_SRCS))
+$(info NASM_SRCS := $(NASM_SRCS))
+$(info SRCDIRS := $(SRCDIRS))
+$(info OBJSUBDIRS := $(OBJSUBDIRS))
+endif
+
+C_OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(C_SRCS))
+AS_OBJS := $(patsubst %.s,$(OBJDIR)/%.o,$(AS_SRCS))
+NASM_OBJS := $(patsubst %.asm,$(OBJDIR)/%.o,$(NASM_SRCS))
+OBJS := $(NASM_OBJS) $(AS_OBJS) $(C_OBJS)
+
+ifeq ($(VERBOSE),1)
+$(info C_OBJS := $(C_OBJS))
+$(info AS_OBJS := $(AS_OBJS))
+$(info NASM_OBJS := $(NASM_OBJS))
+$(info OBJS := $(OBJS))
+endif
+
+INCLUDES := $(HDRDIRS:%=-I${TOPDIR}/%)
+INCLUDES += $(SRCDIRS:%=-I${TOPDIR}/%)
+
+ifeq ($(VERBOSE),1)
+$(info INCLUDES := $(INCLUDES))
+endif
+
+MODULE := $(OBJDIR)/$(MODULEDIR)/$(MODULE_NAME)
+MODULE_LINKER_SCRIPT := $(LINKER_SCRIPT_DIR)/$(MODULE_LINKAGE_TYPE)_module.ld
+MODULE_MAP := $(MODULE).map
+
+ifeq ($(MODULE_LINKAGE_TYPE), standalone)
+	STANDALONE_MODULES += $(MODULE)
+	MODULE_DSTDIRS += $(MODULE_DSTDIR)
+else
+	EMBEDDED_MODULES += $(MODULE)
+endif
+
+ifeq ($(VERBOSE),1)
+$(info MODULE := $(MODULE))
+$(info MODULE_LINKER_SCRIPT := $(MODULE_LINKER_SCRIPT))
+$(info MODULE_MAP := $(MODULE_MAP))
+$(info EMBEDDED_MODULES := $(EMBEDDED_MODULES))
+$(info STANDALONE_MODULES := $(STANDALONE_MODULES))
+$(info MODULE_DSTDIRS := $(MODULE_DSTDIRS))
+endif
+
+#**********************
+define module_template
+    $(1): $(OBJS) ; @$${LD} $${LDFLAGS} $(OBJS) -r -Map $(MODULE_MAP) -T $(MODULE_LINKER_SCRIPT) -o $$@ ; if [ $$$$? -eq 0 ] ; then echo; echo "$$$$(tput setaf 2)Module $(1): Compilation Successfull!$$$$(tput sgr0)"; echo; fi
+endef
+#**********************
+
+ifeq ($(VERBOSE),1)
+#$(info $(call module_template,$(MODULE)))
+endif
+
+$(eval $(call module_template,$(MODULE)))
+
+#**********************
+define CC_template
+	$(1)_file := $(1:$(OBJDIR)/%.o=$(TOPDIR)/%.c)
+    $(1): $$($(1)_file) ; @for i in $(OBJSUBDIRS) ; do if [ ! -d $$$$i ]; then mkdir -p $(OBJSUBDIRS); fi done; $$(CC) $$(CFLAGS_FOR_TARGET) $(INCLUDES) $$(CFLAGS) -c -o $$@ $$<
+endef
+#**********************
+
+ifeq ($(VERBOSE),1)
+#$(foreach prog,$(C_OBJS),$(info $(call CC_template,$(prog))))
+endif
+
+$(foreach prog,$(C_OBJS),$(eval $(call CC_template,$(prog))))
+
+#**********************
+define AS_template
+	$(1)_file := $(1:$(OBJDIR)/%.o=$(TOPDIR)/%.s)
+    $(1): $$($(1)_file) ; @for i in $(OBJSUBDIRS) ; do if [ ! -d $$$$i ]; then mkdir -p $(OBJSUBDIRS); fi done; $$(AS) $$(ASFLAGS_FOR_TARGET) $$(ASFLAGS) -o $$@ $$<
+endef
+#**********************
+
+ifeq ($(VERBOSE),1)
+#$(foreach prog,$(AS_OBJS),$(info $(call AS_template,$(prog))))
+endif
+
+$(foreach prog,$(AS_OBJS),$(eval $(call AS_template,$(prog))))
+
+#**********************
+define nasm_template
+	$(1)_file := $(1:$(OBJDIR)/%.o=$(TOPDIR)/%.asm)
+    $(1): $$($(1)_file) ; @for i in $(OBJSUBDIRS) ; do if [ ! -d $$$$i ]; then mkdir -p $(OBJSUBDIRS); fi done; nasm -felf -o $$@ $$<
+endef
+#**********************
+
+ifeq ($(VERBOSE),1)
+#$(foreach prog,$(NASM_OBJS),$(info $(call nasm_template,$(prog))))
+endif
+
+$(foreach prog,$(NASM_OBJS),$(eval $(call nasm_template,$(prog))))
+
+#**********************
+define install_template
+	$(subst ^, ,$(join $(addprefix cp^,$(STANDALONE_MODULES)),$(patsubst %,^%/;,$(MODULE_DSTDIRS))))
+endef
+#**********************
+
+ifeq ($(VERBOSE),1)
+#$(info $(call install_template))
+endif
+
+ifeq ($(VERBOSE),1)
+$(info "================common makerules end====================")
+endif

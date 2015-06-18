@@ -1,0 +1,33 @@
+# By defult
+PLATFORM := qemu
+
+# verbose = 0 means, without debug output
+# verbose = 1 means, with debug output
+VERBOSE := 0
+
+OBJDIR := bin
+DSTDIR := $(TOPDIR)/hdd
+
+ifeq ($(VERBOSE),1)
+$(info "================make init start====================")
+$(info PLATFORM := $(PLATFORM))
+$(info TOPDIR := $(TOPDIR))
+$(info COMPILE_DIR := $(COMPILE_DIR))
+$(info OBJDIR := $(OBJDIR))
+$(info DSTDIR := $(DSTDIR))
+endif
+
+
+ifeq ($(PLATFORM),qemu)
+	ARCH := x86
+else ifeq ($(PLATFORM),pc)
+	ARCH := x86
+else ifeq ($(PLATFORM),rpi)
+    ARCH := arm
+else ifeq ($(PLATFORM),mobile)
+    ARCH := arm
+endif
+
+ifeq ($(VERBOSE),1)
+$(info "================make init end====================")
+endif

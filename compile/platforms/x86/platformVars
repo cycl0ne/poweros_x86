@@ -1,0 +1,31 @@
+#
+# Platform-specific Makefile definitions for the x86
+#
+
+# DO NOT assign these variables here
+# These variables may get assigned inside include file
+CROSS :=
+
+CFLAGS :=
+ASFLAGS :=
+CFLAGS_FOR_TARGET :=
+ASFLAGS_FOR_TARGET :=
+LDFLAGS :=
+
+# Include default x86 definitions
+include arch/x86/platformVars
+
+$(info "================x86 Platform====================")
+CFLAGS += -O -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Wall
+ASFLAGS +=
+CFLAGS_FOR_TARGET +=
+ASFLAGS_FOR_TARGET +=
+LDFLAGS +=
+
+LINKER_SCRIPT := platforms/x86/arch_x86.ld
+
+DEVS := timer serial_x86  pata_x86 console_x86vga # dev.input dev.keyboard dev.mouseport dev.timer
+LIBS := utility dos bcache # lib.coregfx lib.expansion lib.region lib.utility lib.vgagfx
+HANDLERS := serial_handler ram_handler aux_handler ext2_handler #pfs_handler pfs3_handler #sfs_handler
+APPS := shell #test
+

@@ -1,0 +1,29 @@
+# arch specific Makefile vars
+
+ifeq ($(VERBOSE),1)
+$(info "================x86 arch makevars start====================")
+endif
+
+CROSS := i686-elf-
+
+CFLAGS +=
+ASFLAGS +=
+LDFLAGS +=
+
+LINKER_SCRIPT_DIR := $(COMPILE_DIR)/arch_$(ARCH)
+
+# include platform specific Makefile rules if any
+FILE_NAME := $(wildcard ${COMPILE_DIR}/arch_$(ARCH)/platform_$(PLATFORM)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+ifeq ($(VERBOSE),1)
+$(info "================x86 arch makevars end====================")
+endif

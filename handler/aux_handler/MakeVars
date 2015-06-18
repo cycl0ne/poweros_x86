@@ -1,0 +1,44 @@
+ifeq ($(VERBOSE),1)
+$(info "================aux_handler makevars start====================")
+endif
+
+MODULE_NAME := aux
+# module linkage type: embedded or standalone
+MODULE_LINKAGE_TYPE := embedded
+MODULEDIR := handler/aux_handler
+MODULE_DSTDIR := $(DSTDIR)/handlers
+
+C_FILES := aux_handler.c
+
+S_FILES :=
+ASM_FILES :=
+
+C_SRCS := ${C_FILES:%=${MODULEDIR}/%}
+AS_SRCS := ${S_FILES:%=${MODULEDIR}/%}
+NASM_SRCS := ${ASM_FILES:%=${MODULEDIR}/%}
+
+SRCDIRS := ${MODULEDIR}
+OBJSUBDIRS := ${OBJDIR}/${MODULEDIR}
+
+# include arch specific Makefile rules if any
+FILE_NAME := $(wildcard ${TOPDIR}/${MODULEDIR}/arch_$(ARCH)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+
+# include common Makefile rules
+include $(COMPILE_DIR)/MakeRules
+
+ifeq ($(VERBOSE),1)
+$(info "================aux_handler makevars end====================")
+endif
+
+
+

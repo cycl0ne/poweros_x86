@@ -1,0 +1,51 @@
+ifeq ($(VERBOSE),1)
+$(info "================shell makevars start====================")
+endif
+
+MODULE_NAME := shell
+# module linkage type: embedded or standalone
+MODULE_LINKAGE_TYPE := embedded
+MODULEDIR := apps/shell
+MODULE_DSTDIR := $(DSTDIR)/handlers
+
+C_FILES := startup_shell.c shell.c\
+quit.c echo.c why.c endcli.c avail.c cd.c makedir.c dir.c testconsole.c runprg.c\
+resident.c cmd_debug.c
+
+#shell.c\
+#quit.c echo.c why.c avail.c endcli.c cd.c makedir.c set.c makeleanfs.c makesfs.c\
+#dir.c sanitycheck.c testconsole.c nyancat.c runprg.c\
+#_pfs.c addbuffers.c run.c cmd_debug.c
+
+S_FILES :=
+ASM_FILES :=
+
+C_SRCS := ${C_FILES:%=${MODULEDIR}/%}
+AS_SRCS := ${S_FILES:%=${MODULEDIR}/%}
+NASM_SRCS := ${ASM_FILES:%=${MODULEDIR}/%}
+
+SRCDIRS := ${MODULEDIR}
+OBJSUBDIRS := ${OBJDIR}/${MODULEDIR}
+
+# include arch specific Makefile rules if any
+FILE_NAME := $(wildcard ${TOPDIR}/${MODULEDIR}/arch_$(ARCH)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+
+# include common Makefile rules
+include $(COMPILE_DIR)/MakeRules
+
+ifeq ($(VERBOSE),1)
+$(info "================shell makevars end====================")
+endif
+
+
+

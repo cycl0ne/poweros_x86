@@ -1,0 +1,57 @@
+ifeq ($(VERBOSE),1)
+$(info "================exec arch_x86 makevars start====================")
+endif
+
+THISDIR := system/exec/arch_x86
+
+C_FILES := arch_before_task_runs.c \
+	arch_clk_init.c \
+	arch_exc_handler.c \
+	arch_exc_init.c \
+	arch_int_disable.c \
+	arch_int_enable.c \
+	arch_int_read.c \
+	arch_int_restore.c \
+	arch_irq_create.c \
+	arch_irq_eoi.c \
+	arch_irq_init.c \
+	arch_irq_mask.c \
+	arch_irq_server.c \
+	arch_irq_unmask.c \
+	arch_main_pre.c \
+	_debug.c \
+	gdt_init.c \
+	arch_acpi.c \
+	arch_madt.c arch_smp.c
+
+S_FILES := arch_ctx_restore.s \
+	arch_ctx_save.s
+
+ASM_FILES := interrupt.asm \
+	gdt.asm \
+	boot.asm
+
+C_SRCS += ${C_FILES:%=${THISDIR}/%}
+AS_SRCS += ${S_FILES:%=${THISDIR}/%}
+NASM_SRCS += ${ASM_FILES:%=${THISDIR}/%}
+
+SRCDIRS += ${THISDIR}
+OBJSUBDIRS += ${OBJDIR}/${THISDIR}
+
+# include platform specific Makefile rules if any
+FILE_NAME := $(wildcard ${TOPDIR}/${THISDIR}/platform_$(PLATFORM)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+
+ifeq ($(VERBOSE),1)
+$(info "================exec arch_x86 makevars end====================")
+endif
+

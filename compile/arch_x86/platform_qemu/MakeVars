@@ -1,0 +1,15 @@
+# platform specific Makefile vars
+
+ifeq ($(VERBOSE),1)
+$(info "================qemu Platform makevars start====================")
+endif
+
+CFLAGS +=
+ASFLAGS +=
+LDFLAGS +=
+
+LINKER_SCRIPT_DIR := $(COMPILE_DIR)/arch_$(ARCH)/platform_$(PLATFORM)
+
+ifeq ($(VERBOSE),1)
+$(info "================qemu Platform makevars end====================")
+endif

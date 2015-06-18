@@ -1,0 +1,42 @@
+ifeq ($(VERBOSE),1)
+$(info "================gfxlib makevars start====================")
+endif
+
+MODULE_NAME := gfx
+# module linkage type: embedded or standalone
+MODULE_LINKAGE_TYPE := embedded
+MODULEDIR := lib/gfx
+MODULE_DSTDIR := $(DSTDIR)/libs
+
+C_FILES := gfx_lib.c gfx_clip.c gfx_cursor.c gfx_draw.c gfx_color.c gfx_drawarc.c gfx_drawpoly.c gfx_drawstipple.c\
+gfx_font1.c gfx_font2.c gfx_font.c gfx_fontprocs.c gfx_dbcs.c gfx_blit.c gfx_view.c
+
+S_FILES :=
+ASM_FILES :=
+
+C_SRCS := ${C_FILES:%=${MODULEDIR}/%}
+AS_SRCS := ${S_FILES:%=${MODULEDIR}/%}
+NASM_SRCS := ${ASM_FILES:%=${MODULEDIR}/%}
+
+SRCDIRS := ${MODULEDIR}
+OBJSUBDIRS := ${OBJDIR}/${MODULEDIR}
+
+# include arch specific Makefile rules if any
+FILE_NAME := $(wildcard ${TOPDIR}/${MODULEDIR}/arch_$(ARCH)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+
+# include common Makefile rules
+include $(COMPILE_DIR)/MakeRules
+
+ifeq ($(VERBOSE),1)
+$(info "================gfxlib makevars end====================")
+endif

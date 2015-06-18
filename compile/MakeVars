@@ -1,0 +1,87 @@
+# common Makefile vars
+ifeq ($(VERBOSE),1)
+$(info "================common makevars start====================")
+endif
+
+# these variables maby me modified by architecture specific makevars
+CROSS :=
+
+CFLAGS := -O0 -nostdlib -nostdinc -fno-builtin -fno-stack-protector -std=gnu99 -Wall -fno-common -Wextra
+ASFLAGS :=
+LDFLAGS :=
+
+LINKER_SCRIPT_DIR := $(COMPILE_DIR)
+
+SYSCOMPS := system/exec
+DEVCOMPS := device/timer device/serial_x86 device/pata_x86 device/console_x86vga device/mouse device/keyboard\
+			device/virtio_blk
+LIBCOMPS := lib/utility lib/dos lib/bcache lib/clib lib/expansion lib/framebuffer lib/region lib/gfx\
+			lib/virtio
+
+HANDLERCOMPS := handler/serial_handler handler/ram_handler handler/aux_handler handler/ext2_handler
+APPCOMPS := apps/shell apps/test apps/helloworld apps/nyancat apps/addbuffers apps/sanitycheck \
+			apps/showinfo apps/stack apps/prompt apps/ask apps/path apps/get apps/getenv apps/unset apps/type \
+			apps/gfxtest apps/list apps/touch apps/setfilesize apps/simon apps/copylite apps/delete \
+			apps/rename apps/fstest apps/sort apps/copy
+
+
+# include arch specific Makefile rules if any
+FILE_NAME := $(wildcard ${COMPILE_DIR}/arch_$(ARCH)/MakeVars)
+
+ifeq ($(VERBOSE),1)
+$(info FILE_NAME := $(FILE_NAME))
+endif
+
+ifneq ($(FILE_NAME), )
+	include $(FILE_NAME)
+else
+endif
+
+# see the final values
+ifeq ($(VERBOSE),1)
+$(info CROSS := $(CROSS))
+$(info CFLAGS := $(CFLAGS))
+$(info ASFLAGS := $(ASFLAGS))
+$(info LDFLAGS := $(LDFLAGS))
+$(info LINKER_SCRIPT_DIR := $(LINKER_SCRIPT_DIR))
+$(info SYSCOMPS := $(SYSCOMPS))
+$(info DEVCOMPS := $(DEVCOMPS))
+$(info LIBCOMPS := $(LIBCOMPS))
+$(info HANDLERCOMPS := $(HANDLERCOMPS))
+$(info APPCOMPS := $(APPCOMPS))
+endif
+
+# Important variables
+CC := ${CROSS}gcc
+AS := ${CROSS}as
+LD := ${CROSS}ld
+
+KERNEL_LINKER_SCRIPT := $(LINKER_SCRIPT_DIR)/kernel.ld
+
+COMPS := $(SYSCOMPS) $(DEVCOMPS) $(LIBCOMPS) $(HANDLERCOMPS) $(APPCOMPS)
+
+HDRDIRS := include/interfaces \
+	include/system \
+	include/devices \
+	include/libraries
+
+ifeq ($(VERBOSE),1)
+$(info CC := $(CC))
+$(info AS := $(AS))
+$(info LD := $(LD))
+$(info KERNEL_LINKER_SCRIPT := $(KERNEL_LINKER_SCRIPT))
+$(info COMPS := $(COMPS))
+$(info HDRDIRS := $(HDRDIRS))
+endif
+
+# these are needed for MakeTargets
+EMBEDDED_MODULES :=
+STANDALONE_MODULES :=
+MODULE_DSTDIRS :=
+
+ifeq ($(VERBOSE),1)
+$(info "================common makevars end====================")
+endif
+
+
+
