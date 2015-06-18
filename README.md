@@ -1,7 +1,19 @@
 PowerOS
 =======
 
-PowerOS Multiplatform with changed folder structure:
+History:
+
+18.06.2015: **Update new V0.2 from our working branch**
+
+* Dos.library
+* aux: device
+* ext2.handler Read/Write
+* first shell
+* loading of files from disk
+* booting into shell with HD0: mounted
+* first ram.handler
+
+01.2015: **PowerOS Multiplatform with changed folder structure**
 
 Following platforms are included
 - x86 (fully working shell on AUX: on qemu)
